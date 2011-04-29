@@ -55,6 +55,7 @@ import org.jboss.netty.util.CharsetUtil;
 		                  readingChunks = false;
 		                  //System.out.println("} END OF CHUNKED CONTENT");
 		              } else {
+		            	  client.write(chunk);
 		                  //System.out.print(chunk.getContent().toString(CharsetUtil.UTF_8));
 		                  //System.out.flush();
 		              }
