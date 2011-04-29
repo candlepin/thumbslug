@@ -5,11 +5,14 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.*;
 import static org.jboss.netty.handler.codec.http.HttpVersion.*;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Executors;
 
+import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
@@ -19,6 +22,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.CookieEncoder;
@@ -36,29 +40,33 @@ import org.jboss.netty.util.CharsetUtil;
 		      private boolean readingChunks;
 		      /** Buffer that stores the response content */
 		      private final StringBuilder buf = new StringBuilder();
+			private ChannelFuture future;
 		  
 		      @Override
 		      public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
 		          if (!readingChunks) {
-		              HttpRequest request = this.request = (HttpRequest) e.getMessage();
+		              final HttpRequest request = this.request = (HttpRequest) e.getMessage();
 		  
 		              if (is100ContinueExpected(request)) {
 		                  send100Continue(e);
 		              }
-		  
-		              buf.setLength(0);
-		              buf.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
-		              buf.append("===================================\r\n");
-		  
-		              buf.append("VERSION: " + request.getProtocolVersion() + "\r\n");
-		              buf.append("HOSTNAME: " + getHost(request, "unknown") + "\r\n");
-		              buf.append("REQUEST_URI: " + request.getUri() + "\r\n\r\n");
-		  
-		              for (Map.Entry<String, String> h: request.getHeaders()) {
-		                  buf.append("HEADER: " + h.getKey() + " = " + h.getValue() + "\r\n");
-		              }
-		              buf.append("\r\n");
-		  
+		              
+		              ClientBootstrap bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
+		            		                            Executors.newCachedThreadPool(),
+		            		                            Executors.newCachedThreadPool()));
+		            		    
+		            		            // Set up the event pipeline factory.
+		            		            bootstrap.setPipelineFactory(new HttpClientPipelineFactory(e.getChannel()));
+		            		    
+		            		            future = bootstrap.connect(new InetSocketAddress("fedoraproject.org", 80));
+	            		                future.addListener(new ChannelFutureListener() {
+	            		                    
+	            		                    public void operationComplete(final ChannelFuture future) 
+	            		                        throws Exception {
+	            		                        future.getChannel().write(request);
+	            		                    }
+	            		                });
+		              
 		              QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getUri());
 		              Map<String, List<String>> params = queryStringDecoder.getParameters();
 		              if (!params.isEmpty()) {
@@ -74,12 +82,13 @@ import org.jboss.netty.util.CharsetUtil;
 		  
 		              if (request.isChunked()) {
 		                  readingChunks = true;
+		                  System.out.println("Request is chunked");
 		              } else {
 		                  ChannelBuffer content = request.getContent();
 		                 if (content.readable()) {
 		                     buf.append("CONTENT: " + content.toString(CharsetUtil.UTF_8) + "\r\n");
 		                 }
-		                 writeResponse(e);
+//		                 writeResponse(e);
 		             }
 		         } else {
 		             HttpChunk chunk = (HttpChunk) e.getMessage();
@@ -98,7 +107,7 @@ import org.jboss.netty.util.CharsetUtil;
 		                     buf.append("\r\n");
 		                 }
 		 
-		                 writeResponse(e);
+//		                 writeResponse(e);
 		             } else {
 		                 buf.append("CHUNK: " + chunk.getContent().toString(CharsetUtil.UTF_8) + "\r\n");
 		             }
