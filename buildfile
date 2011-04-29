@@ -25,3 +25,8 @@ define "sam-proxy" do
 
   package(:jar).merge NETTY
 end
+
+task :serve do
+    sh "java -jar target/#{GROUP}-#{VERSION_NUMBER}.jar"
+end
+task :serve => :package

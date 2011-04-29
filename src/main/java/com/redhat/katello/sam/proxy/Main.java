@@ -12,6 +12,7 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		int port = 8088;
         // Configure the server.
 		          ServerBootstrap bootstrap = new ServerBootstrap(
 		                  new NioServerSocketChannelFactory(
@@ -22,7 +23,8 @@ public class Main {
 		          bootstrap.setPipelineFactory(new HttpServerPipelineFactory());
 		  
 		          // Bind and start to accept incoming connections.
-		          bootstrap.bind(new InetSocketAddress(8088));
+		          bootstrap.bind(new InetSocketAddress(port));
+		          System.out.println("Running SAM proxy on port " + port);
 	}
 
 }
