@@ -23,6 +23,7 @@ define "sam-proxy" do
   compile.with NETTY
   test.compile.with NETTY
 
+  # include netty (and deps) in the jar, so it can run standalone
   package(:jar).merge NETTY
 end
 

@@ -141,6 +141,8 @@ import org.jboss.netty.util.CharsetUtil;
 		         if (!keepAlive) {
 		             future.addListener(ChannelFutureListener.CLOSE);
 		         }
+		         
+		         System.out.println(String.format("%s %s %d", request.getMethod(), request.getUri(), response.getStatus().getCode()));
 		     }
 		 
 		     private void send100Continue(MessageEvent e) {
