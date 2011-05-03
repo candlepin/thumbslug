@@ -1,3 +1,0 @@
-[submodule "chainsaw-extensions"]
-	path = chainsaw-extensions
-	url = git://github.com/jbowes/chainsaw-extensions.git
