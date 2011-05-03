@@ -1,3 +1,4 @@
 target
+reports
 .project
-.swp
+*.swp

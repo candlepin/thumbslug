@@ -11,6 +11,8 @@ COPYRIGHT = ""
 repositories.remote << "http://www.ibiblio.org/maven2/"
 repositories.remote << "https://repository.jboss.org/nexus/content/repositories/releases/"
 
+require 'chainsaw-extensions/checkstyle'
+
 NETTY = transitive 'org.jboss.netty:netty:jar:3.2.4.Final'
 
 desc "The Sam-proxy project"
