@@ -26,7 +26,8 @@ import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
  * HttpServerPipelineFactory
  */
 public class HttpServerPipelineFactory implements ChannelPipelineFactory {
-
+        
+    @Override
     public ChannelPipeline getPipeline() throws Exception {
         // Create a default pipeline implementation.
         ChannelPipeline pipeline = pipeline();

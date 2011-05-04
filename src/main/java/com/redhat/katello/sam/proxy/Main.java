@@ -18,12 +18,19 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.group.ChannelGroup;
+import org.jboss.netty.channel.group.ChannelGroupFuture;
+import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 /**
  * Main
  */
 public class Main {
+    
+    // maintain a list of open channels so we can shut them down on app exit
+    static final ChannelGroup ALL_CHANNELS = new DefaultChannelGroup("sam-proxy");
 
     private Main() {
         // silence checkstyle
@@ -44,8 +51,19 @@ public class Main {
         bootstrap.setPipelineFactory(new HttpServerPipelineFactory());
 
         // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port));
+        Channel channel = bootstrap.bind(new InetSocketAddress(port));
         System.out.println("Running SAM proxy on port " + port);
+
+        ALL_CHANNELS.add(channel);
+        
+        //intercept shutdown signal from VM and shut-down gracefully. 
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { 
+            public void run() { 
+                System.out.println("Shutting down...");
+                ChannelGroupFuture future = ALL_CHANNELS.close();
+                future.awaitUninterruptibly();
+            } 
+        }, "shutdownHook")); 
     }
 
 }

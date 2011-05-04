@@ -32,6 +32,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
@@ -58,6 +59,12 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private final StringBuilder buf = new StringBuilder();
     private ChannelFuture future;
 
+    @Override
+    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) {
+        // Add to the global list of open channels for graceful shutdown
+        Main.ALL_CHANNELS.add(ctx.getChannel());
+    }
+    
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
