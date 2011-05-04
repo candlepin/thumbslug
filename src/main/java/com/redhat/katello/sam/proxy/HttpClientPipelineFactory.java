@@ -18,23 +18,19 @@ import static org.jboss.netty.channel.Channels.*;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.handler.codec.http.HttpClientCodec;
 import org.jboss.netty.handler.codec.http.HttpContentDecompressor;
 
 /**
  * HttpClientPipelineFactory
  */
-public class HttpClientPipelineFactory implements ChannelPipelineFactory {
+class HttpClientPipelineFactory {
 
-    private Channel client;
-
-    public HttpClientPipelineFactory(Channel client) {
-        this.client = client;
+    private HttpClientPipelineFactory() {
+        // silence checkstyle
     }
 
-    @Override
-    public ChannelPipeline getPipeline() throws Exception {
+    public static ChannelPipeline getPipeline(Channel client) throws Exception {
         ChannelPipeline pipeline = pipeline();
         pipeline.addLast("codec", new HttpClientCodec());
 

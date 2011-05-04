@@ -26,9 +26,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executors;
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -76,19 +77,17 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                 send100Continue(e);
             }
 
-            ClientBootstrap bootstrap = new ClientBootstrap(
-                    new NioClientSocketChannelFactory(
-                            Executors.newCachedThreadPool(),
-                            Executors.newCachedThreadPool()));
-
-            // Set up the event pipeline factory.
-            bootstrap.setPipelineFactory(new HttpClientPipelineFactory(e
-                    .getChannel()));
-
-            future = bootstrap.connect(new InetSocketAddress(
-                    "fedoraproject.org", 80));
+            
+            ChannelFactory channelFactory = new NioClientSocketChannelFactory(
+                Executors.newSingleThreadExecutor(),
+                Executors.newSingleThreadExecutor());
+            
+            Channel channel = channelFactory.newChannel(
+                HttpClientPipelineFactory.getPipeline(e.getChannel()));
+            
+            future = channel.connect(
+                new InetSocketAddress("fedoraproject.org", 80));
             future.addListener(new ChannelFutureListener() {
-
                 public void operationComplete(final ChannelFuture future)
                     throws Exception {
                     future.getChannel().write(request);
