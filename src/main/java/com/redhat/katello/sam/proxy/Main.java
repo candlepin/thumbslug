@@ -40,7 +40,9 @@ public class Main {
      * @param args
      */
     public static void main(String[] args) {
-        int port = 8088;
+        Config config = new Config();
+        int port = Integer.parseInt(config.getProperty("port"));
+
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
