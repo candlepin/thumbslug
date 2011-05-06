@@ -12,6 +12,7 @@ repositories.remote << "http://www.ibiblio.org/maven2/"
 repositories.remote << "https://repository.jboss.org/nexus/content/repositories/releases/"
 
 require 'buildr/checkstyle'
+require 'rspec/core/rake_task'
 
 NETTY = transitive 'org.jboss.netty:netty:jar:3.2.4.Final'
 
@@ -33,3 +34,40 @@ task :serve do
     sh "java -jar target/#{GROUP}-#{VERSION_NUMBER}.jar"
 end
 task :serve => :package
+
+
+#==========================================================================
+# RSpec functional tests
+#==========================================================================
+RSpec::Core::RakeTask.new do |task|
+
+  # Support optional features env variable, specify the spec files to run
+  # without the trailing '_spec.rb'. Specify multiple by separating with ':'.
+  # i.e. build spec features=flex_expiry:authorization
+  features = ENV['features']
+  if not features.nil?
+    feature_files = Array.new
+    features.split(":").each do |part|
+      feature_files << "spec/#{part}_spec.rb"
+    end
+    task.pattern = feature_files
+  end
+
+  #  task.rspec_opts = ["-I#{File.expand_path '../client/ruby/'}"]
+  task.rspec_opts = ['-c']
+
+  # Allow specify only="should do something" to run only a specific
+  # test. The text must completely match the contents of your "it" string.
+  only_run = ENV['only']
+  if not only_run.nil?
+    task.rspec_opts << "-e '#{only_run}'"
+  end
+
+  dots = ENV['dots']
+  if not dots.nil?
+    task.rspec_opts << "-fp"
+  else
+    task.rspec_opts << "-fd"
+  end
+end
+task :spec
