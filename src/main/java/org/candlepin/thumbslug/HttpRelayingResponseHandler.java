@@ -14,8 +14,9 @@
  */
 package org.candlepin.thumbslug;
 
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
@@ -29,56 +30,101 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
 
     private boolean readingChunks;
     private Channel client;
+    private boolean keepAlive;
 
-    public HttpRelayingResponseHandler(Channel client) {
+    public HttpRelayingResponseHandler(Channel client, boolean keepAlive) {
         this.client = client;
+        this.keepAlive = false;
     }
 
+    /**
+     * This is an event *to* the client coming *from* the cdn
+     * 
+     * @throws Exception - an exception
+     */
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
+        
         if (!readingChunks) {
             HttpResponse response = (HttpResponse) e.getMessage();
 
-            // System.out.println("STATUS: " + response.getStatus());
-            // System.out.println("VERSION: " + response.getProtocolVersion());
-            // System.out.println();
-
-            if (!response.getHeaderNames().isEmpty()) {
-                for (String name : response.getHeaderNames()) {
-                    for (String value : response.getHeaders(name)) {
-                        // System.out.println("HEADER: " + name + " = " +
-                        // value);
-                    }
-                }
-                // System.out.println();
-            }
+            ChannelFuture future = client.write(response);
 
             if (response.getStatus().getCode() == 200 && response.isChunked()) {
                 readingChunks = true;
-                // System.out.println("CHUNKED CONTENT {");
             }
             else {
-                ChannelBuffer content = response.getContent();
-                if (content.readable()) {
-                    // System.out.println("CONTENT {");
-                    // System.out.println(content.toString(CharsetUtil.UTF_8));
-                    // System.out.println("} END OF CONTENT");
+                if (!keepAlive) {
+                    future.addListener(new ChannelFutureListener() {
+                        @Override
+                        public void operationComplete(ChannelFuture arg0) throws Exception {
+                            client.close();
+                        }
+                    });
                 }
-                client.write(response);
             }
         }
         else {
             HttpChunk chunk = (HttpChunk) e.getMessage();
+            ChannelFuture future = client.write(chunk);
             if (chunk.isLast()) {
                 readingChunks = false;
-                // System.out.println("} END OF CHUNKED CONTENT");
-            }
-            else {
-                client.write(chunk);
-                // System.out.print(chunk.getContent().toString(CharsetUtil.UTF_8));
-                // System.out.flush();
+                
+                if (!keepAlive) {
+                    future.addListener(new ChannelFutureListener() {
+                        @Override
+                        public void operationComplete(ChannelFuture arg0) throws Exception {
+                            client.close();
+                        }
+                    });
+                }
             }
         }
     }
+    
+//    private void writeResponse(MessageEvent e) {
+//        // Decide whether to close the connection or not.
+//        boolean keepAlive = isKeepAlive(request);
+//
+//        // Build the response object.
+//        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+//        response.setContent(ChannelBuffers.copiedBuffer(buf.toString(),
+//                CharsetUtil.UTF_8));
+//        response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+//
+//        if (keepAlive) {
+//            // Add 'Content-Length' header only for a keep-alive connection.
+//            response.setHeader(CONTENT_LENGTH, response.getContent()
+//                    .readableBytes());
+//        }
+//
+//        // Encode the cookie.
+//        String cookieString = request.getHeader(COOKIE);
+//        if (cookieString != null) {
+//            CookieDecoder cookieDecoder = new CookieDecoder();
+//            Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+//            if (!cookies.isEmpty()) {
+//                // Reset the cookies if necessary.
+//                CookieEncoder cookieEncoder = new CookieEncoder(true);
+//                for (Cookie cookie : cookies) {
+//                    cookieEncoder.addCookie(cookie);
+//                }
+//                response.addHeader(SET_COOKIE, cookieEncoder.encode());
+//            }
+//        }
+//
+//        // Write the response.
+//        ChannelFuture future = e.getChannel().write(response);
+//
+//        // Close the non-keep-alive connection after the write operation is
+//        // done.
+//        if (!keepAlive) {
+//            future.addListener(ChannelFutureListener.CLOSE);
+//        }
+//
+//        System.out.println(String.format("%s %s %d", request.getMethod(),
+//                request.getUri(), response.getStatus().getCode()));
+//    }
+
 }

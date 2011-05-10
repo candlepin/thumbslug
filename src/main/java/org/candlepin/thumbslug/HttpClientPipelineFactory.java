@@ -30,7 +30,8 @@ class HttpClientPipelineFactory {
         // silence checkstyle
     }
 
-    public static ChannelPipeline getPipeline(Channel client) throws Exception {
+    public static ChannelPipeline getPipeline(Channel client, boolean keepAlive)
+        throws Exception {
         ChannelPipeline pipeline = pipeline();
         pipeline.addLast("codec", new HttpClientCodec());
 
@@ -41,7 +42,7 @@ class HttpClientPipelineFactory {
         // Uncomment the following line if you don't want to handle HttpChunks.
         // pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
 
-        pipeline.addLast("handler", new HttpRelayingResponseHandler(client));
+        pipeline.addLast("handler", new HttpRelayingResponseHandler(client, keepAlive));
         return pipeline;
     }
 
