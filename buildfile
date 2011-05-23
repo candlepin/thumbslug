@@ -4,7 +4,7 @@
 # Version number for this release
 VERSION_NUMBER = "1.0.0"
 # Group identifier for your projects
-GROUP = "sam-proxy"
+GROUP = "thumbslug"
 COPYRIGHT = ""
 
 # Specify Maven 2.0 remote repositories here, like this:
@@ -16,13 +16,13 @@ require 'rspec/core/rake_task'
 
 NETTY = transitive 'org.jboss.netty:netty:jar:3.2.4.Final'
 
-desc "The Sam-proxy project"
-define "sam-proxy" do
+desc "The Thumbslug project"
+define "thumbslug" do
 
   project.version = VERSION_NUMBER
   project.group = GROUP
   manifest["Implementation-Vendor"] = COPYRIGHT
-  manifest["Main-Class"] = "com.redhat.katello.sam.proxy.Main"
+  manifest["Main-Class"] = "org.candlepin.thumbslug.Main"
   compile.with NETTY
   test.compile.with NETTY
 
@@ -62,6 +62,10 @@ RSpec::Core::RakeTask.new do |task|
 
   #  task.rspec_opts = ["-I#{File.expand_path '../client/ruby/'}"]
   task.rspec_opts = ['-c']
+  skipbundler = ENV['skipbundler']
+  if not skipbundler.nil?
+      task.skip_bundler = true
+  end
 
   # Allow specify only="should do something" to run only a specific
   # test. The text must completely match the contents of your "it" string.
@@ -92,6 +96,6 @@ task :eclipse do
   FileUtils.copy("tmp", ".classpath")
   File.delete("tmp")
 
-  # make the gettext output dir to silence eclipse errors
+ # make the gettext output dir to silence eclipse errors
   mkdir_p("target/generated-source")
 end

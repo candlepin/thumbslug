@@ -12,7 +12,7 @@
  * granted to use or replicate Red Hat trademarks that are incorporated
  * in this software or its documentation.
  */
-package com.redhat.katello.sam.proxy;
+package org.candlepin.thumbslug;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,8 +26,8 @@ import java.util.Properties;
  */
 public class Config {
 
-    private static final String CONFIG_FILE = "/etc/sam-proxy/sam-proxy.conf";
-    private static final String DEFAULT_CONFIG_RESOURCE = "config/sam-proxy.conf";
+    private static final String CONFIG_FILE = "/etc/thumbslug/thumbslug.conf";
+    private static final String DEFAULT_CONFIG_RESOURCE = "config/thumbslug.conf";
     private Properties props;
 
     public Config() {

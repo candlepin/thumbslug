@@ -12,7 +12,7 @@
  * granted to use or replicate Red Hat trademarks that are incorporated
  * in this software or its documentation.
  */
-package com.redhat.katello.sam.proxy;
+package org.candlepin.thumbslug;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -30,7 +30,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 public class Main {
     
     // maintain a list of open channels so we can shut them down on app exit
-    static final ChannelGroup ALL_CHANNELS = new DefaultChannelGroup("sam-proxy");
+    static final ChannelGroup ALL_CHANNELS = new DefaultChannelGroup("thumbslug");
 
     private Main() {
         // silence checkstyle
@@ -54,7 +54,7 @@ public class Main {
 
         // Bind and start to accept incoming connections.
         Channel channel = bootstrap.bind(new InetSocketAddress(port));
-        System.out.println("Running SAM proxy on port " + port);
+        System.out.println("Running Thumbslug on port " + port);
 
         ALL_CHANNELS.add(channel);
         
