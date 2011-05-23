@@ -26,6 +26,13 @@ define "sam-proxy" do
   compile.with NETTY
   test.compile.with NETTY
 
+  #
+  # eclipse settings
+  # http://buildr.apache.org/more_stuff.html#eclipse
+  #
+  eclipse.natures 'org.eclipse.jdt.core.javanature'
+  eclipse.builders 'org.eclipse.jdt.core.javabuilder'
+
   # include netty (and deps) in the jar, so it can run standalone
   package(:jar).merge NETTY
 end
@@ -71,3 +78,20 @@ RSpec::Core::RakeTask.new do |task|
   end
 end
 task :spec
+
+# runs the eclipse task to generate the .classpath and .project
+# files, then fixes the output.
+task :eclipse do
+  puts "Fixing eclipse .classpath"
+  text = File.read(".classpath")
+  tmp = File.new("tmp", "w")
+  text = text.gsub(/output="target\/resources"/, "")
+  tmp.write(text.gsub(/<\/classpath>/, "  <classpathentry path=\"#{Java.tools_jar}\" kind=\"lib\"\/>"))
+  tmp.write("</classpath>")
+  tmp.close()
+  FileUtils.copy("tmp", ".classpath")
+  File.delete("tmp")
+
+  # make the gettext output dir to silence eclipse errors
+  mkdir_p("target/generated-source")
+end
