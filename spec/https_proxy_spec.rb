@@ -23,6 +23,8 @@ describe 'HTTPS proxying' do
     }
     
     @https_proc = fork {
+      #the dots and pluses are outputted direct to stderr by webrick's ssl
+      #routines.
       server = HTTPServer.new(config)
       trap('INT') { server.stop }
       server.start
@@ -38,6 +40,7 @@ describe 'HTTPS proxying' do
 
 
   it 'validate mocked env' do
+    #sleep 60
     filename = Dir.pwd + '/spec/data/random.10k'
     uri = URI.parse('https://127.0.0.1:9443/random.10k')
     https_client = Net::HTTP.new uri.host, uri.port
@@ -52,4 +55,23 @@ describe 'HTTPS proxying' do
     #ensure that the file we got is the same as what's on disk
     uri_digest.should == file_digest
   end
+
+#this won't work until tslug supports https
+#  it 'pull a file from thumbslug' do
+#    #sleep 60
+#    filename = Dir.pwd + '/spec/data/random.10k'
+#    uri = URI.parse('https://127.0.0.1:8088/random.10k')
+#    https_client = Net::HTTP.new uri.host, uri.port
+#    https_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
+#    https_client.use_ssl = true
+#
+#    response = https_client.request(Net::HTTP::Get.new(uri.path))
+#
+#    file_digest = Digest::MD5.hexdigest(File.read(filename))
+#    uri_digest = Digest::MD5.hexdigest(response.body)
+#
+#    #ensure that the file we got is the same as what's on disk
+#    uri_digest.should == file_digest
+#  end
+
 end
