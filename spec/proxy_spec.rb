@@ -21,6 +21,8 @@ describe 'HTTP proxying' do
       trap('INT') { server.stop }
       server.start
     }
+    #give the webrick a few seconds to start up
+    sleep(3)
   end
 
   after(:all) do
