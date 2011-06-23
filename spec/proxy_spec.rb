@@ -1,4 +1,7 @@
 require 'webrick'
+require 'net/http'
+require 'uri'
+
 include WEBrick
 
 describe 'HTTP proxying' do
@@ -26,7 +29,15 @@ describe 'HTTP proxying' do
   end
 
 
-  it 'should do stuff' do
-    1.should == 1
+  it 'validate mocked env' do
+    filename = Dir.pwd + '/spec/data/random.10k'
+    uri = URI.parse('http://127.0.0.1:9090/random.10k')
+    response = Net::HTTP.get_response(uri)
+
+    file_digest = Digest::MD5.hexdigest(File.read(filename))
+    uri_digest = Digest::MD5.hexdigest(response.body)
+
+    #ensure that the file we got is the same as what's on disk
+    uri_digest.should == file_digest
   end
 end
