@@ -40,7 +40,15 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private HttpRequest request;
     private boolean readingChunks;
     private Channel cdnChannel;
+    
+    private String cdnHost;
+    private int cdnPort;
 
+    public HttpRequestHandler(String cdnHost, int cdnPort) {
+        this.cdnHost = cdnHost;
+        this.cdnPort = cdnPort;
+    }
+    
     @Override
     public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) {
         // Add to the global list of open channels for graceful shutdown
@@ -70,7 +78,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             HttpClientPipelineFactory.getPipeline(e.getChannel(), isKeepAlive(request)));
         
         ChannelFuture future = cdnChannel.connect(
-            new InetSocketAddress("mirror.csclub.uwaterloo.ca", 80));
+            new InetSocketAddress(cdnHost, cdnPort));
         future.addListener(new ChannelFutureListener() {
             public void operationComplete(final ChannelFuture future)
                 throws Exception {

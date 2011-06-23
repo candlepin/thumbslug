@@ -59,5 +59,9 @@ public class Config {
     public String getProperty(String key) {
         return props.getProperty(key);
     }
+    
+    public int getInt(String key) {
+        return Integer.parseInt(getProperty(key));
+    }
 
 }

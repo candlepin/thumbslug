@@ -41,7 +41,7 @@ public class Main {
      */
     public static void main(String[] args) {
         Config config = new Config();
-        int port = Integer.parseInt(config.getProperty("port"));
+        int port = config.getInt("port");
 
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
@@ -50,7 +50,7 @@ public class Main {
                         Executors.newCachedThreadPool()));
 
         // Set up the event pipeline factory.
-        bootstrap.setPipelineFactory(new HttpServerPipelineFactory());
+        bootstrap.setPipelineFactory(new HttpServerPipelineFactory(config));
 
         // Bind and start to accept incoming connections.
         Channel channel = bootstrap.bind(new InetSocketAddress(port));

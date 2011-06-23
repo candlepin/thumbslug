@@ -26,6 +26,12 @@ import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
  * HttpServerPipelineFactory
  */
 public class HttpServerPipelineFactory implements ChannelPipelineFactory {
+    
+    private Config config;
+    
+    public HttpServerPipelineFactory(Config config) {
+        this.config = config;
+    }
         
     @Override
     public ChannelPipeline getPipeline() throws Exception {
@@ -45,7 +51,8 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         // Remove the following line if you don't want automatic content
         // compression.
         pipeline.addLast("deflater", new HttpContentCompressor());
-        pipeline.addLast("handler", new HttpRequestHandler());
+        pipeline.addLast("handler", new HttpRequestHandler(config.getProperty("cdn.host"),
+            config.getInt("cdn.port")));
         return pipeline;
     }
 }
