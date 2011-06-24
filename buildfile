@@ -81,7 +81,7 @@ RSpec::Core::RakeTask.new do |task|
     task.rspec_opts << "-fd"
   end
 end
-task :spec
+task :spec => :package
 
 # runs the eclipse task to generate the .classpath and .project
 # files, then fixes the output.
