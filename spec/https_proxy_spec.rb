@@ -18,7 +18,6 @@ describe 'HTTPS proxying' do
 
 
   it 'validate mocked env' do
-    #sleep 60
     filename = Dir.pwd + '/spec/data/random.10k'
     uri = URI.parse('https://127.0.0.1:9443/random.10k')
     https_client = Net::HTTP.new uri.host, uri.port

@@ -40,6 +40,7 @@ module ThumbslugMethods
     }
     pid = fork {
       server = HTTPServer.new(config)
+      server.mount "/this_will_500", FiveHundred 
       trap('INT') { server.stop }
       server.start
     }
@@ -72,4 +73,15 @@ module ThumbslugMethods
     Process.detach(pid)
     return pid
   end
+end
+
+
+class FiveHundred < WEBrick::HTTPServlet::AbstractServlet
+
+  def do_GET(request, response)
+    response.status = 500 
+    response['Content-Type'] = "text/plain"
+    response.body = 'Error! a 500 error'
+  end
+
 end
