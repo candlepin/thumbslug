@@ -50,22 +50,31 @@ module ThumbslugMethods
     return pid
   end
 
-  def create_thumbslug
+  def create_thumbslug(secure=false)
     #these need to all be strings
-    config = {
+    insecure_config = {
      :port => '8088',
      :ssl => 'false',
      :cdn_port => '9090',
      :cdn_host => 'localhost',
      :cdn_ssl => 'false'
     }
-    tslug_exec_string = "java -jar" + 
+    secure_config = {
+     :port => '8443',
+     :ssl => 'true',
+     :cdn_port => '9443',
+     :cdn_host => 'localhost',
+     :cdn_ssl => 'true'
+    }
+    config = secure ? secure_config : insecure_config
+    tslug_exec_string = "java " + 
                  " -Dport=" + config[:port] +
                  " -Dssl=" + config[:ssl] +
-                 " -Dcdn_port=" + config[:cdn_port] +
-                 " -Dcdn_host=" + config[:cdn_host] +
-                 " -Dcdn_ssl=" + config[:cdn_ssl] +
-                 " " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
+                 " -Dcdn.port=" + config[:cdn_port] +
+                 " -Dcdn.host=" + config[:cdn_host] +
+                 " -Dcdn.ssl=" + config[:cdn_ssl] +
+                 " -jar " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
+    pp tslug_exec_string
     pid = fork {
       exec(tslug_exec_string)
     }

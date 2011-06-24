@@ -20,7 +20,6 @@ describe 'HTTP proxying' do
 
 
   it 'validate mocked env' do
-    #sleep 60
     filename = Dir.pwd + '/spec/data/random.10k'
     uri = URI.parse('http://127.0.0.1:9090/random.10k')
     response = Net::HTTP.get_response(uri)
@@ -57,7 +56,6 @@ describe 'HTTP proxying' do
   end
 
   it 'check that headers are being passed through' do
-    sleep 300
     uri = URI.parse('http://127.0.0.1:8088/trace')
     req = Net::HTTP::Get.new(uri.path)
     req.add_field("X-Foo-Bar", "Halifax-Sewage")
