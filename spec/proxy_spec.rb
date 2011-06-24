@@ -55,4 +55,16 @@ describe 'HTTP proxying' do
     response = Net::HTTP.get_response(uri)
     response.code.should == '500'
   end
+
+  it 'check that headers are being passed through' do
+    sleep 300
+    uri = URI.parse('http://127.0.0.1:8088/trace')
+    req = Net::HTTP::Get.new(uri.path)
+    req.add_field("X-Foo-Bar", "Halifax-Sewage")
+    res = Net::HTTP.new(uri.host, uri.port).start do |http|
+      http.request(req)
+    end
+    header_idx = res.body =~ /Halifax/
+    header_idx.should > 0
+  end
 end

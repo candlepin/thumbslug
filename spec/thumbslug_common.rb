@@ -41,6 +41,7 @@ module ThumbslugMethods
     pid = fork {
       server = HTTPServer.new(config)
       server.mount "/this_will_500", FiveHundred 
+      server.mount "/trace", Trace
       trap('INT') { server.stop }
       server.start
     }
@@ -82,6 +83,19 @@ class FiveHundred < WEBrick::HTTPServlet::AbstractServlet
     response.status = 500 
     response['Content-Type'] = "text/plain"
     response.body = 'Error! a 500 error'
+  end
+
+end
+
+class Trace < WEBrick::HTTPServlet::AbstractServlet
+  #ersatz trace that implements GET, not TRACE verb
+
+  def do_GET(request, response)
+    response.status = 200
+    response['Content-Type'] = "text/plain"
+    headers = ""
+    request.raw_header.each {|r| headers += r }
+    response.body = headers
   end
 
 end
