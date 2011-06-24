@@ -49,8 +49,23 @@ module ThumbslugMethods
   end
 
   def create_thumbslug
+    #these need to all be strings
+    config = {
+     :port => '8088',
+     :ssl => 'false',
+     :cdn_port => '9090',
+     :cdn_host => 'localhost',
+     :cdn_ssl => 'false'
+    }
+    tslug_exec_string = "java -jar" + 
+                 " -Dport=" + config[:port] +
+                 " -Dssl=" + config[:ssl] +
+                 " -Dcdn_port=" + config[:cdn_port] +
+                 " -Dcdn_host=" + config[:cdn_host] +
+                 " -Dcdn_ssl=" + config[:cdn_ssl] +
+                 " " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
     pid = fork {
-      exec("java -jar " + Dir.pwd + "/target/thumbslug-1.0.0.jar")
+      exec(tslug_exec_string)
     }
     #avoid a race condition
     sleep 1
