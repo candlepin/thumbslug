@@ -20,15 +20,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Config
  */
 public class Config {
+    private static final Logger log = Logger.getLogger(Config.class.getName());
 
     private static final String CONFIG_FILE = "/etc/thumbslug/thumbslug.conf";
     private static final String DEFAULT_CONFIG_RESOURCE = "config/thumbslug.conf";
     private Properties props;
+    
+    private String[] defaultKeys = {"port", "ssl", "cdn.port", "cdn.host", "cdn.ssl"};
 
     public Config() {
 
@@ -54,14 +58,36 @@ public class Config {
         catch (IOException e) {
             throw new RuntimeException(e);
         }
+        
+        log.info("Config values:");
+        for (String key : defaultKeys) {
+            log.info(String.format("\t%1$s : %2$s", key, getProperty(key)));
+        }
     }
 
     public String getProperty(String key) {
-        return props.getProperty(key);
+        // allow for command line/system override of values
+        String value = System.getProperty(key);
+        if (value != null) {
+            return value;
+        }
+        else {
+            return props.getProperty(key);
+        }
     }
     
     public int getInt(String key) {
         return Integer.parseInt(getProperty(key));
+    }
+    
+    public boolean getBoolean(String key) {
+        String prop = getProperty(key);
+        boolean value = false;
+        if (prop.toLowerCase().equals("true") || prop.toLowerCase().equals("yes") || prop.equals("1")) {
+            value = true;
+        }
+        
+        return value;
     }
 
 }
