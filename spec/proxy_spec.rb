@@ -1,39 +1,21 @@
 require 'webrick'
 require 'net/http'
 require 'uri'
+require 'thumbslug_common'
 
 include WEBrick
 
 describe 'HTTP proxying' do
-
+  include ThumbslugMethods
   before(:all) do
-    config = {
-      :Port => 9090,
-      :BindAddress => '127.0.0.1',
-      :DocumentRoot => Dir.pwd + '/spec/data/',
-      #comment out these two lines to enable webrick logging
-      :Logger => WEBrick::Log.new("/dev/null"),
-      :AccessLog => [nil, nil],
-    }
-    
-    @http_proc = fork {
-      server = HTTPServer.new(config)
-      trap('INT') { server.stop }
-      server.start
-    }
-    @tslug_proc = fork {
-      exec("java -jar " + Dir.pwd + "/target/thumbslug-1.0.0.jar")
-    } 
-    Process.detach(@tslug_proc)
-    #give the webrick a few seconds to start up
-    sleep(3)
+    @http_proc = create_httpd
+    @tslug_proc = create_thumbslug
   end
 
   after(:all) do
-    #do any cleanup
+    #clean up what we forked out
     Process.kill('INT', @http_proc)
-    puts @tslug_proc
-    Process.kill('INT', @tslug_proc)
+    Process.kill('KILL', @tslug_proc)
   end
 
 

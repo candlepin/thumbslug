@@ -1,36 +1,14 @@
-#require 'webrick'
 require 'webrick/https'
 require 'net/https'
 require 'uri'
+require 'thumbslug_common'
 
 include WEBrick
 
 describe 'HTTPS proxying' do
-
+  include ThumbslugMethods
   before(:all) do
-    config = {
-      :Port => 9443,
-      :BindAddress => '127.0.0.1',
-      :DocumentRoot => Dir.pwd + '/spec/data/',
-      :Debugger => true,
-      :Verbose => true,
-      :SSLEnable => true,
-      :SSLVerifyClient => ::OpenSSL::SSL::VERIFY_NONE,
-      :SSLCertName => [ [ "CN", WEBrick::Utils::getservername ] ],
-      #comment out these two lines to enable webrick logging
-      :Logger => WEBrick::Log.new("/dev/null"),
-      :AccessLog => [nil, nil],
-    }
-    
-    @https_proc = fork {
-      #the dots and pluses are outputted direct to stderr by webrick's ssl
-      #routines.
-      server = HTTPServer.new(config)
-      trap('INT') { server.stop }
-      server.start
-    }
-    #give the webrick a few seconds to start up
-    sleep(3)
+    @https_proc = create_secure_httpd
   end
 
   after(:all) do
