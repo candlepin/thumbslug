@@ -43,10 +43,12 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     
     private String cdnHost;
     private int cdnPort;
+    private boolean cdnSSL;
 
-    public HttpRequestHandler(String cdnHost, int cdnPort) {
+    public HttpRequestHandler(String cdnHost, int cdnPort, boolean cdnSSL) {
         this.cdnHost = cdnHost;
         this.cdnPort = cdnPort;
+        this.cdnSSL = cdnSSL;
     }
     
     @Override
@@ -75,7 +77,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             Executors.newSingleThreadExecutor());
         
         cdnChannel = channelFactory.newChannel(
-            HttpClientPipelineFactory.getPipeline(e.getChannel(), isKeepAlive(request)));
+            HttpClientPipelineFactory.getPipeline(e.getChannel(), cdnSSL,
+                isKeepAlive(request)));
         
         ChannelFuture future = cdnChannel.connect(
             new InetSocketAddress(cdnHost, cdnPort));

@@ -16,11 +16,15 @@ package org.candlepin.thumbslug;
 
 import static org.jboss.netty.channel.Channels.*;
 
+import javax.net.ssl.SSLEngine;
+
+import org.candlepin.thumbslug.ssl.SslContextFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
+import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
  * HttpServerPipelineFactory
@@ -38,12 +42,13 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         // Create a default pipeline implementation.
         ChannelPipeline pipeline = pipeline();
 
-        // Uncomment the following line if you want HTTPS
-        // SSLEngine engine =
-        // SecureChatSslContextFactory.getServerContext().createSSLEngine();
-        // engine.setUseClientMode(false);
-        // pipeline.addLast("ssl", new SslHandler(engine));
-
+        if (config.getBoolean("ssl")) {
+            SSLEngine engine =
+                SslContextFactory.getServerContext().createSSLEngine();
+            engine.setUseClientMode(false);
+            pipeline.addLast("ssl", new SslHandler(engine));
+        }
+        
         pipeline.addLast("decoder", new HttpRequestDecoder());
         // Uncomment the following line if you don't want to handle HttpChunks.
         // pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
@@ -52,7 +57,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         // compression.
         pipeline.addLast("deflater", new HttpContentCompressor());
         pipeline.addLast("handler", new HttpRequestHandler(config.getProperty("cdn.host"),
-            config.getInt("cdn.port")));
+            config.getInt("cdn.port"), config.getBoolean("cdn.ssl")));
         return pipeline;
     }
 }

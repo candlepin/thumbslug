@@ -16,10 +16,14 @@ package org.candlepin.thumbslug;
 
 import static org.jboss.netty.channel.Channels.*;
 
+import javax.net.ssl.SSLEngine;
+
+import org.candlepin.thumbslug.ssl.SslContextFactory;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.codec.http.HttpClientCodec;
 import org.jboss.netty.handler.codec.http.HttpContentDecompressor;
+import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
  * HttpClientPipelineFactory
@@ -30,9 +34,17 @@ class HttpClientPipelineFactory {
         // silence checkstyle
     }
 
-    public static ChannelPipeline getPipeline(Channel client, boolean keepAlive)
+    public static ChannelPipeline getPipeline(Channel client, boolean useSSL, boolean keepAlive)
         throws Exception {
         ChannelPipeline pipeline = pipeline();
+        
+        if (useSSL) {
+            SSLEngine engine =
+                SslContextFactory.getServerContext().createSSLEngine();
+            engine.setUseClientMode(true);
+            pipeline.addLast("ssl", new SslHandler(engine));
+        }
+        
         pipeline.addLast("codec", new HttpClientCodec());
 
         // Remove the following line if you don't want automatic content
