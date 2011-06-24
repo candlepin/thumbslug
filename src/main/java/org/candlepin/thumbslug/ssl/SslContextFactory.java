@@ -27,10 +27,10 @@ import javax.net.ssl.SSLContext;
 public class SslContextFactory {
 
     private static final String PROTOCOL = "TLS";
-    private static final SSLContext SERVER_CONTEXT;
-    private static final SSLContext CLIENT_CONTEXT;
+    private final SSLContext SERVER_CONTEXT;
+    private final SSLContext CLIENT_CONTEXT;
 
-    static {
+    public SslContextFactory() {
         String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
         if (algorithm == null) {
             algorithm = "SunX509";
@@ -39,7 +39,7 @@ public class SslContextFactory {
         SSLContext serverContext = null;
         SSLContext clientContext = null;
         try {
-            KeyStore ks = KeyStore.getInstance("JKS");
+            KeyStore ks = KeyStore.getInstance("JKS"); //PKCS12");
             ks.load(StaticKeyStore.asInputStream(),
                     StaticKeyStore.getKeyStorePassword());
 
@@ -70,11 +70,11 @@ public class SslContextFactory {
         CLIENT_CONTEXT = clientContext;
     }
 
-    public static SSLContext getServerContext() {
+    public SSLContext getServerContext() {
         return SERVER_CONTEXT;
     }
 
-    public static SSLContext getClientContext() {
+    public SSLContext getClientContext() {
         return CLIENT_CONTEXT;
     }
 }
