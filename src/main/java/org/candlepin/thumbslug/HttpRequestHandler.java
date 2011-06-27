@@ -46,7 +46,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private boolean cdnSSL;
     private boolean sendTSHeader;
 
-    public HttpRequestHandler(String cdnHost, int cdnPort, boolean cdnSSL, boolean sendHeader) {
+    public HttpRequestHandler(String cdnHost, int cdnPort, boolean cdnSSL,
+        boolean sendHeader) {
         this.cdnHost = cdnHost;
         this.cdnPort = cdnPort;
         this.cdnSSL = cdnSSL;

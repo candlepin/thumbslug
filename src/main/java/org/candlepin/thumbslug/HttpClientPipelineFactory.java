@@ -34,7 +34,8 @@ class HttpClientPipelineFactory {
         // silence checkstyle
     }
 
-    public static ChannelPipeline getPipeline(Channel client, boolean useSSL, boolean keepAlive)
+    public static ChannelPipeline getPipeline(Channel client, boolean useSSL,
+        boolean keepAlive)
         throws Exception {
         ChannelPipeline pipeline = pipeline();
         

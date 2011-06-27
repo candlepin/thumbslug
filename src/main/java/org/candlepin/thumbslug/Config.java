@@ -32,7 +32,8 @@ public class Config {
     private static final String DEFAULT_CONFIG_RESOURCE = "config/thumbslug.conf";
     private Properties props;
     
-    private String[] defaultKeys = {"port", "ssl", "cdn.port", "cdn.host", "cdn.ssl", "sendTSheader"};
+    private String[] defaultKeys = {"port", "ssl", "cdn.port", "cdn.host", "cdn.ssl",
+        "sendTSheader"};
 
     public Config() {
 
@@ -83,7 +84,8 @@ public class Config {
     public boolean getBoolean(String key) {
         String prop = getProperty(key);
         boolean value = false;
-        if (prop.toLowerCase().equals("true") || prop.toLowerCase().equals("yes") || prop.equals("1")) {
+        if (prop.toLowerCase().equals("true") || prop.toLowerCase().equals("yes") ||
+            prop.equals("1")) {
             value = true;
         }
         

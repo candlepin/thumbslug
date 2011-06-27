@@ -1,4 +1,4 @@
-/*
+/**
  * Adapted from Netty example code, which is 
  *      Copyright (C) 2008  Trustin Heuiseung Lee
  *
@@ -285,7 +285,7 @@ public class StaticKeyStore {
 
     public static InputStream asInputStream() {
         byte[] data = new byte[DATA.length];
-        for (int i = 0; i < data.length; i ++) {
+        for (int i = 0; i < data.length; i++) {
             data[i] = (byte) DATA[i];
         }
         return new ByteArrayInputStream(data);

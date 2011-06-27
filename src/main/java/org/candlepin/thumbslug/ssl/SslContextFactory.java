@@ -52,7 +52,8 @@ public class SslContextFactory {
             serverContext.init(
                     kmf.getKeyManagers(),
                     TrustManagerFactory.getTrustManagers(), null);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new Error(
                     "Failed to initialize the server-side SSLContext", e);
         }
@@ -61,7 +62,8 @@ public class SslContextFactory {
             clientContext = SSLContext.getInstance(PROTOCOL);
             clientContext.init(
                     null, TrustManagerFactory.getTrustManagers(), null);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new Error(
                     "Failed to initialize the client-side SSLContext", e);
         }

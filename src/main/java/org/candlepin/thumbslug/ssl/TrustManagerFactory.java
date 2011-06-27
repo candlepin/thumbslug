@@ -66,7 +66,7 @@ public class TrustManagerFactory extends TrustManagerFactorySpi {
 
     @Override
     protected void engineInit(ManagerFactoryParameters managerFactoryParameters)
-            throws InvalidAlgorithmParameterException {
+        throws InvalidAlgorithmParameterException {
         // Unused
     }
 }
