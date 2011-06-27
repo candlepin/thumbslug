@@ -10,20 +10,31 @@ module ThumbslugMethods
     return client.request(Net::HTTP::Get.new(uri.path, headers))
   end
 
-  def create_secure_httpd
-    config = {
-      :Port => 9443,
-      :BindAddress => '127.0.0.1',
-      :DocumentRoot => Dir.pwd + '/spec/data/',
-      :Debugger => true,
-      :Verbose => true,
-      :SSLEnable => true,
-      :SSLVerifyClient => ::OpenSSL::SSL::VERIFY_NONE,
-      :SSLCertName => [ [ "CN", WEBrick::Utils::getservername ] ],
-      #comment out these two lines to enable webrick logging
-      :Logger => WEBrick::Log.new("/dev/null"),
-      :AccessLog => [nil, nil],
-    }
+  def create_httpd(secure=false)
+    if secure
+      config = {
+        :Port => 9443,
+        :BindAddress => '127.0.0.1',
+        :DocumentRoot => Dir.pwd + '/spec/data/',
+        :Debugger => true,
+        :Verbose => true,
+        :SSLEnable => true,
+        :SSLVerifyClient => ::OpenSSL::SSL::VERIFY_NONE,
+        :SSLCertName => [ [ "CN", WEBrick::Utils::getservername ] ],
+        #comment out these two lines to enable webrick logging
+        :Logger => WEBrick::Log.new("/dev/null"),
+        :AccessLog => [nil, nil],
+      }
+    else
+      config = {
+        :Port => 9090,
+        :BindAddress => '127.0.0.1',
+        :DocumentRoot => Dir.pwd + '/spec/data/',
+        #comment out these two lines to enable webrick logging
+        :Logger => WEBrick::Log.new("/dev/null"),
+        :AccessLog => [nil, nil],
+      }
+    end
     
     pid = fork {
       $stderr = File.open('/dev/null', 'w')
@@ -35,28 +46,7 @@ module ThumbslugMethods
       server.mount "/trace", Trace
       server.start
     }
-    #give the webrick a few seconds to start up
-    return pid
-  end
-
-
-  def create_httpd
-    config = {
-      :Port => 9090,
-      :BindAddress => '127.0.0.1',
-      :DocumentRoot => Dir.pwd + '/spec/data/',
-      #comment out these two lines to enable webrick logging
-      :Logger => WEBrick::Log.new("/dev/null"),
-      :AccessLog => [nil, nil],
-    }
-    pid = fork {
-      server = HTTPServer.new(config)
-      server.mount "/this_will_500", FiveHundred 
-      server.mount "/trace", Trace
-      trap('INT') { server.stop }
-      server.start
-    }
-    #give the webrick a few seconds to start up
+    #TODO: this should read the forked pid and wait for the "I am ready" message
     sleep 3
     return pid
   end
@@ -89,7 +79,7 @@ module ThumbslugMethods
     pid = fork {
       exec(tslug_exec_string)
     }
-    #avoid a race condition
+    #TODO: this should read the forked pid and wait for the "I am ready" message
     sleep 1
     Process.detach(pid)
     return pid

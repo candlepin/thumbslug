@@ -8,7 +8,7 @@ include WEBrick
 describe 'HTTPS proxying' do
   include ThumbslugMethods
   before(:all) do
-    @https_proc = create_secure_httpd
+    @https_proc = create_httpd(true)
     @tslugs_proc = create_thumbslug(true)
   end
 
