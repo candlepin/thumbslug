@@ -15,6 +15,7 @@ describe 'HTTPS proxying' do
   after(:all) do
     #do any cleanup
     Process.kill('INT', @https_proc)
+    Process.kill('INT', @tslugs_proc)
   end
 
 
@@ -48,6 +49,39 @@ describe 'HTTPS proxying' do
 
     #ensure that the file we got is the same as what's on disk
     uri_digest.should == file_digest
+  end
+
+  it 'pull a 404 from the cdn' do
+
+    uri = URI.parse('https://127.0.0.1:8443/this_will_404')
+    https_client = Net::HTTP.new uri.host, uri.port
+    https_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    https_client.use_ssl = true
+
+    response = https_client.request(Net::HTTP::Get.new(uri.path))
+    response.code.should == '404'
+  end
+
+  it 'pull a 500 from the cdn' do
+    uri = URI.parse('https://127.0.0.1:8443/this_will_500')
+    https_client = Net::HTTP.new uri.host, uri.port
+    https_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    https_client.use_ssl = true
+
+    response = https_client.request(Net::HTTP::Get.new(uri.path))
+    response.code.should == '500'
+  end
+
+  it 'check that headers are being passed through' do
+    uri = URI.parse('https://127.0.0.1:8443/trace')
+    https_client = Net::HTTP.new uri.host, uri.port
+    https_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    https_client.use_ssl = true
+
+    response = https_client.request(Net::HTTP::Get.new(uri.path, {'halifax' => 'sewage'}))
+    response.code.should == '200'
+    header_idx = response.body =~ /sewage/
+    header_idx.should > 0
   end
 
 end

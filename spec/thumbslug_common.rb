@@ -21,10 +21,11 @@ module ThumbslugMethods
       #routines.
       server = HTTPServer.new(config)
       trap('INT') { server.stop }
+      server.mount "/this_will_500", FiveHundred 
+      server.mount "/trace", Trace
       server.start
     }
     #give the webrick a few seconds to start up
-    sleep 3
     return pid
   end
 
