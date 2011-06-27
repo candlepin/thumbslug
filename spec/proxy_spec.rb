@@ -10,12 +10,14 @@ describe 'HTTP proxying' do
   before(:all) do
     @http_proc = create_httpd
     @tslug_proc = create_thumbslug
+    @tslug_header_proc = create_thumbslug(false, true)
   end
 
   after(:all) do
     #clean up what we forked out
     Process.kill('INT', @http_proc)
     Process.kill('KILL', @tslug_proc)
+    Process.kill('KILL', @tslug_header_proc)
   end
 
 
@@ -54,6 +56,13 @@ describe 'HTTP proxying' do
   it 'check that headers are being passed through' do
     response = get('http://127.0.0.1:8088/trace', {'halifax'=>'sewage'})
     header_idx = response.body =~ /sewage/
+    header_idx.should > 0
+  end
+
+  it 'check that thumbslug header is added' do
+    #8089 is the thumbslug instance with header injection
+    response = get('http://127.0.0.1:8089/trace')
+    header_idx = response.body =~ /Thumbslug/
     header_idx.should > 0
   end
 end

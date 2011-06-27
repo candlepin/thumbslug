@@ -57,7 +57,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         // compression.
         pipeline.addLast("deflater", new HttpContentCompressor());
         pipeline.addLast("handler", new HttpRequestHandler(config.getProperty("cdn.host"),
-            config.getInt("cdn.port"), config.getBoolean("cdn.ssl")));
+            config.getInt("cdn.port"), config.getBoolean("cdn.ssl"), config.getBoolean("sendTSheader")));
         return pipeline;
     }
 }

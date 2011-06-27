@@ -44,11 +44,13 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private String cdnHost;
     private int cdnPort;
     private boolean cdnSSL;
+    private boolean sendTSHeader;
 
-    public HttpRequestHandler(String cdnHost, int cdnPort, boolean cdnSSL) {
+    public HttpRequestHandler(String cdnHost, int cdnPort, boolean cdnSSL, boolean sendHeader) {
         this.cdnHost = cdnHost;
         this.cdnPort = cdnPort;
         this.cdnSSL = cdnSSL;
+        this.sendTSHeader = sendHeader;
     }
     
     @Override
@@ -71,6 +73,9 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private void requestStartReceived(MessageEvent e) throws Exception {
         this.request = (HttpRequest) e.getMessage();
         final HttpRequest request = this.request;
+        if (sendTSHeader) {
+            request.addHeader("X-Forwarded-By", "Thumbslug v1.0");
+        }
 
         ChannelFactory channelFactory = new NioClientSocketChannelFactory(
             Executors.newSingleThreadExecutor(),
