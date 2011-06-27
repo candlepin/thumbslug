@@ -1,5 +1,15 @@
 module ThumbslugMethods
 
+  def get(url_str, headers = nil)
+    uri = URI.parse(url_str)
+    client = Net::HTTP.new uri.host, uri.port
+    if uri.scheme == 'https':
+      client.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      client.use_ssl = true
+    end
+    return client.request(Net::HTTP::Get.new(uri.path, headers))
+  end
+
   def create_secure_httpd
     config = {
       :Port => 9443,

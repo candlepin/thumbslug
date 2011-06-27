@@ -18,15 +18,9 @@ describe 'HTTPS proxying' do
     Process.kill('INT', @tslugs_proc)
   end
 
-
   it 'validate mocked env' do
     filename = Dir.pwd + '/spec/data/random.10k'
-    uri = URI.parse('https://127.0.0.1:9443/random.10k')
-    https_client = Net::HTTP.new uri.host, uri.port
-    https_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    https_client.use_ssl = true
-
-    response = https_client.request(Net::HTTP::Get.new(uri.path))
+    response = get('https://127.0.0.1:9443/random.10k')
 
     file_digest = Digest::MD5.hexdigest(File.read(filename))
     uri_digest = Digest::MD5.hexdigest(response.body)
@@ -37,12 +31,7 @@ describe 'HTTPS proxying' do
 
   it 'pull a file from thumbslug' do
     filename = Dir.pwd + '/spec/data/random.10k'
-    uri = URI.parse('https://127.0.0.1:8443/random.10k')
-    https_client = Net::HTTP.new uri.host, uri.port
-    https_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    https_client.use_ssl = true
-
-    response = https_client.request(Net::HTTP::Get.new(uri.path))
+    response = get('https://127.0.0.1:8443/random.10k')
 
     file_digest = Digest::MD5.hexdigest(File.read(filename))
     uri_digest = Digest::MD5.hexdigest(response.body)
@@ -52,33 +41,17 @@ describe 'HTTPS proxying' do
   end
 
   it 'pull a 404 from the cdn' do
-
-    uri = URI.parse('https://127.0.0.1:8443/this_will_404')
-    https_client = Net::HTTP.new uri.host, uri.port
-    https_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    https_client.use_ssl = true
-
-    response = https_client.request(Net::HTTP::Get.new(uri.path))
+    response = get('https://127.0.0.1:8443/this_will_404')
     response.code.should == '404'
   end
 
   it 'pull a 500 from the cdn' do
-    uri = URI.parse('https://127.0.0.1:8443/this_will_500')
-    https_client = Net::HTTP.new uri.host, uri.port
-    https_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    https_client.use_ssl = true
-
-    response = https_client.request(Net::HTTP::Get.new(uri.path))
+    response = get('https://127.0.0.1:8443/this_will_500')
     response.code.should == '500'
   end
 
-  it 'check that headers are being passed through' do
-    uri = URI.parse('https://127.0.0.1:8443/trace')
-    https_client = Net::HTTP.new uri.host, uri.port
-    https_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    https_client.use_ssl = true
-
-    response = https_client.request(Net::HTTP::Get.new(uri.path, {'halifax' => 'sewage'}))
+  it 'check that client headers are being passed through' do
+    response = get('https://127.0.0.1:8443/trace', {'halifax' => 'sewage'})
     response.code.should == '200'
     header_idx = response.body =~ /sewage/
     header_idx.should > 0

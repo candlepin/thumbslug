@@ -21,8 +21,7 @@ describe 'HTTP proxying' do
 
   it 'validate mocked env' do
     filename = Dir.pwd + '/spec/data/random.10k'
-    uri = URI.parse('http://127.0.0.1:9090/random.10k')
-    response = Net::HTTP.get_response(uri)
+    response = get('http://127.0.0.1:9090/random.10k')
 
     file_digest = Digest::MD5.hexdigest(File.read(filename))
     uri_digest = Digest::MD5.hexdigest(response.body)
@@ -33,8 +32,7 @@ describe 'HTTP proxying' do
 
   it 'pull a file from thumbslug' do
     filename = Dir.pwd + '/spec/data/random.10k'
-    uri = URI.parse('http://127.0.0.1:8088/random.10k')
-    response = Net::HTTP.get_response(uri)
+    response = get('http://127.0.0.1:8088/random.10k')
 
     file_digest = Digest::MD5.hexdigest(File.read(filename))
     uri_digest = Digest::MD5.hexdigest(response.body)
@@ -44,25 +42,18 @@ describe 'HTTP proxying' do
   end
 
   it 'pull a 404 from the cdn' do
-    uri = URI.parse('http://127.0.0.1:8088/this_will_404')
-    response = Net::HTTP.get_response(uri)
+    response = get('http://127.0.0.1:8088/this_will_404')
     response.code.should == '404'
   end
 
   it 'pull a 500 from the cdn' do
-    uri = URI.parse('http://127.0.0.1:8088/this_will_500')
-    response = Net::HTTP.get_response(uri)
+    response = get('http://127.0.0.1:8088/this_will_500')
     response.code.should == '500'
   end
 
   it 'check that headers are being passed through' do
-    uri = URI.parse('http://127.0.0.1:8088/trace')
-    req = Net::HTTP::Get.new(uri.path)
-    req.add_field("X-Foo-Bar", "Halifax-Sewage")
-    res = Net::HTTP.new(uri.host, uri.port).start do |http|
-      http.request(req)
-    end
-    header_idx = res.body =~ /Halifax/
+    response = get('http://127.0.0.1:8088/trace', {'halifax'=>'sewage'})
+    header_idx = response.body =~ /sewage/
     header_idx.should > 0
   end
 end
