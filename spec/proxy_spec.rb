@@ -9,8 +9,9 @@ describe 'HTTP proxying' do
   include ThumbslugMethods
   before(:all) do
     @http_proc = create_httpd
-    @tslug_proc = create_thumbslug
-    @tslug_header_proc = create_thumbslug(false, true)
+    @tslug_proc = create_thumbslug({:ssl => 'false'})
+    @tslug_header_proc = create_thumbslug({:ssl => 'false',
+                                          :sendTSHeader => 'true'})
   end
 
   after(:all) do

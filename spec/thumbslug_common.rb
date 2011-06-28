@@ -59,20 +59,10 @@ module ThumbslugMethods
     return pid
   end
 
-  def create_thumbslug(secure=false, sendTSheader=false, port=nil, cdn_port=nil)
+  def create_thumbslug(params={})
     #these need to all be strings
-    insecure_config = {
+    config = {
      :port => '8088',
-     :ssl => 'false',
-     :ssl_keystore => '',
-     :ssl_keystore_password => '',
-     :cdn_port => '9090',
-     :cdn_host => 'localhost',
-     :cdn_ssl => 'false',
-     :sendTSHeader => 'false'
-    }
-    secure_config = {
-     :port => '8443',
      :ssl => 'true',
      :ssl_keystore => 'spec/data/keystore.p12',
      :ssl_keystore_password => 'password',
@@ -81,14 +71,11 @@ module ThumbslugMethods
      :cdn_ssl => 'true',
      :sendTSHeader => 'false'
     }
-    config = secure ? secure_config : insecure_config
-    if sendTSheader
-      config[:sendTSHeader] = "true"
-      config[:port] = config[:port].to_i + 1
-      config[:port] = config[:port].to_s
+
+    params.each_pair do |key, value|
+      config[key] = value
     end
-    config[:port] = port.nil? ? config[:port] : port
-    config[:cdn_port] = cdn_port.nil? ? config[:cdn_port] : cdn_port
+
     tslug_exec_string = "java " + 
                  " -Dport=" + config[:port] +
                  " -Dssl=" + config[:ssl] +

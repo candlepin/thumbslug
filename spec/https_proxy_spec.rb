@@ -17,8 +17,9 @@ describe 'HTTPS proxying' do
 
   before(:all) do
     @https_proc = create_httpd(true)
-    @tslugs_proc = create_thumbslug(true)
-    @tslugs_badcdn_proc = create_thumbslug(true, false, '9998', '9999')
+    @tslugs_proc = create_thumbslug
+    @tslugs_badcdn_proc = create_thumbslug({:port => '9998',
+                                           :cdn_port => '9999'})
   end
 
   after(:all) do
@@ -41,7 +42,7 @@ describe 'HTTPS proxying' do
 
   it 'pull a file from thumbslug' do
     filename = Dir.pwd + '/spec/data/random.10k'
-    response = get('https://127.0.0.1:8443/random.10k')
+    response = get('https://127.0.0.1:8088/random.10k')
 
     file_digest = Digest::MD5.hexdigest(File.read(filename))
     uri_digest = Digest::MD5.hexdigest(response.body)
@@ -56,17 +57,17 @@ describe 'HTTPS proxying' do
   end
 
   it 'pull a 404 from the cdn' do
-    response = get('https://127.0.0.1:8443/this_will_404')
+    response = get('https://127.0.0.1:8088/this_will_404')
     response.code.should == '404'
   end
 
   it 'pull a 500 from the cdn' do
-    response = get('https://127.0.0.1:8443/this_will_500')
+    response = get('https://127.0.0.1:8088/this_will_500')
     response.code.should == '500'
   end
 
   it 'check that client headers are being passed through' do
-    response = get('https://127.0.0.1:8443/trace', {'captain' => 'sub'})
+    response = get('https://127.0.0.1:8088/trace', {'captain' => 'sub'})
     response.code.should == '200'
     header_idx = response.body =~ /sub/
     header_idx.should > 0
