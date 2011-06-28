@@ -44,7 +44,8 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 
         if (config.getBoolean("ssl")) {
             SSLEngine engine =
-                new SslContextFactory().getServerContext().createSSLEngine();
+                SslContextFactory.getServerContext(config.getProperty("ssl.keystore"),
+                    config.getProperty("ssl.keystore.password")).createSSLEngine();
             engine.setUseClientMode(false);
             pipeline.addLast("ssl", new SslHandler(engine));
         }

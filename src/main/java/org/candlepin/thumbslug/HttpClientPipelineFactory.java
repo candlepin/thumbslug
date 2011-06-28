@@ -40,8 +40,7 @@ class HttpClientPipelineFactory {
         ChannelPipeline pipeline = pipeline();
         
         if (useSSL) {
-            SSLEngine engine =
-                new SslContextFactory().getClientContext().createSSLEngine();
+            SSLEngine engine = SslContextFactory.getClientContext().createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }

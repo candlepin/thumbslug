@@ -18,6 +18,8 @@
  */
 
 package org.candlepin.thumbslug.ssl;
+import java.io.File;
+import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.Security;
 
@@ -27,25 +29,23 @@ import javax.net.ssl.SSLContext;
 public class SslContextFactory {
 
     private static final String PROTOCOL = "TLS";
-    private final SSLContext SERVER_CONTEXT;
-    private final SSLContext CLIENT_CONTEXT;
 
-    public SslContextFactory() {
+    public static SSLContext getServerContext(String keystoreUrl, String keystorePassword) {
         String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
         if (algorithm == null) {
             algorithm = "SunX509";
         }
 
         SSLContext serverContext = null;
-        SSLContext clientContext = null;
         try {
-            KeyStore ks = KeyStore.getInstance("JKS"); //PKCS12");
-            ks.load(StaticKeyStore.asInputStream(),
-                    StaticKeyStore.getKeyStorePassword());
+            FileInputStream fis = new FileInputStream(new File(keystoreUrl));
+            
+            KeyStore ks = KeyStore.getInstance("PKCS12");
+            ks.load(fis, keystorePassword.toCharArray());
 
             // Set up key manager factory to use our key store
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
-            kmf.init(ks, StaticKeyStore.getCertificatePassword());
+            kmf.init(ks, keystorePassword.toCharArray());
 
             // Initialize the SSLContext to work with our key managers.
             serverContext = SSLContext.getInstance(PROTOCOL);
@@ -58,6 +58,12 @@ public class SslContextFactory {
                     "Failed to initialize the server-side SSLContext", e);
         }
 
+        return serverContext;
+    }
+
+    public static SSLContext getClientContext() {
+        SSLContext clientContext = null;
+    
         try {
             clientContext = SSLContext.getInstance(PROTOCOL);
             clientContext.init(
@@ -68,15 +74,6 @@ public class SslContextFactory {
                     "Failed to initialize the client-side SSLContext", e);
         }
 
-        SERVER_CONTEXT = serverContext;
-        CLIENT_CONTEXT = clientContext;
-    }
-
-    public SSLContext getServerContext() {
-        return SERVER_CONTEXT;
-    }
-
-    public SSLContext getClientContext() {
-        return CLIENT_CONTEXT;
+        return clientContext;
     }
 }
