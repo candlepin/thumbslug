@@ -20,8 +20,12 @@ import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpResponse;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.netty.channel.ExceptionEvent;
 
 /**
  * HttpRelayingResponseHandler
@@ -37,6 +41,27 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
         this.keepAlive = false;
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+        throws Exception {
+        //if we aren't reading bits yet and we run into an issue, fire off a 502 to the client
+        if (!readingChunks){
+            
+            HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
+                HttpResponseStatus.BAD_GATEWAY);
+            ChannelFuture future = client.write(response);
+            future.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture arg0) throws Exception {
+                    client.close();
+                }
+            });
+
+        }
+
+        e.getCause().printStackTrace();
+        client.close(); //if something happens, close the connection
+    }
     /**
      * This is an event *to* the client coming *from* the cdn
      * 
@@ -45,7 +70,7 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
-        
+        System.out.println("MESSAGE RECEIVED!");
         if (!readingChunks) {
             HttpResponse response = (HttpResponse) e.getMessage();
 
@@ -82,6 +107,8 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
             }
         }
     }
+    
+    
     
 //    private void writeResponse(MessageEvent e) {
 //        // Decide whether to close the connection or not.

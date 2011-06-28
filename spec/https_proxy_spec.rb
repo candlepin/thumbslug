@@ -18,12 +18,14 @@ describe 'HTTPS proxying' do
   before(:all) do
     @https_proc = create_httpd(true)
     @tslugs_proc = create_thumbslug(true)
+    @tslugs_badcdn_proc = create_thumbslug(true, false, '9998', '9999')
   end
 
   after(:all) do
     #do any cleanup
     Process.kill('INT', @https_proc)
     Process.kill('INT', @tslugs_proc)
+    Process.kill('INT', @tslugs_badcdn_proc)
   end
 
   it 'validate mocked env' do
@@ -46,6 +48,11 @@ describe 'HTTPS proxying' do
 
     #ensure that the file we got is the same as what's on disk
     uri_digest.should == file_digest
+  end
+
+  it 'pull a 502 from thumbslug (no open port on CDN)' do
+    response = get('https://127.0.0.1:9998/this_will_404')
+    response.code.should == '502'
   end
 
   it 'pull a 404 from the cdn' do
