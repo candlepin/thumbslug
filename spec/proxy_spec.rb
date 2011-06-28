@@ -54,8 +54,8 @@ describe 'HTTP proxying' do
   end
 
   it 'check that headers are being passed through' do
-    response = get('http://127.0.0.1:8088/trace', {'halifax'=>'sewage'})
-    header_idx = response.body =~ /sewage/
+    response = get('http://127.0.0.1:8088/trace', {'captain'=>'sub'})
+    header_idx = response.body =~ /sub/
     header_idx.should > 0
   end
 

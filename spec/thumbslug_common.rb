@@ -4,13 +4,19 @@ module ThumbslugMethods
     uri = URI.parse(url_str)
     client = Net::HTTP.new uri.host, uri.port
     if uri.scheme == 'https':
-      client.verify_mode = OpenSSL::SSL::VERIFY_NONE
       client.use_ssl = true
+      client.verify_mode = OpenSSL::SSL::VERIFY_NONE #TODO: verify server
+      client.ca_file = "CA/cacert.pem"
+      client.key = OpenSSL::PKey::RSA.new(File.read("spec/data/spec/spec-client_keypair.pem"))
+      client.cert = OpenSSL::X509::Certificate.new(File.read("spec/data/spec/cert_spec-client.pem"))
     end
     return client.request(Net::HTTP::Get.new(uri.path, headers))
   end
 
   def create_httpd(secure=false)
+    privkey = OpenSSL::PKey::RSA.new(File.read("spec/data/webrick/webrick-server_keypair.pem"), '5678')
+    server_cert = OpenSSL::X509::Certificate.new(File.read("spec/data/webrick/cert_webrick-server.pem"))
+    ca_cert = "spec/data/CA/cacert.pem" 
     if secure
       config = {
         :Port => 9443,
@@ -19,10 +25,12 @@ module ThumbslugMethods
         :Debugger => true,
         :Verbose => true,
         :SSLEnable => true,
-        :SSLVerifyClient => ::OpenSSL::SSL::VERIFY_NONE,
-        :SSLCertName => [ [ "CN", WEBrick::Utils::getservername ] ],
+        :SSLVerifyClient => OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT,
+        :SSLPrivateKey => privkey,
+        :SSLCertificate => server_cert,
+        :SSLCACertificateFile => ca_cert,
         #comment out these two lines to enable webrick logging
-        :Logger => WEBrick::Log.new("/dev/null"),
+        :Logger => WEBrick::Log.new('/dev/null'),
         :AccessLog => [nil, nil],
       }
     else
@@ -38,8 +46,6 @@ module ThumbslugMethods
     
     pid = fork {
       $stderr = File.open('/dev/null', 'w')
-      #the dots and pluses are outputted direct to stderr by webrick's ssl
-      #routines.
       server = HTTPServer.new(config)
       trap('INT') { server.stop }
       server.mount "/this_will_500", FiveHundred 

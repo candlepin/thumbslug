@@ -2,11 +2,19 @@ require 'webrick/https'
 require 'net/https'
 require 'uri'
 require 'thumbslug_common'
+require 'timeout'
 
 include WEBrick
 
 describe 'HTTPS proxying' do
   include ThumbslugMethods
+
+  around(:each) do |test|
+    Timeout::timeout(6) {
+      test.run
+    }
+  end
+
   before(:all) do
     @https_proc = create_httpd(true)
     @tslugs_proc = create_thumbslug(true)
@@ -51,9 +59,9 @@ describe 'HTTPS proxying' do
   end
 
   it 'check that client headers are being passed through' do
-    response = get('https://127.0.0.1:8443/trace', {'halifax' => 'sewage'})
+    response = get('https://127.0.0.1:8443/trace', {'captain' => 'sub'})
     response.code.should == '200'
-    header_idx = response.body =~ /sewage/
+    header_idx = response.body =~ /sub/
     header_idx.should > 0
   end
 
