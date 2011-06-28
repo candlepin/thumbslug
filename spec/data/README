@@ -1,0 +1,8 @@
+# to generate the pkcs12 server keystore:
+openssl req -x509 -new -out CERT.crt -keyout KEY.key -days 3650 \
+    -subj "/CN=localhost/C=US/L=Raleigh/"
+# enter password/password
+openssl pkcs12 -export -in CERT.crt -inkey KEY.key -out keystore.p12 \
+    -name thumbslug -chain -password pass:password
+# enter password
+# if you see 'unable to write random state, you might need to sudo rm ~/.rnd

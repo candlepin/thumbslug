@@ -56,6 +56,8 @@ module ThumbslugMethods
     insecure_config = {
      :port => '8088',
      :ssl => 'false',
+     :ssl_keystore => '',
+     :ssl_keystore_password => '',
      :cdn_port => '9090',
      :cdn_host => 'localhost',
      :cdn_ssl => 'false',
@@ -64,6 +66,8 @@ module ThumbslugMethods
     secure_config = {
      :port => '8443',
      :ssl => 'true',
+     :ssl_keystore => 'spec/data/keystore.p12',
+     :ssl_keystore_password => 'password',
      :cdn_port => '9443',
      :cdn_host => 'localhost',
      :cdn_ssl => 'true',
@@ -78,6 +82,8 @@ module ThumbslugMethods
     tslug_exec_string = "java " + 
                  " -Dport=" + config[:port] +
                  " -Dssl=" + config[:ssl] +
+                 " -Dssl.keystore=" + config[:ssl_keystore] +
+                 " -Dssl.keystore.password=" + config[:ssl_keystore_password] +
                  " -Dcdn.port=" + config[:cdn_port] +
                  " -Dcdn.host=" + config[:cdn_host] +
                  " -Dcdn.ssl=" + config[:cdn_ssl] +
