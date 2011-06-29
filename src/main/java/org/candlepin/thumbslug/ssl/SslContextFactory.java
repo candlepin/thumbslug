@@ -26,7 +26,11 @@ import java.security.Security;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 
+import org.apache.log4j.Logger;
+
 public class SslContextFactory {
+    private static Logger log = Logger.getLogger(SslContextFactory.class);
+
 
     private static final String PROTOCOL = "TLS";
 
@@ -38,8 +42,8 @@ public class SslContextFactory {
 
         SSLContext serverContext = null;
         try {
+            log.info("reading keystore");
             FileInputStream fis = new FileInputStream(new File(keystoreUrl));
-            
             KeyStore ks = KeyStore.getInstance("PKCS12");
             ks.load(fis, keystorePassword.toCharArray());
 

@@ -15,6 +15,7 @@ require 'buildr/checkstyle'
 require 'rspec/core/rake_task'
 
 NETTY = transitive 'org.jboss.netty:netty:jar:3.2.4.Final'
+LOG4J = 'log4j:log4j:jar:1.2.14'
 
 desc "The Thumbslug project"
 define "thumbslug" do
@@ -23,8 +24,8 @@ define "thumbslug" do
   project.group = GROUP
   manifest["Implementation-Vendor"] = COPYRIGHT
   manifest["Main-Class"] = "org.candlepin.thumbslug.Main"
-  compile.with NETTY
-  test.compile.with NETTY
+  compile.with [NETTY, LOG4J]
+  test.compile.with [NETTY, LOG4J]
 
   #
   # eclipse settings
@@ -35,6 +36,7 @@ define "thumbslug" do
 
   # include netty (and deps) in the jar, so it can run standalone
   package(:jar).merge NETTY
+  package(:jar).merge LOG4J
 end
 
 task :serve do

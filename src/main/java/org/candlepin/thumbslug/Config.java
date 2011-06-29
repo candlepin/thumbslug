@@ -20,13 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Config
  */
 public class Config {
-    private static final Logger log = Logger.getLogger(Config.class.getName());
+    private static final Logger log = Logger.getLogger(Config.class);
 
     private static final String CONFIG_FILE = "/etc/thumbslug/thumbslug.conf";
     private static final String DEFAULT_CONFIG_RESOURCE = "config/thumbslug.conf";

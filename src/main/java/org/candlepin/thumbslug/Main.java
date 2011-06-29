@@ -24,10 +24,14 @@ import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
+import org.apache.log4j.Logger;
+
 /**
  * Main
  */
 public class Main {
+    
+    private static Logger log = Logger.getLogger(Main.class);
     
     // maintain a list of open channels so we can shut them down on app exit
     static final ChannelGroup ALL_CHANNELS = new DefaultChannelGroup("thumbslug");
@@ -42,6 +46,7 @@ public class Main {
     public static void main(String[] args) {
         Config config = new Config();
         int port = config.getInt("port");
+        log.warn("HELLO!");
 
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
