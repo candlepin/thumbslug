@@ -11,7 +11,8 @@ describe 'HTTP proxying' do
     @http_proc = create_httpd
     @tslug_proc = create_thumbslug({:ssl => 'false'})
     @tslug_header_proc = create_thumbslug({:ssl => 'false',
-                                          :sendTSHeader => 'true'})
+                                          :sendTSHeader => 'true',
+                                          :port => '8089'})
   end
 
   after(:all) do
