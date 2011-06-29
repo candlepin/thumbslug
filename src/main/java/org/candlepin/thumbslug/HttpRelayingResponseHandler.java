@@ -14,6 +14,7 @@
  */
 package org.candlepin.thumbslug;
 
+import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -31,6 +32,8 @@ import org.jboss.netty.channel.ExceptionEvent;
  * HttpRelayingResponseHandler
  */
 public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
+    private static Logger log = Logger.getLogger(HttpRelayingResponseHandler.class);
+
 
     private boolean readingChunks;
     private Channel client;
@@ -70,7 +73,7 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
-        System.out.println("MESSAGE RECEIVED!");
+        log.debug("message received!");
         if (!readingChunks) {
             HttpResponse response = (HttpResponse) e.getMessage();
 

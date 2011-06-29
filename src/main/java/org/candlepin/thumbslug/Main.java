@@ -59,14 +59,14 @@ public class Main {
 
         // Bind and start to accept incoming connections.
         Channel channel = bootstrap.bind(new InetSocketAddress(port));
-        System.out.println("Running Thumbslug on port " + port);
+        log.warn("Running Thumbslug on port " + port);
 
         ALL_CHANNELS.add(channel);
         
         //intercept shutdown signal from VM and shut-down gracefully. 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { 
             public void run() { 
-                System.out.println("Shutting down...");
+                log.warn("Shutting down...");
                 ChannelGroupFuture future = ALL_CHANNELS.close();
                 future.awaitUninterruptibly();
             } 
