@@ -21,7 +21,7 @@ module ThumbslugMethods
     ca_cert = "spec/data/CA/cacert.pem" 
     if secure
       config = {
-        :Port => 9443,
+        :Port => 9090,
         :BindAddress => '127.0.0.1',
         :DocumentRoot => Dir.pwd + '/spec/data/',
         :Debugger => true,
@@ -66,7 +66,7 @@ module ThumbslugMethods
      :ssl => 'true',
      :ssl_keystore => 'spec/data/keystore.p12',
      :ssl_keystore_password => 'password',
-     :cdn_port => '9443',
+     :cdn_port => '9090',
      :cdn_host => 'localhost',
      :cdn_ssl => 'true',
      :sendTSHeader => 'false'
