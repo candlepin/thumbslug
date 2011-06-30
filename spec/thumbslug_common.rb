@@ -86,7 +86,7 @@ module ThumbslugMethods
                  " -Dcdn.ssl=" + config[:cdn_ssl] +
                  " -DsendTSheader=" + config[:sendTSHeader] +
                  " -jar " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
-    pp tslug_exec_string 
+    pp tslug_exec_string
     pid = fork {
       exec(tslug_exec_string)
     }

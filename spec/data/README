@@ -6,3 +6,6 @@ openssl pkcs12 -export -in CERT.crt -inkey KEY.key -out keystore.p12 \
     -name thumbslug -chain -password pass:password
 # enter password
 # if you see 'unable to write random state, you might need to sudo rm ~/.rnd
+
+#to make a pkcs12 cert for use on thumbslug as a client talkign to the cdn
+openssl pkcs12 -export -inkey cakeypair.pem -in cacert.pem -out keystore-spec.p12 -name thumbslug
