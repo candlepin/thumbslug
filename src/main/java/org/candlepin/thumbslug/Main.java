@@ -17,6 +17,8 @@ package org.candlepin.thumbslug;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLContext;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.group.ChannelGroup;
@@ -25,6 +27,8 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 import org.apache.log4j.Logger;
+import org.candlepin.thumbslug.ssl.SslContextFactory;
+import org.candlepin.thumbslug.ssl.SslKeystoreException;
 
 /**
  * Main
@@ -41,6 +45,29 @@ public class Main {
     }
 
     /**
+     * Do an initial bootstrap setup of the server SSL Context, so we can shake out any
+     * errors early, and abort if needed.
+     * 
+     * @param config our Config
+     */
+    private static boolean configureSSL(Config config) {
+        if (!config.getBoolean("ssl")) {
+            return true;
+        }
+        
+        try {
+            SslContextFactory.getServerContext(config.getProperty("ssl.keystore"),
+                config.getProperty("ssl.keystore.password"));
+            return true;
+        }
+        catch (SslKeystoreException e) {
+            System.err.println("Unable to load the ssl keystore. " +
+                "Check that ssl.keystore and ssl.keystore.password are set correctly.");
+            return false;
+        } 
+    }
+    
+    /**
      * @param args
      */
     public static void main(String[] args) {
@@ -48,6 +75,10 @@ public class Main {
         int port = config.getInt("port");
         log.warn("HELLO!");
 
+        if (!configureSSL(config)) {
+            System.exit(-1);
+        }
+        
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(

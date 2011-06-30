@@ -33,14 +33,21 @@ public class SslContextFactory {
 
 
     private static final String PROTOCOL = "TLS";
+    
+    // we only want to initialize the server context once.
+    private static SSLContext serverContext = null;
 
-    public static SSLContext getServerContext(String keystoreUrl, String keystorePassword) {
+    public static SSLContext getServerContext(String keystoreUrl, String keystorePassword)
+        throws SslKeystoreException {
+        if (serverContext != null) {
+            return serverContext;
+        }
+        
         String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
         if (algorithm == null) {
             algorithm = "SunX509";
         }
 
-        SSLContext serverContext = null;
         try {
             log.info("reading keystore");
             FileInputStream fis = new FileInputStream(new File(keystoreUrl));
@@ -58,8 +65,8 @@ public class SslContextFactory {
                     TrustManagerFactory.getTrustManagers(), null);
         }
         catch (Exception e) {
-            throw new Error(
-                    "Failed to initialize the server-side SSLContext", e);
+            throw new SslKeystoreException(
+                    "Failed to initialize the server-side SSLContext.", e);
         }
 
         return serverContext;
@@ -67,7 +74,7 @@ public class SslContextFactory {
 
     public static SSLContext getClientContext(String keystoreUrl, String keystorePassword) {
         //TODO: this is heavily based on getServerContext, may need to refactor them into
-        // each other
+        // each other after we set this up to use dynamic keystores/pem entitlements
         SSLContext clientContext = null;
         String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
         if (algorithm == null) {
