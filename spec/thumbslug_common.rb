@@ -89,10 +89,11 @@ module ThumbslugMethods
                  " -Dcdn.ssl=" + config[:cdn_ssl] +
                  " -DsendTSheader=" + config[:sendTSHeader] +
                  " -jar " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
-    pp tslug_exec_string
     pipe = IO.popen(tslug_exec_string, "w+")
-    #TODO: this should read the pipe and wait for the "I am ready" message
-    sleep 1
+    #this is perlesque
+    while pipe.gets()
+      break if $_ =~ /Running Thumbslug/
+    end 
     return pipe
   end
 end
