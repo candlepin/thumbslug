@@ -17,8 +17,6 @@ package org.candlepin.thumbslug;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-import javax.net.ssl.SSLContext;
-
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.group.ChannelGroup;

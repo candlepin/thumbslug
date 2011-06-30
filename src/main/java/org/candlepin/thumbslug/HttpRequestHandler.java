@@ -75,13 +75,16 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         ChannelFactory channelFactory = new NioClientSocketChannelFactory(
             Executors.newSingleThreadExecutor(),
             Executors.newSingleThreadExecutor());
-        HttpClientPipelineFactory httpClientPipelineFactory = new HttpClientPipelineFactory(config);
+        HttpClientPipelineFactory httpClientPipelineFactory =
+            new HttpClientPipelineFactory(config);
         cdnChannel = channelFactory.newChannel(
-            httpClientPipelineFactory.getPipeline(e.getChannel(), config.getBoolean("cdn.ssl"),
+            httpClientPipelineFactory.getPipeline(e.getChannel(),
+                config.getBoolean("cdn.ssl"),
                 isKeepAlive(request)));
         
         ChannelFuture future = cdnChannel.connect(
-            new InetSocketAddress(config.getProperty("cdn.host"), config.getInt("cdn.port")));
+            new InetSocketAddress(config.getProperty("cdn.host"),
+                config.getInt("cdn.port")));
         future.addListener(new ChannelFutureListener() {
             public void operationComplete(final ChannelFuture future)
                 throws Exception {

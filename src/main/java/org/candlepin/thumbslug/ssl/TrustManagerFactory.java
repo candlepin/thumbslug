@@ -1,20 +1,21 @@
+/**
+ * Copyright (c) 2011 Red Hat, Inc.
+ *
+ * This software is licensed to you under the GNU General Public License,
+ * version 2 (GPLv2). There is NO WARRANTY for this software, express or
+ * implied, including the implied warranties of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2
+ * along with this software; if not, see
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
+ *
+ * Red Hat trademarks are not licensed under GPLv2. No permission is
+ * granted to use or replicate Red Hat trademarks that are incorporated
+ * in this software or its documentation.
+ */
+
 /*
  * Adapted from Netty example code, which is 
  *      Copyright (C) 2008  Trustin Heuiseung Lee
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
  */
 
 package org.candlepin.thumbslug.ssl;
@@ -30,6 +31,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactorySpi;
 import javax.net.ssl.X509TrustManager;
 
+/**
+ * TrustManagerFactory
+ */
 public class TrustManagerFactory extends TrustManagerFactorySpi {
 
     private static final TrustManager DUMMY_TRUST_MANAGER = new X509TrustManager() {

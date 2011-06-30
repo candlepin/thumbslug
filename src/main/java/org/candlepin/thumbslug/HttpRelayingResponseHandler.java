@@ -47,8 +47,9 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
         throws Exception {
-        //if we aren't reading bits yet and we run into an issue, fire off a 502 to the client
-        if (!readingChunks){
+        // if we aren't reading bits yet and we run into an issue,
+        // fire off a 502 to the client
+        if (!readingChunks) {
             
             HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
                 HttpResponseStatus.BAD_GATEWAY);
