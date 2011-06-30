@@ -1,6 +1,9 @@
 require 'openssl'
+require 'webrick/https'
 
 module ThumbslugMethods
+
+  include WEBrick
 
   def get(url_str, headers = nil)
     uri = URI.parse(url_str)

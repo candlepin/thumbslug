@@ -1,10 +1,7 @@
-require 'webrick/https'
 require 'net/https'
 require 'uri'
 require 'thumbslug_common'
 require 'timeout'
-
-include WEBrick
 
 describe 'HTTPS proxying' do
   include ThumbslugMethods
