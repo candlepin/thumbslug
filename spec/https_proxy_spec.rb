@@ -25,9 +25,12 @@ describe 'HTTPS proxying' do
 
   after(:all) do
     #do any cleanup
-    Process.kill('KILL', @https_proc)
-    Process.kill('KILL', @tslugs_proc)
-    Process.kill('KILL', @tslugs_badcdn_proc)
+    Process.kill('INT', @https_proc)
+    Process.kill('INT', @tslugs_proc)
+    Process.kill('INT', @tslugs_badcdn_proc)
+    puts "Waiting for forked procs to terminate.."
+    Process.waitall()
+    print "done"
   end
 
   it 'validate mocked env' do

@@ -18,9 +18,12 @@ describe 'HTTP proxying' do
 
   after(:all) do
     #clean up what we forked out
-    Process.kill('KILL', @http_proc)
-    Process.kill('KILL', @tslug_proc)
-    Process.kill('KILL', @tslug_header_proc)
+    Process.kill('INT', @http_proc)
+    Process.kill('INT', @tslug_proc)
+    Process.kill('INT', @tslug_header_proc)
+    puts "Waiting for forked procs to terminate..."
+    Process.waitall()
+    puts "Done"
   end
 
 
