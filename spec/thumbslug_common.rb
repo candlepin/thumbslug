@@ -87,13 +87,10 @@ module ThumbslugMethods
                  " -DsendTSheader=" + config[:sendTSHeader] +
                  " -jar " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
     pp tslug_exec_string
-    pid = fork {
-      exec(tslug_exec_string)
-    }
-    #TODO: this should read the forked pid and wait for the "I am ready" message
+    pipe = IO.popen(tslug_exec_string, "w+")
+    #TODO: this should read the pipe and wait for the "I am ready" message
     sleep 1
-    Process.detach(pid)
-    return pid
+    return pipe
   end
 end
 

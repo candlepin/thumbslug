@@ -9,8 +9,8 @@ describe 'HTTP proxying' do
   include ThumbslugMethods
   before(:all) do
     @http_proc = create_httpd
-    @tslug_proc = create_thumbslug({:ssl => 'false', :cdn_ssl => 'false'})
-    @tslug_header_proc = create_thumbslug({:ssl => 'false',
+    @tslug_pipe =  create_thumbslug({:ssl => 'false', :cdn_ssl => 'false'})
+    @tslug_header_pipe = create_thumbslug({:ssl => 'false',
                                           :sendTSHeader => 'true',
                                           :port => '8089',
                                           :cdn_ssl => 'false'})
@@ -19,8 +19,8 @@ describe 'HTTP proxying' do
   after(:all) do
     #clean up what we forked out
     Process.kill('INT', @http_proc)
-    Process.kill('INT', @tslug_proc)
-    Process.kill('INT', @tslug_header_proc)
+    Process.kill('INT', @tslug_pipe.pid)
+    Process.kill('INT', @tslug_header_pipe.pid)
     puts "Waiting for forked procs to terminate..."
     Process.waitall()
     puts "Done"
