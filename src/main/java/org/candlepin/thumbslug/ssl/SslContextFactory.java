@@ -65,13 +65,32 @@ public class SslContextFactory {
         return serverContext;
     }
 
-    public static SSLContext getClientContext() {
+    public static SSLContext getClientContext(String keystoreUrl, String keystorePassword) {
+        //TODO: this is heavily based on getServerContext, may need to refactor them into
+        // each other
         SSLContext clientContext = null;
+        String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
+        if (algorithm == null) {
+            algorithm = "SunX509";
+        }
     
         try {
+            log.info("reading keystore");
+            FileInputStream fis = new FileInputStream(new File(keystoreUrl));
+            KeyStore ks = KeyStore.getInstance("PKCS12");
+            ks.load(fis, keystorePassword.toCharArray());
+
+            // Set up key manager factory to use our key store
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
+            kmf.init(ks, keystorePassword.toCharArray());
+
+            // Initialize the SSLContext to work with our key managers.
             clientContext = SSLContext.getInstance(PROTOCOL);
             clientContext.init(
-                    null, TrustManagerFactory.getTrustManagers(), null);
+                    kmf.getKeyManagers(),
+                    TrustManagerFactory.getTrustManagers(), null);
+            
+
         }
         catch (Exception e) {
             throw new Error(

@@ -64,8 +64,8 @@ module ThumbslugMethods
     config = {
      :port => '8088',
      :ssl => 'true',
-     :ssl_keystore => 'spec/data/keystore.p12',
-     :ssl_keystore_password => 'password',
+     :ssl_keystore => 'spec/data/keystore-spec.p12',
+     :ssl_keystore_password => 'pass',
      :cdn_port => '9090',
      :cdn_host => 'localhost',
      :cdn_ssl => 'true',

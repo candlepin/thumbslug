@@ -29,18 +29,21 @@ import org.jboss.netty.handler.ssl.SslHandler;
  * HttpClientPipelineFactory
  */
 class HttpClientPipelineFactory {
+    private Config config;
+    
+    public HttpClientPipelineFactory(Config config) {
+        this.config = config;
 
-    private HttpClientPipelineFactory() {
-        // silence checkstyle
     }
 
-    public static ChannelPipeline getPipeline(Channel client, boolean useSSL,
+    public ChannelPipeline getPipeline(Channel client, boolean useSSL,
         boolean keepAlive)
         throws Exception {
         ChannelPipeline pipeline = pipeline();
         
         if (useSSL) {
-            SSLEngine engine = SslContextFactory.getClientContext().createSSLEngine();
+            SSLEngine engine = SslContextFactory.getClientContext(config.getProperty("ssl.keystore"),
+                config.getProperty("ssl.keystore.password")).createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }

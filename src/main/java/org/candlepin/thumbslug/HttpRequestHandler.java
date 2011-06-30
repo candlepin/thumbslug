@@ -40,18 +40,12 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private HttpRequest request;
     private boolean readingChunks;
     private Channel cdnChannel;
-    
-    private String cdnHost;
-    private int cdnPort;
-    private boolean cdnSSL;
-    private boolean sendTSHeader;
+  
+    private Config config;
 
-    public HttpRequestHandler(String cdnHost, int cdnPort, boolean cdnSSL,
-        boolean sendHeader) {
-        this.cdnHost = cdnHost;
-        this.cdnPort = cdnPort;
-        this.cdnSSL = cdnSSL;
-        this.sendTSHeader = sendHeader;
+
+    public HttpRequestHandler(Config config) {
+        this.config = config;
     }
     
     @Override
@@ -74,20 +68,20 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private void requestStartReceived(MessageEvent e) throws Exception {
         this.request = (HttpRequest) e.getMessage();
         final HttpRequest request = this.request;
-        if (sendTSHeader) {
+        if (config.getBoolean("sendTSheader")) {
             request.addHeader("X-Forwarded-By", "Thumbslug v1.0");
         }
 
         ChannelFactory channelFactory = new NioClientSocketChannelFactory(
             Executors.newSingleThreadExecutor(),
             Executors.newSingleThreadExecutor());
-        
+        HttpClientPipelineFactory httpClientPipelineFactory = new HttpClientPipelineFactory(config);
         cdnChannel = channelFactory.newChannel(
-            HttpClientPipelineFactory.getPipeline(e.getChannel(), cdnSSL,
+            httpClientPipelineFactory.getPipeline(e.getChannel(), config.getBoolean("cdn.ssl"),
                 isKeepAlive(request)));
         
         ChannelFuture future = cdnChannel.connect(
-            new InetSocketAddress(cdnHost, cdnPort));
+            new InetSocketAddress(config.getProperty("cdn.host"), config.getInt("cdn.port")));
         future.addListener(new ChannelFutureListener() {
             public void operationComplete(final ChannelFuture future)
                 throws Exception {
