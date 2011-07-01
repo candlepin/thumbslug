@@ -35,8 +35,8 @@ module ThumbslugMethods
         :SSLCertificate => server_cert,
         :SSLCACertificateFile => ca_cert,
         #comment out these two lines to enable webrick logging
-        :Logger => WEBrick::Log.new('/dev/null'),
-        :AccessLog => [nil, nil],
+        #:Logger => WEBrick::Log.new('/dev/null'),
+        #:AccessLog => [nil, nil],
       }
     else
       config = {
@@ -48,17 +48,26 @@ module ThumbslugMethods
         :AccessLog => [nil, nil],
       }
     end
-    
+    rd, wr = IO.pipe
     pid = fork {
+      rd.close #no need for this side in here
       $stderr = File.open('/dev/null', 'w')
-      server = HTTPServer.new(config)
-      trap('INT') { server.stop }
-      server.mount "/this_will_500", FiveHundred 
-      server.mount "/trace", Trace
+      begin
+        server = HTTPServer.new(config)
+        trap('INT') { server.stop }
+        server.mount "/this_will_500", FiveHundred 
+        server.mount "/trace", Trace
+        wr.write "Started webrick"
+      rescue
+        wr.write "Error starting webrick"
+      ensure
+        wr.close  #this makes the parent process unblock and continue
+      end
       server.start
     }
-    #TODO: this should read the forked pid and wait for the "I am ready" message
-    sleep 3
+    wr.close #no need for this side in here
+    puts "#{rd.read}" #this will wait for the forked process to send an EOF
+    rd.close
     return pid
   end
 
