@@ -15,6 +15,12 @@ Thumbslug is a content/entitlement proxy.
 
 To run, use `buildr serve`, or `java -jar target/thumbslug-1.0.0.jar`
 
+To run via jsvc (experimental):
+
+/usr/bin/jsvc -debug -cp thumbslug-1.0.0.jar org.candlepin.thumbslug.Daemon
+
+^^ specifying the full path to jsvc is important, it examines argv[0]
+
 == Config Options ==
 
 port = <integer>       :: the local address to listen for requests on
@@ -23,3 +29,4 @@ ssl = <true|false>     :: use ssl for client to thumbslug communication
 cdn.port = <integer>   :: the remote cdn port to connect to
 cdn.host = <string>    :: hostname of the cdn
 cdn.ssl = <true|false> :: use ssl for connecting to the cdn
+
