@@ -132,49 +132,4 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
         }
         super.handleUpstream(ctx, e);
     }
-    
-//    private void writeResponse(MessageEvent e) {
-//        // Decide whether to close the connection or not.
-//        boolean keepAlive = isKeepAlive(request);
-//
-//        // Build the response object.
-//        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-//        response.setContent(ChannelBuffers.copiedBuffer(buf.toString(),
-//                CharsetUtil.UTF_8));
-//        response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
-//
-//        if (keepAlive) {
-//            // Add 'Content-Length' header only for a keep-alive connection.
-//            response.setHeader(CONTENT_LENGTH, response.getContent()
-//                    .readableBytes());
-//        }
-//
-//        // Encode the cookie.
-//        String cookieString = request.getHeader(COOKIE);
-//        if (cookieString != null) {
-//            CookieDecoder cookieDecoder = new CookieDecoder();
-//            Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-//            if (!cookies.isEmpty()) {
-//                // Reset the cookies if necessary.
-//                CookieEncoder cookieEncoder = new CookieEncoder(true);
-//                for (Cookie cookie : cookies) {
-//                    cookieEncoder.addCookie(cookie);
-//                }
-//                response.addHeader(SET_COOKIE, cookieEncoder.encode());
-//            }
-//        }
-//
-//        // Write the response.
-//        ChannelFuture future = e.getChannel().write(response);
-//
-//        // Close the non-keep-alive connection after the write operation is
-//        // done.
-//        if (!keepAlive) {
-//            future.addListener(ChannelFutureListener.CLOSE);
-//        }
-//
-//        System.out.println(String.format("%s %s %d", request.getMethod(),
-//                request.getUri(), response.getStatus().getCode()));
-//    }
-
 }
