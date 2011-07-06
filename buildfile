@@ -18,6 +18,9 @@ NETTY = transitive 'org.jboss.netty:netty:jar:3.2.4.Final'
 LOG4J = 'log4j:log4j:jar:1.2.14'
 DAEMON = 'commons-daemon:commons-daemon:jar:1.0.5'
 
+JUNIT = 'junit:junit:jar:4.5'
+MOCKITO = 'org.mockito:mockito-all:jar:1.8.5'
+
 desc "The Thumbslug project"
 define "thumbslug" do
 
@@ -27,6 +30,7 @@ define "thumbslug" do
   manifest["Main-Class"] = "org.candlepin.thumbslug.Main"
   compile.with [NETTY, LOG4J, DAEMON]
   test.compile.with [NETTY, LOG4J, DAEMON]
+  test.with [JUNIT, MOCKITO]
 
   #
   # eclipse settings

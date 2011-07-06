@@ -43,6 +43,8 @@ class HttpRequestLogger extends SimpleChannelHandler {
         HttpRequestLogger.class.getCanonicalName() + ".accessLog");
     private final Logger log = Logger.getLogger(HttpRequestLogger.class);
     
+    private static boolean loggingConfigured = false; 
+    
     // CLF. see wikipedia ;)
     private static final String DEFAULT_LOG_FORMAT =
         "%1$s - - [%2$td/%2$tb/%2$tY:%2$tT %2$tz] \"%3$s %4$s %5$s\" %6$d %7$d";
@@ -78,15 +80,19 @@ class HttpRequestLogger extends SimpleChannelHandler {
             }
             // maybe this request was proxied or load balanced.
             // try and get the real originating IP
+            // XXX: someone could set this header on their request to hide their ip
             if (request.containsHeader("X-Forwarded-For")) {
                 // can contain multiple IPs for proxy chains. the first ip is our client.
                 String proxyChain = request.getHeader("X-Forwarded-For");
-                int firstComma = proxyChain.indexOf(',');
-                if (firstComma != -1) {
-                    inetAddress = proxyChain.substring(0, proxyChain.indexOf(','));
-                }
-                else {
-                    inetAddress = proxyChain;
+                // we'll skip an empty header, but a malformed header will still get through
+                if (!proxyChain.equals("")) {
+                    int firstComma = proxyChain.indexOf(',');
+                    if (firstComma != -1) {
+                        inetAddress = proxyChain.substring(0, proxyChain.indexOf(','));
+                    }
+                    else {
+                        inetAddress = proxyChain;
+                    }
                 }
             }
 
@@ -152,7 +158,12 @@ class HttpRequestLogger extends SimpleChannelHandler {
         }
     }
     
-    private void configureAccessLog(String fileName) {
+    private synchronized void configureAccessLog(String fileName) {
+        if (loggingConfigured) {
+            return;
+        }
+        loggingConfigured = true;
+        
         accessLog.setLevel(org.apache.log4j.Level.INFO);
         try {
             Layout layout = new PatternLayout("%m%n");
@@ -161,7 +172,14 @@ class HttpRequestLogger extends SimpleChannelHandler {
             accessLog.setAdditivity(false);
         }
         catch (IOException e) {
+            // if we error here, we'll just end up logging the accesses to the standard
+            // log output, which is ok.
             log.error("unable to open access.log for writing!", e);
         }
+    }
+    
+    // for testing
+    String getInetAddress() {
+        return this.inetAddress;
     }
 }
