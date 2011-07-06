@@ -52,6 +52,19 @@ describe 'HTTPS proxying' do
     uri_digest.should == file_digest
   end
 
+
+  it 'pull a file from thumbslug without a client cert' do
+    filename = Dir.pwd + '/spec/data/random.10k'
+    uri = URI.parse('https://127.0.0.1:8088/random.10k')
+    client = Net::HTTP.new uri.host, uri.port
+    client.use_ssl = true
+   
+    lambda do
+      client.request(Net::HTTP::Get.new(uri.path))
+    end.should raise_exception(OpenSSL::SSL::SSLError)
+  end
+
+
   it 'pull a 502 from thumbslug (no open port on CDN)' do
     response = get('https://127.0.0.1:9998/this_will_404')
     response.code.should == '502'

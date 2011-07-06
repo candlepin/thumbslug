@@ -19,6 +19,7 @@ describe 'Server SSL' do
 #  end
 
   it 'uses the configured ssl certificate for its server certificate' do
+    fail #this isn't cleaning up properly for some reason, need to investigate
     httpd = create_httpd
     tslug = create_thumbslug({
       :ssl_keystore => 'spec/data/keystore.p12',
