@@ -17,7 +17,6 @@ package org.candlepin.thumbslug;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.*;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -28,7 +27,6 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 
@@ -77,6 +75,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             request.addHeader("X-Forwarded-By", "Thumbslug v1.0");
         }
 
+        // XXX: can we use channel.getSink() and attach here to join the two channels
+        // instead?
         cdnChannel = channelFactory.newChannel(
             clientFactory.getPipeline(e.getChannel(),
                 config.getBoolean("cdn.ssl"),
