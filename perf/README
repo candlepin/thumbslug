@@ -1,0 +1,4 @@
+= Performance and Load Testing =
+
+concurrency test will lauch N requests each in its own thread over M
+iterations, run it like 'ruby perf/concurrency-test.rb M N'
