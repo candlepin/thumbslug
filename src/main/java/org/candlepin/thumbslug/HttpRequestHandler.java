@@ -42,10 +42,15 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private Channel cdnChannel;
   
     private Config config;
+    private ChannelFactory channelFactory;
+    private HttpClientPipelineFactory clientFactory;
 
 
-    public HttpRequestHandler(Config config) {
+    public HttpRequestHandler(Config config, ChannelFactory channelFactory,
+        HttpClientPipelineFactory clientFactory) {
         this.config = config;
+        this.channelFactory = channelFactory;
+        this.clientFactory = clientFactory;
     }
     
     @Override
@@ -72,13 +77,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             request.addHeader("X-Forwarded-By", "Thumbslug v1.0");
         }
 
-        ChannelFactory channelFactory = new NioClientSocketChannelFactory(
-            Executors.newSingleThreadExecutor(),
-            Executors.newSingleThreadExecutor());
-        HttpClientPipelineFactory httpClientPipelineFactory =
-            new HttpClientPipelineFactory(config);
         cdnChannel = channelFactory.newChannel(
-            httpClientPipelineFactory.getPipeline(e.getChannel(),
+            clientFactory.getPipeline(e.getChannel(),
                 config.getBoolean("cdn.ssl"),
                 isKeepAlive(request)));
         

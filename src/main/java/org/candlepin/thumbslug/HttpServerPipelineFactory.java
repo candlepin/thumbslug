@@ -16,11 +16,15 @@ package org.candlepin.thumbslug;
 
 import static org.jboss.netty.channel.Channels.*;
 
+import java.util.concurrent.Executors;
+
 import javax.net.ssl.SSLEngine;
 
 import org.candlepin.thumbslug.ssl.SslContextFactory;
+import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
@@ -32,9 +36,16 @@ import org.jboss.netty.handler.ssl.SslHandler;
 public class HttpServerPipelineFactory implements ChannelPipelineFactory {
     
     private Config config;
+    private ChannelFactory channelFactory;
+    private HttpClientPipelineFactory httpClientPipelineFactory;
     
     public HttpServerPipelineFactory(Config config) {
         this.config = config;
+        
+        channelFactory = new NioClientSocketChannelFactory(
+            Executors.newCachedThreadPool(),
+            Executors.newCachedThreadPool());
+        httpClientPipelineFactory = new HttpClientPipelineFactory(config);
     }
         
     @Override
@@ -61,7 +72,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         
         pipeline.addLast("logger", new HttpRequestLogger(config.getProperty("log.access")));
         
-        pipeline.addLast("handler", new HttpRequestHandler(config));
+        pipeline.addLast("handler", new HttpRequestHandler(config, channelFactory, httpClientPipelineFactory));
         return pipeline;
     }
 }
