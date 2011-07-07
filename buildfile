@@ -10,13 +10,15 @@ COPYRIGHT = ""
 # Specify Maven 2.0 remote repositories here, like this:
 repositories.remote << "http://www.ibiblio.org/maven2/"
 repositories.remote << "https://repository.jboss.org/nexus/content/repositories/releases/"
+# for akuma
+repositories.remote << "http://download.java.net/maven/2/"
 
 require 'buildr/checkstyle'
 require 'rspec/core/rake_task'
 
 NETTY = transitive 'org.jboss.netty:netty:jar:3.2.4.Final'
 LOG4J = 'log4j:log4j:jar:1.2.14'
-DAEMON = 'commons-daemon:commons-daemon:jar:1.0.5'
+DAEMON = transitive 'com.sun.akuma:akuma:jar:1.4'
 
 JUNIT = 'junit:junit:jar:4.5'
 MOCKITO = 'org.mockito:mockito-all:jar:1.8.5'

@@ -14,6 +14,7 @@
  */
 package org.candlepin.thumbslug;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
@@ -27,6 +28,8 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.apache.log4j.Logger;
 import org.candlepin.thumbslug.ssl.SslContextFactory;
 import org.candlepin.thumbslug.ssl.SslKeystoreException;
+
+import com.sun.akuma.Daemon;
 
 /**
  * Main
@@ -72,9 +75,45 @@ public class Main {
         Config config = new Config();
         int port = config.getInt("port");
         log.warn("HELLO!");
+        
+        boolean shouldDaemonize = config.getBoolean("daemonize");
+        
+
+        Daemon daemon = new Daemon();
+        log.warn("HERE");
+
+        if (daemon.isDaemonized()) {
+            try {
+                log.warn("Inside daemonized instance");
+
+                daemon.init("/tmp/lock.pid");
+                log.warn("Daemonized"); //I am not sure if it is possible to get to this line
+
+            }
+            catch (Exception e) {
+                log.warn("Exception caught during daemon initialization!");
+                log.warn(e.getMessage());
+                System.exit(-1);
+            }
+        }
+        else {
+            if (shouldDaemonize) {
+                try {
+                    log.warn("Daemonizing..");
+                    daemon.daemonize();
+                    log.warn("Daemonized, exiting");
+                }
+                catch (IOException e) {
+                    System.err.println("Unable to daemonize properly");
+                    System.exit(-2);
+                }
+                System.exit(0);
+            }
+        }
+        log.warn("GOT THROUGH!");
 
         if (!configureSSL(config)) {
-            System.exit(-1);
+            System.exit(-3);
         }
         
         // Configure the server.

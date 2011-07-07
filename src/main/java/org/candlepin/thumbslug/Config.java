@@ -33,7 +33,7 @@ public class Config {
     private Properties props;
     
     private String[] defaultKeys = {"port", "ssl", "ssl.keystore", "ssl.keystore.password",
-        "cdn.port", "cdn.host", "cdn.ssl", "sendTSheader"};
+        "cdn.port", "cdn.host", "cdn.ssl", "sendTSheader", "daemonize"};
 
     public Config() {
 
