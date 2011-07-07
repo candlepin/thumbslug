@@ -22,6 +22,7 @@ package org.candlepin.thumbslug.ssl;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.Security;
 
@@ -57,9 +58,10 @@ public class SslContextFactory {
             algorithm = "SunX509";
         }
 
+        FileInputStream fis = null;
         try {
             log.info("reading keystore");
-            FileInputStream fis = new FileInputStream(new File(keystoreUrl));
+            fis = new FileInputStream(new File(keystoreUrl));
             KeyStore ks = KeyStore.getInstance("PKCS12");
             ks.load(fis, keystorePassword.toCharArray());
 
@@ -77,6 +79,18 @@ public class SslContextFactory {
             throw new SslKeystoreException(
                     "Failed to initialize the server-side SSLContext.", e);
         }
+        finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                }
+                catch (IOException e) {
+                    throw new Error(
+                        "Failed to initialize the client-side SSLContext", e);
+                }
+
+            }
+        }
 
         return serverContext;
     }
@@ -90,9 +104,10 @@ public class SslContextFactory {
             algorithm = "SunX509";
         }
     
+        FileInputStream fis = null;
         try {
             log.info("reading keystore");
-            FileInputStream fis = new FileInputStream(new File(keystoreUrl));
+            fis = new FileInputStream(new File(keystoreUrl));
             KeyStore ks = KeyStore.getInstance("PKCS12");
             ks.load(fis, keystorePassword.toCharArray());
 
@@ -111,6 +126,17 @@ public class SslContextFactory {
         catch (Exception e) {
             throw new Error(
                     "Failed to initialize the client-side SSLContext", e);
+        }
+        finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                }
+                catch (IOException e) {
+                    throw new Error(
+                        "Failed to initialize the client-side SSLContext", e);
+                }
+            }
         }
 
         return clientContext;
