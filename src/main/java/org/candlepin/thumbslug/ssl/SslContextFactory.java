@@ -73,7 +73,7 @@ public class SslContextFactory {
             serverContext = SSLContext.getInstance(PROTOCOL);
             serverContext.init(
                     kmf.getKeyManagers(),
-                    TrustManagerFactory.getTrustManagers(), null);
+                    ServerContextTrustManagerFactory.getTrustManagers(), null);
         }
         catch (Exception e) {
             throw new SslKeystoreException(
@@ -119,7 +119,7 @@ public class SslContextFactory {
             clientContext = SSLContext.getInstance(PROTOCOL);
             clientContext.init(
                     kmf.getKeyManagers(),
-                    TrustManagerFactory.getTrustManagers(), null);
+                    ClientContextTrustManagerFactory.getTrustManagers(), null);
             
 
         }

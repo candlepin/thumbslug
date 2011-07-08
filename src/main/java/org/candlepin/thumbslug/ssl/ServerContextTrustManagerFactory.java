@@ -32,9 +32,14 @@ import javax.net.ssl.TrustManagerFactorySpi;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * TrustManagerFactory
+ * ServerContextTrustManagerFactory
+ * 
+ * The TrustManager Provided by this class is used to verify that clients connecting to
+ * thumbslug are valid clients. As such, you'll notice that the checkServerTrusted call
+ * always fails. we don't want to use this trust manager when acting as a client to
+ * someone else!
  */
-public class TrustManagerFactory extends TrustManagerFactorySpi {
+public class ServerContextTrustManagerFactory extends TrustManagerFactorySpi {
 
     private static final TrustManager DUMMY_TRUST_MANAGER = new X509TrustManager() {
         public X509Certificate[] getAcceptedIssuers() {
@@ -45,12 +50,14 @@ public class TrustManagerFactory extends TrustManagerFactorySpi {
                 X509Certificate[] arg0, String arg1) throws CertificateException {
             // Always trust - it's an example.
             // You should do something in the real world.
+            
         }
 
         public void checkServerTrusted(
                 X509Certificate[] arg0, String arg1) throws CertificateException {
-            // Always trust - it's an example.
-            // You should do something in the real world.
+            throw new CertificateException(
+                "Using ServerContextTrustManager when acting as a client " +
+                "- programmer error!");
         }
     };
 
