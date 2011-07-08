@@ -78,6 +78,8 @@ module ThumbslugMethods
      :ssl => 'true',
      :ssl_keystore => 'spec/data/keystore-spec.p12',
      :ssl_keystore_password => 'pass',
+     :ssl_client_keystore => 'spec/data/keystore-spec.p12',
+     :ssl_client_keystore_password => 'pass',
      :cdn_port => '9090',
      :cdn_host => 'localhost',
      :cdn_ssl => 'true',
@@ -91,6 +93,8 @@ module ThumbslugMethods
     tslug_exec_string = "java " + 
                  " -Dport=" + config[:port] +
                  " -Dssl=" + config[:ssl] +
+                 " -Dssl.client.keystore=" + config[:ssl_client_keystore] +
+                 " -Dssl.client.keystore.password=" + config[:ssl_client_keystore_password] +
                  " -Dssl.keystore=" + config[:ssl_keystore] +
                  " -Dssl.keystore.password=" + config[:ssl_keystore_password] +
                  " -Dcdn.port=" + config[:cdn_port] +

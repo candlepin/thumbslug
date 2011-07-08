@@ -15,7 +15,7 @@ describe 'HTTPS proxying' do
   before(:all) do
     @https_proc = create_httpd(true)
     @tslugs_pipe = create_thumbslug({:ssl_keystore => 'spec/data/keystore-spec.p12',
-                                    :ssl_keystore_password => 'pass'})
+                                     :ssl_keystore_password => 'pass'})
     @tslugs_badcdn_pipe = create_thumbslug({:port => '9998',
                                            :cdn_port => '9999'})
   end
