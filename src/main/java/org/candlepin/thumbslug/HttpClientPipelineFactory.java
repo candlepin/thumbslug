@@ -43,8 +43,8 @@ class HttpClientPipelineFactory {
         
         if (useSSL) {
             SSLEngine engine = SslContextFactory.getClientContext(
-                config.getProperty("ssl.keystore"),
-                config.getProperty("ssl.keystore.password")).createSSLEngine();
+                config.getProperty("ssl.client.keystore"),
+                config.getProperty("ssl.client.keystore.password")).createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }
