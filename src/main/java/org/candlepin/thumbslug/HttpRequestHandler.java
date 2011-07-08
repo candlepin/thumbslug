@@ -75,6 +75,11 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             request.addHeader("X-Forwarded-By", "Thumbslug v1.0");
         }
 
+        // Reset the host header to our new request.
+        // A certain CDN provider is quite picky about this.
+        request.setHeader("Host",
+            config.getProperty("cdn.host") + ":" + config.getProperty("cdn.port"));
+
         // XXX: can we use channel.getSink() and attach here to join the two channels
         // instead?
         cdnChannel = channelFactory.newChannel(
