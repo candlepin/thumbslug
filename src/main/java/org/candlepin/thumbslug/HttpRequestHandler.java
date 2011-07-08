@@ -18,6 +18,7 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.*;
 
 import java.net.InetSocketAddress;
 
+import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
@@ -34,6 +35,9 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
  * HttpRequestHandler
  */
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
+    
+    private static Logger log = Logger.getLogger(HttpRequestHandler.class);
+
 
     private HttpRequest request;
     private boolean readingChunks;
@@ -115,7 +119,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
         throws Exception {
-        e.getCause().printStackTrace();
+        log.error(e.getCause());
         e.getChannel().close();
     }
 }
