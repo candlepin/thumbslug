@@ -7,7 +7,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.3
+Version: 0.0.4
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 # Source0: 
@@ -38,6 +38,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}/*
 
 %changelog
+* Mon Jul 11 2011 Chris Duryee (beav) <cduryee@redhat.com>
+- try to make an rpm (cduryee@redhat.com)
+
 * Mon Jul 11 2011 Chris Duryee (beav) <cduryee@redhat.com>
 - bump the version 
 
