@@ -16,7 +16,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Vendor: Red Hat, Inc
 BuildArch: noarch
 
+BuildRequires: ant >= 0:1.7.0
 BuildRequires: thumbslug-deps >= 0:0.0.1
+
 %define __jar_repack %{nil}
 
 %description
