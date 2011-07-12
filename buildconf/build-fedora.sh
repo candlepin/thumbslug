@@ -26,7 +26,7 @@ pushd $DEPSDIR
 tito build --rpm
 popd
 pushd $TSDIR
-tito build --srpm --test
+tito build --srpm
 popd
 
 for i in fedora-15-x86_64

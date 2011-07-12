@@ -28,7 +28,7 @@ fill me in
 %setup -q 
 
 %build
-ant -Dlibdir=/usr/share/thumbslug/lib/ clean package genschema
+ant -Dlibdir=/usr/share/thumbslug/lib/ clean package
 
 %install
 

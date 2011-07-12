@@ -121,25 +121,6 @@
     -->
   </target>
 
-  <target name="genschema" depends="compile">
-    <mkdir dir="${target.dir}/schema" />
-    <mkdir dir="${target.dir}/schema/quartz" />
-    <copy file="${res.main.dir}/META-INF/persistence.xml"
-          tofile="${target.dir}/classes/META-INF/persistence.xml" />
-    <schema destdir="${target.dir}/schema">
-      <classpath>
-        <path location="${target.dir}/classes" />
-      </classpath>
-      <jpaconfiguration persistenceunit="production" />
-      <hbm2ddl export="false" update="false" drop="false" create="true"
-               outputfilename="thumbslug-proxy.sql" delimiter=";"
-               format="false" haltonerror="true" />
-    </schema>
-    <copy todir="${target.dir}/schema/quartz">
-      <fileset dir="${ts-home}/code/schema/quartz" />
-    </copy>
-  </target>
-
   <target name="clean">
     <delete dir="${target.dir}" quiet="true" />
   </target>
