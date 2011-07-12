@@ -31,10 +31,8 @@
   <target name="setvr">
     <grepfromspec text="Version:" prop="version" />
     <grepfromspec text="Release:" prop="release" />
-    <property name="thumbslug.war"
-              value="${target.dir}/thumbslug-${version}.war" />
-    <property name="api.jar"
-              value="${target.dir}/thumbslug-api-${version}.jar" />
+    <property name="ts.jar"
+              value="${target.dir}/thumbslug.jar" />
   </target>
 
   <!--<target name="da_popo">
@@ -82,7 +80,7 @@
   </target>
 
   <target name="package" depends="compile">
-    <jar destfile="${api.jar}">
+    <jar destfile="${ts.jar}">
       <fileset dir="${target.dir}/classes">
         <include name="**"/>
       </fileset>
