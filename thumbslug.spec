@@ -31,13 +31,15 @@ fill me in
 ant -Dlibdir=/usr/share/thumbslug/lib/ clean package
 
 %install
+install -d -m 755 $RPM_BUILD_ROOT/%{_datadir}/%{name}/
+install -m 644 target/%{name}.jar $RPM_BUILD_ROOT/%{_datadir}/%{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 #%config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
-%{_datadir}/%{name}/*
+%{_datadir}/%{name}/thumbslug.jar
 
 %changelog
 * Tue Jul 12 2011 Chris Duryee (beav) <cduryee@redhat.com>
