@@ -7,7 +7,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.7
+Version: 0.0.8
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 # Source0: 
@@ -42,6 +42,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}/thumbslug.jar
 
 %changelog
+* Tue Jul 12 2011 Chris Duryee (beav) <cduryee@redhat.com>
+- pull the jar into the rpm (cduryee@redhat.com)
+
 * Tue Jul 12 2011 Chris Duryee (beav) <cduryee@redhat.com>
 - make the jar file have a consistent name (cduryee@redhat.com)
 
