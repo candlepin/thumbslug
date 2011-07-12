@@ -1,0 +1,90 @@
+#!/bin/sh
+#
+#     statup script for Thumbslug
+#     Adapted from Jenkins startup script by Pascal Bleser
+#          
+#     This library is free software; you can redistribute it and/or modify it
+#     under the terms of the GNU Lesser General Public License as published by
+#     the Free Software Foundation; either version 2.1 of the License, or (at
+#     your option) any later version.
+#			      
+#     This library is distributed in the hope that it will be useful, but
+#     WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#     Lesser General Public License for more details.
+#      
+#     You should have received a copy of the GNU Lesser General Public
+#     License along with this library; if not, write to the Free Software
+#     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307,
+#     USA.
+#
+### BEGIN INIT INFO
+# Provides:          thumbslug
+# Required-Start:    $local_fs $remote_fs $network $time $named
+# Required-Stop:     $local_fs $remote_fs $network $time $named
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Short-Description: Thumbslug CDN proxy
+# Description:       Start the Thumbslug CDN proxy
+### END INIT INFO
+
+# Check for missing binaries (stale symlinks should not happen)
+THUMBSLUG_JAR="/home/beav/Code/thumbslug/target/thumbslug-1.0.0.jar"
+test -r "$THUMBSLUG_JAR" || { echo "$THUMBSLUG_JAR not installed"; 
+	if [ "$1" = "stop" ]; then exit 0;
+	else exit 5; fi; }
+
+
+THUMBSLUG_PID_FILE="/tmp/lock.pid"
+
+# Source function library.
+. /etc/init.d/functions
+
+# Search usable Java. We do this because various reports indicated
+# that /usr/bin/java may not always point to Java 1.5
+# see http://www.nabble.com/guinea-pigs-wanted-----Hudson-RPM-for-RedHat-Linux-td25673707.html
+for candidate in /usr/lib/jvm/java-1.6.0/bin/java /usr/lib/jvm/jre-1.6.0/bin/java /usr/lib/jvm/java-1.5.0/bin/java /usr/lib/jvm/jre-1.5.0/bin/java /usr/bin/java
+do
+  [ -x "$THUMBSLUG_JAVA_CMD" ] && break
+  THUMBSLUG_JAVA_CMD="$candidate"
+done
+
+THUMBSLUG_JAVA_OPTIONS="-Ddaemonize=true"
+JAVA_CMD="$THUMBSLUG_JAVA_CMD $THUMBSLUG_JAVA_OPTIONS -jar $THUMBSLUG_JAR"
+THUMBSLUG_USER="beav"
+
+RETVAL=0
+
+case "$1" in
+    start)
+	echo -n "Starting Thumbslug "
+	daemon --user "$THUMBSLUG_USER" --pidfile "$THUMBSLUG_PID_FILE" $JAVA_CMD $PARAMS
+	RETVAL=$?
+	if [ $RETVAL = 0 ]; then
+	    success
+	    echo > "$THUMBSLUG_PID_FILE"  # just in case we fail to find it
+            MY_SESSION_ID=`/bin/ps h -o sess -p $$`
+            # get PID
+            /bin/ps hww -u "$THUMBSLUG_USER" -o sess,ppid,pid,cmd | \
+            while read sess ppid pid cmd; do
+		[ "$ppid" = 1 ] || continue
+		# this test doesn't work because Jenkins sets a new Session ID
+                # [ "$sess" = "$MY_SESSION_ID" ] || continue
+	       	echo "$cmd" | grep $THUMBSLUG_JAR > /dev/null
+		[ $? = 0 ] || continue
+		# found a PID
+		echo $pid > "$THUMBSLUG_PID_FILE"
+	    done
+	else
+	    failure
+	fi
+	echo
+	;;
+    stop)
+	echo -n "Shutting down Thumbslug "
+	killproc -p $THUMBSLUG_PID_FILE thumbslug
+	RETVAL=$?
+	echo
+	;;
+esac
+exit $RETVAL
