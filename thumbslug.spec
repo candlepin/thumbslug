@@ -7,7 +7,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.8
+Version: 0.0.9
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 # Source0: 
@@ -42,6 +42,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}/thumbslug.jar
 
 %changelog
+* Wed Jul 13 2011 Chris Duryee (beav) <cduryee@redhat.com>
+- ant jar stuff (cduryee@redhat.com)
+- Merge commit 'ed410d78475813f9bd8e28530408c60280c7a000' (cduryee@redhat.com)
+- first cut at a thumbslug init file (cduryee@redhat.com)
+
 * Tue Jul 12 2011 Chris Duryee (beav) <cduryee@redhat.com>
 - pull the jar into the rpm (cduryee@redhat.com)
 
