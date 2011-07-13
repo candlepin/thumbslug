@@ -70,6 +70,10 @@
         </fileset>
       </classpath>
     </javac>
+    <copy todir="${target.dir}/config">
+      <fileset dir="${res.main.dir}/config" />
+    </copy>
+    <copy file="${res.main.dir}/log4j.properties" tofile="${target.dir}/log4j.properties"/>
     <copy todir="${target.dir}/resources">
       <fileset dir="${res.main.dir}" />
       <filterset begintoken="$${" endtoken="}">
@@ -81,9 +85,9 @@
 
   <target name="package" depends="compile">
     <jar destfile="${ts.jar}">
-      <fileset dir="${target.dir}/classes">
-        <include name="**"/>
-      </fileset>
+      <fileset dir="${target.dir}/classes"/>
+      <!--<fileset dir="${target.dir}"/>-->
+      <zipgroupfileset dir="${lib.dir}" includes="*.jar"/>
       <manifest>
         <attribute name="Implementation-Vendor" value="" />
         <attribute name="Manifest-Version" value="1.0" />
@@ -92,6 +96,7 @@
         <attribute name="Implementation-Version" value="" />
         <attribute name="Implementation-Title" value="The Proxy project" />
         <attribute name="Build-Jdk" value="" />
+        <attribute name="Main-Class" value="org.candlepin.thumbslug.Main" />
       </manifest>
     </jar>
     <!--

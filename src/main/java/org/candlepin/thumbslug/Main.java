@@ -111,7 +111,7 @@ public class Main {
             }
         }
         log.warn("GOT THROUGH!");
-
+        
         if (!configureSSL(config)) {
             System.exit(-3);
         }
