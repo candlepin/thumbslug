@@ -87,7 +87,8 @@ public class Main {
                 log.warn("Inside daemonized instance");
 
                 daemon.init("/tmp/lock.pid");
-                log.warn("Daemonized"); //I am not sure if it is possible to get to this line
+                // XXX I am not sure if it is possible to get to this line:
+                log.warn("Daemonized");
 
             }
             catch (Exception e) {
