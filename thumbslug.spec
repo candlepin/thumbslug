@@ -7,7 +7,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.10
+Version: 0.0.11
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 # Source0: 
@@ -42,6 +42,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}/thumbslug.jar
 
 %changelog
+* Tue Oct 11 2011 jesus m. rodriguez <jesusr@redhat.com> 0.0.11-1
+- allow dist-cvs building (jesusr@redhat.com)
+
 * Mon Oct 10 2011 jesus m. rodriguez <jesusr@redhat.com> 0.0.10-1
 - update gitignore (jbowes@redhat.com)
 - checkstyle fixup (jbowes@redhat.com)
