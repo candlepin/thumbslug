@@ -22,7 +22,6 @@ import org.candlepin.thumbslug.ssl.SslContextFactory;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.codec.http.HttpClientCodec;
-import org.jboss.netty.handler.codec.http.HttpContentDecompressor;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
@@ -51,9 +50,9 @@ class HttpClientPipelineFactory {
         
         pipeline.addLast("codec", new HttpClientCodec());
 
-        // Remove the following line if you don't want automatic content
-        // decompression.
-        pipeline.addLast("inflater", new HttpContentDecompressor());
+        // we're explicitly not decompressing here, because we don't read the body,
+        // only pass it on.
+        // pipeline.addLast("inflater", new HttpContentDecompressor());
 
         // Uncomment the following line if you don't want to handle HttpChunks.
         // pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));

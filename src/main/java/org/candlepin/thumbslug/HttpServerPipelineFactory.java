@@ -25,7 +25,6 @@ import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
@@ -67,9 +66,10 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         // Uncomment the following line if you don't want to handle HttpChunks.
         // pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
         pipeline.addLast("encoder", new HttpResponseEncoder());
-        // Remove the following line if you don't want automatic content
-        // compression.
-        pipeline.addLast("deflater", new HttpContentCompressor());
+        
+        // we're explicitly not compressing here; the CDN takes care of that.
+        // pipeline.addLast("deflater", new HttpContentCompressor());
+
         
         pipeline.addLast("logger", new HttpRequestLogger(config.getProperty("log.access")));
         

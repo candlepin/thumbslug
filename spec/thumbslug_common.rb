@@ -57,6 +57,7 @@ module ThumbslugMethods
         trap('INT') { server.stop }
         server.mount "/this_will_500", FiveHundred 
         server.mount "/trace", Trace
+        server.mount "/lorem.ipsum", GzipServlet
         wr.write "Started webrick"
       rescue
         wr.write "Error starting webrick"
@@ -131,6 +132,32 @@ class Trace < WEBrick::HTTPServlet::AbstractServlet
     headers = ""
     request.raw_header.each {|r| headers += r }
     response.body = headers
+  end
+
+end
+
+class GzipServlet < WEBrick::HTTPServlet::AbstractServlet
+
+  def do_GET(request, response)
+    response.status = 200
+    response['Content-Type'] = "text/plain"
+
+    body = ""
+    if request['Accept-Encoding'] =~ /gzip/
+      File.open("spec/data/lorem.ipsum", 'r') do |file|
+        zipped = StringIO.new(body, 'w')
+        gz = Zlib::GzipWriter.new(zipped)
+        gz.write(file.read)
+        gz.close
+        response['Content-Encoding'] = "gzip"
+      end
+    else
+      File.open("spec/data/lorem.ipsum", 'r') do |file|
+        body = file.read
+      end
+    end
+
+    response.body = body
   end
 
 end
