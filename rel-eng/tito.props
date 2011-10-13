@@ -6,4 +6,4 @@ changelog_with_email = 1
 
 [cvs]
 cvsroot = :gserver:cvs.devel.redhat.com:/cvs/dist
-branches = RHEL-6-SAM-1
+branches = RHEL-6-SE
