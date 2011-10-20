@@ -84,8 +84,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         request.setHeader("Host",
             config.getProperty("cdn.host") + ":" + config.getProperty("cdn.port"));
 
-        // XXX: can we use channel.getSink() and attach here to join the two channels
-        // instead?
         cdnChannel = channelFactory.newChannel(
             clientFactory.getPipeline(e.getChannel(),
                 config.getBoolean("cdn.ssl"),
