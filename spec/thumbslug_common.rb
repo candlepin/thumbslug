@@ -55,7 +55,9 @@ module ThumbslugMethods
       begin
         server = HTTPServer.new(config)
         trap('INT') { server.stop }
-        server.mount "/this_will_500", FiveHundred 
+        server.mount "/this_will_500", FiveHundred
+        server.mount "/this_will_400", FourHundred
+        server.mount "/subscription-cert", GetCert
         server.mount "/trace", Trace
         server.mount "/lorem.ipsum", GzipServlet
         wr.write "Started webrick"
@@ -123,6 +125,17 @@ class FiveHundred < WEBrick::HTTPServlet::AbstractServlet
 
 end
 
+
+class FourHundred < WEBrick::HTTPServlet::AbstractServlet
+
+  def do_GET(request, response)
+    response.status = 400
+    response['Content-Type'] = "text/plain"
+    response.body = 'Error! a 400 error'
+  end
+
+end
+
 class Trace < WEBrick::HTTPServlet::AbstractServlet
   #ersatz trace that implements GET, not TRACE verb
 
@@ -135,6 +148,21 @@ class Trace < WEBrick::HTTPServlet::AbstractServlet
   end
 
 end
+
+class GetCert < WEBrick::HTTPServlet::AbstractServlet
+  #pretend to return a cert
+
+  def do_GET(request, response)
+    response.status = 200
+    response['Content-Type'] = "text/plain"
+    body = ""
+    File.open("spec/data/example-subscription-cert.json", 'r') do |file|
+        body = file.read
+    end
+    response.body = body
+  end
+end
+
 
 class GzipServlet < WEBrick::HTTPServlet::AbstractServlet
 
