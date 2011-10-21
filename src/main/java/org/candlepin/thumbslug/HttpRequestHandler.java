@@ -73,6 +73,19 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     }
 
     private void requestStartReceived(MessageEvent e) throws Exception {
+        // configured to use a static ssl cert for all cdn communication. for testing only!
+        // XXX we'll have to remove this at some point and just always do it
+        if (config.getBoolean("dynamicSsl")) {
+            // XXX communication with candlepin goes here
+        }
+        else {
+            // XXX set static certs here
+        }
+        
+        beginCdnCommunication(e);
+    }
+
+    private void beginCdnCommunication(MessageEvent e) throws Exception {
         this.request = (HttpRequest) e.getMessage();
         final HttpRequest request = this.request;
         if (config.getBoolean("sendTSheader")) {
