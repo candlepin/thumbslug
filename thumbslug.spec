@@ -7,7 +7,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.13
+Version: 0.0.14
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 # Source0: 
@@ -42,6 +42,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}/thumbslug.jar
 
 %changelog
+* Wed Oct 26 2011 jesus m. rodriguez <jesusr@redhat.com> 0.0.14-1
+- respin thumbslug (jesusr@redhat.com)
+
 * Tue Oct 25 2011 jesus m. rodriguez <jesusr@redhat.com> 0.0.13-1
 - WIP ts -> candlepin code for chris to pick up (jbowes@redhat.com)
 - remove TODO about getSink (jbowes@redhat.com)
