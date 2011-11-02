@@ -42,7 +42,8 @@ class HttpCandlepinClientPipelineFactory {
         ChannelPipeline pipeline = pipeline();
         
         if (useSSL) {
-            SSLEngine engine = SslContextFactory.getCandlepinClientContext().createSSLEngine();
+            SSLEngine engine =
+                SslContextFactory.getCandlepinClientContext().createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }

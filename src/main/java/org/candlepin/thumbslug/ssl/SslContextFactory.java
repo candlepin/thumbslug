@@ -145,24 +145,27 @@ public class SslContextFactory {
     }
     
     public static SSLContext getCandlepinClientContext() {
-        // Candlepin client context, we won't be sending up an ssl cert, just verifying that of candlepin
+        // Candlepin client context, we won't be sending up an ssl cert,
+        // just verifying that of candlepin
         SSLContext clientContext = null;
         String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
         if (algorithm == null) {
             algorithm = "SunX509";
         }
-    
-            try {
-                clientContext = SSLContext.getInstance(PROTOCOL);
-                clientContext.init(null,
-                    ClientContextTrustManagerFactory.getTrustManagers(), null);
-            }
-            catch (NoSuchAlgorithmException e) {
-                throw new Error("Failed to initialize the thumbslug to candlepin ssl context", e);
-            }
-            catch (KeyManagementException e) {
-                throw new Error("Failed to initialize the thumbslug to candlepin ssl context", e);
-            }
+
+        try {
+            clientContext = SSLContext.getInstance(PROTOCOL);
+            clientContext.init(null,
+                ClientContextTrustManagerFactory.getTrustManagers(), null);
+        }
+        catch (NoSuchAlgorithmException e) {
+            throw new Error("Failed to initialize the thumbslug to candlepin ssl context",
+                e);
+        }
+        catch (KeyManagementException e) {
+            throw new Error("Failed to initialize the thumbslug to candlepin ssl context",
+                e);
+        }
 
         return clientContext;
     }
