@@ -81,7 +81,7 @@ module ThumbslugMethods
      :ssl => 'true',
      :ssl_keystore => 'spec/data/keystore-spec.p12',
      :ssl_keystore_password => 'pass',
-     :ssl_client_keystore => 'spec/data/keystore-spec.p12',
+     :ssl_client_keystore => 'spec/data/cdnclient.pem',
      :ssl_client_keystore_password => 'pass',
      :cdn_port => '9090',
      :cdn_host => 'localhost',

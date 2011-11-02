@@ -12,6 +12,8 @@ repositories.remote << "http://www.ibiblio.org/maven2/"
 repositories.remote << "https://repository.jboss.org/nexus/content/repositories/releases/"
 # for akuma
 repositories.remote << "http://download.java.net/maven/2/"
+# for oauth
+repositories.remote << "http://oauth.googlecode.com/svn/code/maven/"
 
 require 'buildr/checkstyle'
 require 'rspec/core/rake_task'
@@ -19,6 +21,7 @@ require 'rspec/core/rake_task'
 NETTY = transitive 'org.jboss.netty:netty:jar:3.2.4.Final'
 LOG4J = 'log4j:log4j:jar:1.2.14'
 DAEMON = transitive 'com.sun.akuma:akuma:jar:1.4'
+OAUTH = transitive 'net.oauth.core:oauth-consumer:jar:20100527'
 
 JUNIT = 'junit:junit:jar:4.5'
 MOCKITO = 'org.mockito:mockito-all:jar:1.8.5'
@@ -30,8 +33,8 @@ define "thumbslug" do
   project.group = GROUP
   manifest["Implementation-Vendor"] = COPYRIGHT
   manifest["Main-Class"] = "org.candlepin.thumbslug.Main"
-  compile.with [NETTY, LOG4J, DAEMON]
-  test.compile.with [NETTY, LOG4J, DAEMON]
+  compile.with [NETTY, LOG4J, DAEMON, OAUTH]
+  test.compile.with [NETTY, LOG4J, DAEMON, OAUTH]
   test.with [JUNIT, MOCKITO]
 
   #
@@ -45,6 +48,7 @@ define "thumbslug" do
   package(:jar).merge NETTY
   package(:jar).merge LOG4J
   package(:jar).merge DAEMON
+  package(:jar).merge OAUTH
 end
 
 task :serve do

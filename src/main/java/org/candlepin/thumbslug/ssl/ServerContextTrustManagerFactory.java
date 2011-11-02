@@ -48,9 +48,7 @@ public class ServerContextTrustManagerFactory extends TrustManagerFactorySpi {
 
         public void checkClientTrusted(
                 X509Certificate[] arg0, String arg1) throws CertificateException {
-            // Always trust - it's an example.
-            // You should do something in the real world.
-            
+                // XXX check for revoked certificates here
         }
 
         public void checkServerTrusted(

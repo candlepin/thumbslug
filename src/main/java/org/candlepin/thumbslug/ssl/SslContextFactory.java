@@ -23,6 +23,8 @@ package org.candlepin.thumbslug.ssl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
@@ -30,6 +32,8 @@ import java.security.Security;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+
+import net.oauth.signature.pem.PEMReader;
 
 import org.apache.log4j.Logger;
 
@@ -108,24 +112,56 @@ public class SslContextFactory {
     
         FileInputStream fis = null;
         try {
-            log.info("reading keystore");
+            log.info("reading thumbslug to cdn entitlement certificate (pem encoded)");
             fis = new FileInputStream(new File(keystoreUrl));
-            KeyStore ks = KeyStore.getInstance("PKCS12");
-            ks.load(fis, keystorePassword.toCharArray());
+            
+            final char[] buffer = new char[0x10000];
+            StringBuilder out = new StringBuilder();
+            Reader in = new InputStreamReader(fis, "UTF-8");
+            int read;
+            do {
+                read = in.read(buffer, 0, buffer.length);
+                if (read > 0) {
+                    out.append(buffer, 0, read);
+                }
+            } while (read >= 0);
+            
+            // split the pem into its two parts, then figure out which is
+            // the private and which is the public part
+            int endOfFirstPart = out.indexOf("\n", out.indexOf("END"));
+            String certificate = out.substring(0, endOfFirstPart);
+            String privateKey = out.substring(endOfFirstPart);
+            if (!certificate.startsWith(PEMReader.CERTIFICATE_X509_MARKER)) {
+                String tmp = privateKey;
+                privateKey = certificate;
+                certificate = tmp;
+            }
+                
+            
+            //KeyStore ks = KeyStore.getInstance("PKCS12");
+            //ks.load(fis, keystorePassword.toCharArray());
 
             // Set up key manager factory to use our key store
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
-            kmf.init(ks, keystorePassword.toCharArray());
+            //KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
+            //kmf.init(ks, keystorePassword.toCharArray());
 
+            PEMx509KeyManager [] managers = new PEMx509KeyManager[1];
+            managers[0] = new PEMx509KeyManager();
+            managers[0].addPEM(certificate, privateKey);
+            
+            
             // Initialize the SSLContext to work with our key managers.
             clientContext = SSLContext.getInstance(PROTOCOL);
             clientContext.init(
-                    kmf.getKeyManagers(),
+                    // kmf.getKeyManagers(),
+                    managers,
                     ClientContextTrustManagerFactory.getTrustManagers(), null);
             
+            log.info("SSL context initialized!");
 
         }
         catch (Exception e) {
+            log.error("Unable to load pem file!", e);
             throw new Error(
                     "Failed to initialize the client-side SSLContext", e);
         }
