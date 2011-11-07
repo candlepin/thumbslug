@@ -19,6 +19,7 @@ import static org.jboss.netty.channel.Channels.*;
 import javax.net.ssl.SSLEngine;
 
 import org.candlepin.thumbslug.ssl.SslContextFactory;
+import org.candlepin.thumbslug.ssl.SslPemException;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.codec.http.HttpClientCodec;
@@ -36,14 +37,12 @@ class HttpClientPipelineFactory {
     }
 
     public ChannelPipeline getPipeline(Channel client, boolean useSSL,
-        boolean keepAlive)
-        throws Exception {
+        boolean keepAlive, String pem) throws SslPemException {
         ChannelPipeline pipeline = pipeline();
         
         if (useSSL) {
             SSLEngine engine = SslContextFactory.getClientContext(
-                config.getProperty("ssl.client.keystore"),
-                config.getProperty("ssl.client.keystore.password")).createSSLEngine();
+                pem).createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }

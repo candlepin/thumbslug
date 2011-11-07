@@ -16,9 +16,20 @@ package org.candlepin.thumbslug;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.InetSocketAddress;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
 
 import org.apache.log4j.Logger;
+import org.candlepin.thumbslug.HttpCandlepinClient.CandlepinClientResponseHandler;
+import org.candlepin.thumbslug.ssl.SslPemException;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
@@ -28,8 +39,13 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpResponse;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
  * HttpRequestHandler
@@ -65,29 +81,163 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
         if (!readingChunks) {
-            requestStartReceived(e);
+            requestStartReceived(ctx, e);
         }
         else {
             requestChunkReceived(e);
         }
     }
 
-    private void requestStartReceived(MessageEvent e) throws Exception {
+    // we need a java.security.cert rather than a javax one, so we can read extensions.
+    public static X509Certificate convertCertificate(
+        javax.security.cert.X509Certificate cert) {
+        String errMsg = "Unable to convert x509 certificate";
+        try {
+            byte[] encoded = cert.getEncoded();
+            ByteArrayInputStream bis = new ByteArrayInputStream(encoded);
+            java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory
+                .getInstance("X.509");
+            return (java.security.cert.X509Certificate) cf
+                .generateCertificate(bis);
+        }
+        catch (java.security.cert.CertificateEncodingException e) {
+            log.error(errMsg, e);
+        }
+        catch (javax.security.cert.CertificateEncodingException e) {
+            log.error(errMsg, e);
+        }
+        catch (java.security.cert.CertificateException e) {
+            log.error(errMsg, e);
+        }
+        return null;
+    }
+    
+    private String getSubscriptionId(SslHandler handler) {
+        try {
+            X509Certificate cert = convertCertificate(
+                handler.getEngine().getSession().getPeerCertificateChain()[0]);
+            
+            // order number OID.
+            byte[] raw = cert.getExtensionValue("1.3.6.1.4.1.2312.9.4.2");
+            
+            String subId = DerDecoder.parseDerUtf8String(raw);
+            if (subId != null) {
+                subId = subId.trim();
+            }
+            return subId;
+        }
+        catch (SSLPeerUnverifiedException e) {
+            // This isn't going to happen here, afaik.
+            log.error("Unverified peer!", e);
+        }
+        return null;
+    }
+    
+    private void requestStartReceived(final ChannelHandlerContext ctx, final MessageEvent e)
+        throws Exception {
         // configured to use a static ssl cert for all cdn communication. for testing only!
         // XXX we'll have to remove this at some point and just always do it
-        if (config.getBoolean("dynamicSsl")) {
-            // XXX communication with candlepin goes here
+       
+        // prevent any more messages until we are connected to the cdn.
+        e.getChannel().setReadable(false);
+
+        if (config.getBoolean("ssl.client.dynamicSsl")) {
+            
+            String subscriptionId = getSubscriptionId(
+                ctx.getChannel().getPipeline().get(SslHandler.class));
+            
+            if (subscriptionId == null) {
+                log.error("unreadable subscription id");
+                sendResponseToClient(ctx, HttpResponseStatus.UNAUTHORIZED);
+                
+                return;
+            }
+            
+            HttpCandlepinClient client = new HttpCandlepinClient(config,
+                new CandlepinClientResponseHandler() {
+                    @Override
+                    public void onResponse(String buffer) throws Exception {
+                        beginCdnCommunication(ctx, e, buffer);
+                    }
+                    
+                    @Override
+                    public void onError(Throwable reason) {
+                        log.error("Error talking to candlepin", reason);
+                        sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
+                    }
+                    
+                    @Override
+                    public void onNotFound() {
+                        log.info("Subscription id not found on candlepin");
+                        sendResponseToClient(ctx, HttpResponseStatus.UNAUTHORIZED);
+                    }
+
+                    @Override
+                    public void onOtherResponse(int code) {
+                        log.info("Unexpected response code from candlepin: ");
+                        sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
+                    }
+
+                });
+            
+            client.getEntitlementCertificate(subscriptionId);
         }
         else {
-            // XXX set static certs here
+            String pem = "";
+            FileInputStream fis = null;
+            String errorMsg = "Failed to read static client PEM file";
+            try {
+                fis = new FileInputStream(
+                    new File(config.getProperty("ssl.client.keystore")));
+                
+                final char[] buffer = new char[0x10000];
+                StringBuilder out = new StringBuilder();
+                Reader in = new InputStreamReader(fis, "UTF-8");
+                int read;
+                do {
+                    read = in.read(buffer, 0, buffer.length);
+                    if (read > 0) {
+                        out.append(buffer, 0, read);
+                    }
+                } while (read >= 0);
+                
+                pem = out.toString();
+            }
+            catch (Exception exception) {
+                throw new Error(errorMsg, exception);
+            }
+            finally {
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    }
+                    catch (IOException exception) {
+                        throw new Error(errorMsg, exception);
+                    }
+                }
+            }
+            
+            beginCdnCommunication(ctx, e, pem);
         }
-        
-        beginCdnCommunication(e);
     }
 
-    private void beginCdnCommunication(MessageEvent e) throws Exception {
+    private void sendResponseToClient(ChannelHandlerContext ctx,
+        HttpResponseStatus status) {
+        HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
+        ChannelFuture future = ctx.getChannel().write(response);
+        future.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                future.getChannel().close();
+            }
+        });
+    }
+
+    private void beginCdnCommunication(ChannelHandlerContext ctx, MessageEvent e,
+        String pem) throws Exception {
         this.request = (HttpRequest) e.getMessage();
         final HttpRequest request = this.request;
+        final Channel inbound = e.getChannel();
         if (config.getBoolean("sendTSheader")) {
             request.addHeader("X-Forwarded-By", "Thumbslug v1.0");
         }
@@ -97,10 +247,15 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         request.setHeader("Host",
             config.getProperty("cdn.host") + ":" + config.getProperty("cdn.port"));
 
-        cdnChannel = channelFactory.newChannel(
-            clientFactory.getPipeline(e.getChannel(),
-                config.getBoolean("cdn.ssl"),
-                isKeepAlive(request)));
+        try {
+            cdnChannel = channelFactory.newChannel(
+                clientFactory.getPipeline(e.getChannel(),
+                    config.getBoolean("cdn.ssl"),
+                    isKeepAlive(request), pem));
+        }
+        catch (SslPemException p) {
+            sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
+        }
         
         ChannelFuture future = cdnChannel.connect(
             new InetSocketAddress(config.getProperty("cdn.host"),
@@ -109,6 +264,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             public void operationComplete(final ChannelFuture future)
                 throws Exception {
                 future.getChannel().write(request);
+                inbound.setReadable(true);
             }
         });
 
@@ -130,7 +286,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
         throws Exception {
-        log.error(e.getCause());
+        log.error("Exception caught!", e.getCause());
         e.getChannel().close();
     }
 }

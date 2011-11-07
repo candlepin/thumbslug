@@ -25,6 +25,8 @@ import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
 import org.candlepin.thumbslug.ssl.SslContextFactory;
 import org.candlepin.thumbslug.ssl.SslKeystoreException;
@@ -68,11 +70,27 @@ public class Main {
         } 
     }
     
+    private static void configureLogging(String fileName) {
+        try {
+            Layout layout = Logger.getRootLogger().getAppender("RootAppender").getLayout();
+            FileAppender fileAppender = new FileAppender(layout, fileName);
+            Logger.getRootLogger().addAppender(fileAppender);
+        }
+        catch (IOException e) {
+            // if we error here, we'll just end up logging the accesses to the standard
+            // log output, which is ok.
+            log.error("unable to open access.log for writing!", e);
+        }
+    }
+    
     /**
      * @param args
      */
     public static void main(String[] args) {
         Config config = new Config();
+        
+        configureLogging(config.getProperty("log.error"));
+        
         int port = config.getInt("port");
         log.warn("HELLO!");
         

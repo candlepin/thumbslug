@@ -5,15 +5,20 @@ module ThumbslugMethods
 
   include WEBrick
 
-  def get(url_str, headers = nil)
+  def get(url_str, headers = nil, pem = nil)
     uri = URI.parse(url_str)
     client = Net::HTTP.new uri.host, uri.port
     if uri.scheme == 'https':
       client.use_ssl = true
       client.verify_mode = OpenSSL::SSL::VERIFY_NONE #TODO: verify server
       client.ca_file = "CA/cacert.pem"
-      client.key = OpenSSL::PKey::RSA.new(File.read("spec/data/spec/spec-client_keypair.pem"))
-      client.cert = OpenSSL::X509::Certificate.new(File.read("spec/data/spec/cert_spec-client.pem"))
+
+      if pem.nil?:
+        pem = "spec/data/spec/test-entitlement.pem"
+      end
+
+      client.key = OpenSSL::PKey::RSA.new(File.read(pem))
+      client.cert = OpenSSL::X509::Certificate.new(File.read(pem))
     end
     return client.request(Net::HTTP::Get.new(uri.path, headers))
   end
@@ -82,11 +87,13 @@ module ThumbslugMethods
      :ssl_keystore => 'spec/data/keystore-spec.p12',
      :ssl_keystore_password => 'pass',
      :ssl_client_keystore => 'spec/data/cdnclient.pem',
-     :ssl_client_keystore_password => 'pass',
+     :ssl_client_dynamic_ssl => 'false',
      :cdn_port => '9090',
      :cdn_host => 'localhost',
      :cdn_ssl => 'true',
-     :sendTSHeader => 'false'
+     :sendTSHeader => 'false',
+     :candlepin_host => 'localhost',
+     :candlepin_port => '9898',
     }
 
     params.each_pair do |key, value|
@@ -97,13 +104,16 @@ module ThumbslugMethods
                  " -Dport=" + config[:port] +
                  " -Dssl=" + config[:ssl] +
                  " -Dssl.client.keystore=" + config[:ssl_client_keystore] +
-                 " -Dssl.client.keystore.password=" + config[:ssl_client_keystore_password] +
+                 " -Dssl.client.dynamicSsl=" + config[:ssl_client_dynamic_ssl] +
                  " -Dssl.keystore=" + config[:ssl_keystore] +
                  " -Dssl.keystore.password=" + config[:ssl_keystore_password] +
                  " -Dcdn.port=" + config[:cdn_port] +
                  " -Dcdn.host=" + config[:cdn_host] +
                  " -Dcdn.ssl=" + config[:cdn_ssl] +
+                 " -Dcandlepin.host=" + config[:candlepin_host] +
+                 " -Dcandlepin.port=" + config[:candlepin_port] +
                  " -DsendTSheader=" + config[:sendTSHeader] +
+
                  " -jar " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
     pipe = IO.popen(tslug_exec_string, "w+")
     #this is perlesque
