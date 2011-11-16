@@ -8,7 +8,7 @@ GROUP = "thumbslug"
 COPYRIGHT = ""
 
 # Specify Maven 2.0 remote repositories here, like this:
-repositories.remote << "http://www.ibiblio.org/maven2/"
+repositories.remote << "http://mirrors.ibiblio.org/pub/mirrors/maven2/"
 repositories.remote << "https://repository.jboss.org/nexus/content/repositories/releases/"
 # for akuma
 repositories.remote << "http://download.java.net/maven/2/"
