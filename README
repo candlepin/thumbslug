@@ -15,19 +15,36 @@ Thumbslug is a content/entitlement proxy.
 
 To run, use `buildr serve`, or `java -jar target/thumbslug-1.0.0.jar`
 
-To run via jsvc (experimental):
-
-/usr/bin/jsvc -debug -cp thumbslug-1.0.0.jar org.candlepin.thumbslug.Daemon
-
 ^^ specifying the full path to jsvc is important, it examines argv[0]
 
 == Config Options ==
 
-port = <integer>       :: the local address to listen for requests on
-ssl = <true|false>     :: use ssl for client to thumbslug communication
+port = <integer> ................... :: the local address to listen for
+                                        requests on
+daemonize = <true|false> ........... :: daemonize thumbslug or keep in the
+                                        foreground
+ssl = <true|false> ................. :: use ssl for client to thumbslug
+                                        communication
+ssl.keystore = <string> ............ :: pkcs12 keystore for client to thumbslug
+                                        ssl verification
+ssl.keystore.password = <string> ... :: password for above
 
-cdn.port = <integer>   :: the remote cdn port to connect to
-cdn.host = <string>    :: hostname of the cdn
-cdn.ssl = <true|false> :: use ssl for connecting to the cdn
+ssl.client.dynamicSsl = <true|false> :: grab entitlement certificates from
+                                        candlepin for thumbslug to cdn
+                                        communication, or use a static one.
+ssl.client.keystore = <string> ..... :: pem formatted x509 certifcate to use
+                                        with dynamicSsl = false
 
+cdn.port = <integer> ............... :: the remote cdn port to connect to
+cdn.host = <string> ................ :: hostname of the cdn
+cdn.ssl = <true|false> ............. :: use ssl for connecting to the cdn
+cdn.sendTSheader = <true|false> .... :: add thumbslug version to cdn request
 
+log.access = <string> .............. :: client to thumbslug http access log
+log.error = <string> ............... :: debug/error log
+
+candlepin.host = <string> .......... :: candlepin host for dynamicSsl
+candlepin.port = <integer> ......... :: candlepin port
+candlepin.ssl = <true|false> ....... :: use ssl to talk to candlepin
+candlepin.oauth.key = <string> ..... :: shared secret with candlepin
+candlepin.oauth.secret = <string> .. :: shared secret password with candlepin

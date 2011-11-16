@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -238,7 +239,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         this.request = (HttpRequest) e.getMessage();
         final HttpRequest request = this.request;
         final Channel inbound = e.getChannel();
-        if (config.getBoolean("sendTSheader")) {
+        if (config.getBoolean("cdn.sendTSheader")) {
             request.addHeader("X-Forwarded-By", "Thumbslug v1.0");
         }
 
@@ -246,6 +247,17 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         // A certain CDN provider is quite picky about this.
         request.setHeader("Host",
             config.getProperty("cdn.host") + ":" + config.getProperty("cdn.port"));
+        
+        // Likewise, we have to reset the get path, just in case.
+        URI uri = new URI(request.getUri());
+        String rebuiltUri = uri.getRawPath();
+        if (uri.getRawQuery() != null) {
+            rebuiltUri += uri.getRawQuery();
+        }
+        if (uri.getRawFragment() != null) {
+            rebuiltUri += uri.getRawFragment();
+        }
+        request.setUri(rebuiltUri);
 
         try {
             cdnChannel = channelFactory.newChannel(

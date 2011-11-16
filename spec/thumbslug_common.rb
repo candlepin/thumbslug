@@ -91,7 +91,7 @@ module ThumbslugMethods
      :cdn_port => '9090',
      :cdn_host => 'localhost',
      :cdn_ssl => 'true',
-     :sendTSHeader => 'false',
+     :cdn_sendTSHeader => 'false',
      :candlepin_host => 'localhost',
      :candlepin_port => '9898',
     }
@@ -112,7 +112,7 @@ module ThumbslugMethods
                  " -Dcdn.ssl=" + config[:cdn_ssl] +
                  " -Dcandlepin.host=" + config[:candlepin_host] +
                  " -Dcandlepin.port=" + config[:candlepin_port] +
-                 " -DsendTSheader=" + config[:sendTSHeader] +
+                 " -Dcdn.sendTSheader=" + config[:cdn_sendTSHeader] +
 
                  " -jar " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
     pipe = IO.popen(tslug_exec_string, "w+")
