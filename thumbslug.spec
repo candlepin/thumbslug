@@ -7,7 +7,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.14
+Version: 0.0.15
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 # Source0: 
@@ -42,6 +42,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}/thumbslug.jar
 
 %changelog
+* Wed Nov 16 2011 jesus m. rodriguez <jesusr@redhat.com> 0.0.15-1
+- Support downloading entitlement certificates from candlepin (jbowes@redhat.com)
+- Switch to PEM format files for thumbslug to CDN connection (jbowes@redhat.com)
+
 * Wed Oct 26 2011 jesus m. rodriguez <jesusr@redhat.com> 0.0.14-1
 - respin thumbslug (jesusr@redhat.com)
 
