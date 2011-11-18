@@ -70,10 +70,6 @@
         </fileset>
       </classpath>
     </javac>
-    <copy todir="${target.dir}/config">
-      <fileset dir="${res.main.dir}/config" />
-    </copy>
-    <copy file="${res.main.dir}/log4j.properties" tofile="${target.dir}/log4j.properties"/>
     <copy todir="${target.dir}/resources">
       <fileset dir="${res.main.dir}" />
       <filterset begintoken="$${" endtoken="}">
@@ -86,7 +82,7 @@
   <target name="package" depends="compile">
     <jar destfile="${ts.jar}">
       <fileset dir="${target.dir}/classes"/>
-      <!--<fileset dir="${target.dir}"/>-->
+      <fileset dir="${target.dir}/resources"/>
       <zipgroupfileset dir="${lib.dir}" includes="*.jar"/>
       <manifest>
         <attribute name="Implementation-Vendor" value="" />
