@@ -40,6 +40,12 @@ public class Main {
     
     private static Logger log = Logger.getLogger(Main.class);
     
+    private static final int ERROR_DAEMON_INIT = -1;
+    private static final int ERROR_DAEMON_DAEMONIZE = -2;
+    private static final int ERROR_CONFIGURE_SSL = -3;
+    private static final int ERROR_NO_CONFIG = -4;
+    
+    
     // maintain a list of open channels so we can shut them down on app exit
     static final ChannelGroup ALL_CHANNELS = new DefaultChannelGroup("thumbslug");
 
@@ -76,10 +82,9 @@ public class Main {
             FileAppender fileAppender = new FileAppender(layout, fileName);
             Logger.getRootLogger().addAppender(fileAppender);
         }
-        catch (IOException e) {
-            // if we error here, we'll just end up logging the accesses to the standard
-            // log output, which is ok.
-            log.error("unable to open access.log for writing!", e);
+        catch (Exception e) {
+            log.error("unable to open error.log for writing!", e);
+            // we'll just ignore this, and allow logging to happen to the cli.
         }
     }
     
@@ -87,52 +92,50 @@ public class Main {
      * @param args
      */
     public static void main(String[] args) {
-        Config config = new Config();
+        Config config = null;
+        
+        try {
+            config = new Config();
+        }
+        catch (Exception e) {
+            log.error("Unable to load config!", e);
+            System.exit(ERROR_NO_CONFIG);
+        }
         
         configureLogging(config.getProperty("log.error"));
         
         int port = config.getInt("port");
-        log.warn("HELLO!");
-        
         boolean shouldDaemonize = config.getBoolean("daemonize");
-        
 
         Daemon daemon = new Daemon();
-        log.warn("HERE");
-
         if (daemon.isDaemonized()) {
             try {
-                log.warn("Inside daemonized instance");
-
-                daemon.init("/tmp/lock.pid");
+                daemon.init(config.getProperty("lock.file"));
                 // XXX I am not sure if it is possible to get to this line:
-                log.warn("Daemonized");
-
+                log.debug("Daemonized");
             }
             catch (Exception e) {
-                log.warn("Exception caught during daemon initialization!");
-                log.warn(e.getMessage());
-                System.exit(-1);
+                log.error("Exception caught during daemon initialization!", e);
+                System.exit(ERROR_DAEMON_INIT);
             }
         }
         else {
             if (shouldDaemonize) {
                 try {
-                    log.warn("Daemonizing..");
+                    log.debug("Daemonizing..");
                     daemon.daemonize();
-                    log.warn("Daemonized, exiting");
+                    log.debug("Daemonized, exiting");
                 }
                 catch (IOException e) {
-                    System.err.println("Unable to daemonize properly");
-                    System.exit(-2);
+                    log.error("Unable to daemonize properly", e);
+                    System.exit(ERROR_DAEMON_DAEMONIZE);
                 }
                 System.exit(0);
             }
         }
-        log.warn("GOT THROUGH!");
         
         if (!configureSSL(config)) {
-            System.exit(-3);
+            System.exit(ERROR_CONFIGURE_SSL);
         }
         
         // Configure the server.

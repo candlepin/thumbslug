@@ -19,7 +19,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -27,14 +30,14 @@ import org.apache.log4j.Logger;
  */
 public class Config {
     private Logger log = Logger.getLogger(Config.class);
+    
+    private static final String REQUIRED = "XX_REQUIRED_VALUE_XX";
 
     private static final String CONFIG_FILE = "/etc/thumbslug/thumbslug.conf";
     private static final String DEFAULT_CONFIG_RESOURCE = "config/thumbslug.conf";
     private Properties props;
     
-    private String[] defaultKeys = {"port", "ssl", "ssl.keystore", "ssl.keystore.password",
-        "cdn.port", "cdn.host", "cdn.ssl", "cdn.sendTSheader", "daemonize",
-        "cdn.dynamicSsl"};
+    private Set<Object> requiredKeys;
 
     public Config() {
 
@@ -42,18 +45,27 @@ public class Config {
         try {
             InputStream is = null;
 
-            File configFile = new File(CONFIG_FILE);
-            if (configFile.exists()) {
-                is = new FileInputStream(configFile);
-            }
-            else {
-                URL url = this.getClass().getClassLoader().getResource(
-                    DEFAULT_CONFIG_RESOURCE);
-                is = url.openStream();
-            }
+            
+            URL url = this.getClass().getClassLoader().getResource(
+                DEFAULT_CONFIG_RESOURCE);
+            is = url.openStream();
+
             props = new Properties();
 
             props.load(is);
+            
+            // figure out the keys that we need. in the resources config file,
+            // they'll be listed but not set.
+            requiredKeys = props.keySet();
+            
+
+            // override any defaults with the config file
+            File configFile = new File(CONFIG_FILE);
+            if (configFile.exists()) {
+                is = new FileInputStream(configFile);
+                props.load(is);
+                is.close();
+            }
 
             is.close();
         }
@@ -61,9 +73,24 @@ public class Config {
             throw new RuntimeException(e);
         }
         
+        log.debug("Checking for required config keys");
+        Set<String> missingKeys = new HashSet<String>();
+        for (Object key : requiredKeys) {
+            if (REQUIRED.equals(getProperty((String) key))) {
+                missingKeys.add((String) key);
+            }
+        }
+        if (missingKeys.size() > 0) {
+            String errorMessage = "Missing config values for:";
+            for (String missingKey : missingKeys) {
+                errorMessage += "\n  " + missingKey;
+            }
+            throw new Error(errorMessage);
+        }
+        
         log.info("Config values:");
-        for (String key : defaultKeys) {
-            log.info(String.format("\t%1$s : %2$s", key, getProperty(key)));
+        for (Object key : requiredKeys) {
+            log.info(String.format("\t%1$s : %2$s", key, getProperty((String) key)));
         }
     }
 

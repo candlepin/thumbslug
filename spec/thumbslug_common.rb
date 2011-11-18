@@ -94,6 +94,8 @@ module ThumbslugMethods
      :cdn_sendTSHeader => 'false',
      :candlepin_host => 'localhost',
      :candlepin_port => '9898',
+     :candlepin_oauth_key => 'thumbslug',
+     :candlepin_oauth_secret => 'shhhhh',
     }
 
     params.each_pair do |key, value|
@@ -101,6 +103,7 @@ module ThumbslugMethods
     end
 
     tslug_exec_string = "java " + 
+                 " -Ddaemonize=false" +
                  " -Dport=" + config[:port] +
                  " -Dssl=" + config[:ssl] +
                  " -Dssl.client.keystore=" + config[:ssl_client_keystore] +
@@ -113,6 +116,8 @@ module ThumbslugMethods
                  " -Dcandlepin.host=" + config[:candlepin_host] +
                  " -Dcandlepin.port=" + config[:candlepin_port] +
                  " -Dcdn.sendTSheader=" + config[:cdn_sendTSHeader] +
+                 " -Dcandlepin.oauth.key=" + config[:candlepin_oauth_key] +
+                 " -Dcandlepin.oauth.secret=" + config[:candlepin_oauth_secret] +
 
                  " -jar " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
     pipe = IO.popen(tslug_exec_string, "w+")
