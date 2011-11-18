@@ -15,8 +15,6 @@ Thumbslug is a content/entitlement proxy.
 
 To run, use `buildr serve`, or `java -jar target/thumbslug-1.0.0.jar`
 
-^^ specifying the full path to jsvc is important, it examines argv[0]
-
 == Config Options ==
 
 port = <integer> ................... :: the local address to listen for

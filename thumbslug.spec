@@ -10,19 +10,18 @@ License: GPLv2
 Version: 0.0.16
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
-# Source0: 
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Vendor: Red Hat, Inc
 BuildArch: noarch
 
-BuildRequires: ant >= 0:1.7.0
-BuildRequires: thumbslug-deps >= 0:0.0.1
+BuildRequires: ant >= 1.7.0
+BuildRequires: thumbslug-deps >= 0.0.7
 
 %define __jar_repack %{nil}
 
 %description
-fill me in
+Thumbslug is a content and entitlement proxy for on premesis Candlepin installs.
 
 %prep
 %setup -q 
