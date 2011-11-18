@@ -10,8 +10,6 @@ COPYRIGHT = ""
 # Specify Maven 2.0 remote repositories here, like this:
 repositories.remote << "http://mirrors.ibiblio.org/pub/mirrors/maven2/"
 repositories.remote << "https://repository.jboss.org/nexus/content/repositories/releases/"
-# for akuma
-repositories.remote << "http://download.java.net/maven/2/"
 # for oauth
 repositories.remote << "http://oauth.googlecode.com/svn/code/maven/"
 
@@ -20,7 +18,7 @@ require 'rspec/core/rake_task'
 
 NETTY = transitive 'org.jboss.netty:netty:jar:3.2.4.Final'
 LOG4J = 'log4j:log4j:jar:1.2.14'
-DAEMON = transitive 'com.sun.akuma:akuma:jar:1.4'
+DAEMON = transitive 'org.kohsuke:akuma:jar:1.7'
 OAUTH = transitive 'net.oauth.core:oauth-consumer:jar:20100527'
 
 JUNIT = 'junit:junit:jar:4.5'

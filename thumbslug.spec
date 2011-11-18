@@ -18,7 +18,7 @@ BuildArch: noarch
 Requires(pre): shadow-utils
 
 BuildRequires: ant >= 1.7.0
-BuildRequires: thumbslug-deps >= 0.0.7
+BuildRequires: thumbslug-deps >= 0.0.8
 
 %define __jar_repack %{nil}
 
