@@ -9,11 +9,35 @@
 
 == What? ==
 
-Thumbslug is a content/entitlement proxy.
+Thumbslug is a content/entitlement proxy. It lets your candlepin clients access
+content from the upstream cdn using locally granted entitlement certificates.
 
 == How? ==
 
-To run, use `buildr serve`, or `java -jar target/thumbslug-1.0.0.jar`
+To run from source, use `buildr serve`,
+or `java -jar target/thumbslug-1.0.0.jar`
+
+If you've installed via the rpm, you can run it as a regular system service, using 'service' or 'chkconfig'.
+
+== Initial Configuration ==
+
+You'll need to do a bit of setup first, before thumbslug will work.
+ - Create a pkcs keystore containing a cert/private key for thumbslug to use
+   to talk to its clients, and sign it with a CA that your clients will know.
+   Place this keystore in /etc/thumbslug/server_keystore.p12
+ - set the value of ssl.keystore.password in /etc/thumbslug/thumbslug.conf to
+   match the password on the above keystore.
+ - Set up a shared secret betweeen candlepin and thumbslug.
+   In /etc/candlepin/candlepin.conf, set
+   candlepin.auth.oauth.consumer.thumbslug.secret = <SECRET>
+   In /etc/thumbslug/thumbslug.conf, set
+   candlepin.oauth.secret = <SECRET>
+
+That's it!
+
+This assumes your candlepin is running on the same host as thumbslug. If that's
+not the case, you'll need to set some more config values. Check the 'Config
+Options' section below, and the contents of /etc/thumbslug/thumbslug.conf.
 
 == Config Options ==
 

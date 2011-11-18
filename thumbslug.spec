@@ -39,6 +39,8 @@ install -d -m 755 $RPM_BUILD_ROOT/%{_initddir}
 install -m 755 thumbslug.init $RPM_BUILD_ROOT/%{_initddir}/%{name}
 
 install -d -m 755 $RPM_BUILD_ROOT/%{_sysconfdir}/thumbslug
+install -m 640 thumbslug.conf \
+            $RPM_BUILD_ROOT/%{_sysconfdir}/thumbslug/thumbslug.conf
 
 install -d -m 775 $RPM_BUILD_ROOT/%{_var}/log/thumbslug
 
@@ -60,7 +62,7 @@ exit 0
 %{_initddir}/%{name}
 
 %dir %{_sysconfdir}/thumbslug
-#%config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
+%config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
 
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/thumbslug.jar
