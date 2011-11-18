@@ -70,8 +70,8 @@ public class Main {
             return true;
         }
         catch (SslKeystoreException e) {
-            System.err.println("Unable to load the ssl keystore. " +
-                "Check that ssl.keystore and ssl.keystore.password are set correctly.");
+            log.error("Unable to load the ssl keystore. " +
+                "Check that ssl.keystore and ssl.keystore.password are set correctly.", e);
             return false;
         } 
     }
