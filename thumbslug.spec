@@ -15,6 +15,8 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Vendor: Red Hat, Inc
 BuildArch: noarch
 
+Requires(pre): shadow-utils
+
 BuildRequires: ant >= 1.7.0
 BuildRequires: thumbslug-deps >= 0.0.7
 
@@ -33,17 +35,39 @@ ant -Dlibdir=/usr/share/thumbslug/lib/ clean package
 install -d -m 755 $RPM_BUILD_ROOT/%{_datadir}/%{name}/
 install -m 644 target/%{name}.jar $RPM_BUILD_ROOT/%{_datadir}/%{name}
 
-install -d -m 755 $RPM_BUILD_ROOT/%{_sysconfdir}/init.d
-install -m 755 thumbslug.init $RPM_BUILD_ROOT/%{_sysconfdir}/init.d/%{name}
+install -d -m 755 $RPM_BUILD_ROOT/%{_initddir}
+install -m 755 thumbslug.init $RPM_BUILD_ROOT/%{_initddir}/%{name}
+
+install -d -m 755 $RPM_BUILD_ROOT/%{_sysconfdir}/thumbslug
+
+install -d -m 775 $RPM_BUILD_ROOT/%{_var}/log/thumbslug
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+
+%pre
+getent group thumbslug >/dev/null || groupadd -r thumbslug
+getent passwd thumbslug >/dev/null || \
+    useradd -r -g thumbslug -d %{_datadir}/%{name} -s /sbin/nologin \
+    -c "thumbslug content and entitlement proxy" thumbslug 
+exit 0
+
 %files
+%defattr(-, root, thumbslug)
 %doc README
-%{_sysconfdir}/init.d/%{name}
+%{_initddir}/%{name}
+
+%dir %{_sysconfdir}/thumbslug
 #%config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
+
+%dir %{_datadir}/%{name}
 %{_datadir}/%{name}/thumbslug.jar
+
+%dir %{_var}/log/thumbslug
+%ghost %attr(660, thumbslug, thumbslug) %{_var}/run/thumbslug.pid
+
 
 %changelog
 * Wed Nov 16 2011 jesus m. rodriguez <jesusr@redhat.com> 0.0.16-1

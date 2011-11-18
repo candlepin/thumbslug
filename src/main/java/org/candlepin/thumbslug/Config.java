@@ -23,14 +23,10 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 /**
  * Config
  */
 public class Config {
-    private Logger log = Logger.getLogger(Config.class);
-    
     private static final String REQUIRED = "XX_REQUIRED_VALUE_XX";
 
     private static final String CONFIG_FILE = "/etc/thumbslug/thumbslug.conf";
@@ -73,7 +69,6 @@ public class Config {
             throw new RuntimeException(e);
         }
         
-        log.debug("Checking for required config keys");
         Set<String> missingKeys = new HashSet<String>();
         for (Object key : requiredKeys) {
             if (REQUIRED.equals(getProperty((String) key))) {
@@ -86,11 +81,6 @@ public class Config {
                 errorMessage += "\n  " + missingKey;
             }
             throw new Error(errorMessage);
-        }
-        
-        log.info("Config values:");
-        for (Object key : requiredKeys) {
-            log.info(String.format("\t%1$s : %2$s", key, getProperty((String) key)));
         }
     }
 
