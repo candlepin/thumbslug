@@ -33,10 +33,15 @@ ant -Dlibdir=/usr/share/thumbslug/lib/ clean package
 install -d -m 755 $RPM_BUILD_ROOT/%{_datadir}/%{name}/
 install -m 644 target/%{name}.jar $RPM_BUILD_ROOT/%{_datadir}/%{name}
 
+install -d -m 755 $RPM_BUILD_ROOT/%{_sysconfdir}/init.d
+install -m 755 thumbslug.init $RPM_BUILD_ROOT/%{_sysconfdir}/init.d/%{name}
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
+%doc README
+%{_sysconfdir}/init.d/%{name}
 #%config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
 %{_datadir}/%{name}/thumbslug.jar
 
