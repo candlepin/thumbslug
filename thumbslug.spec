@@ -69,6 +69,7 @@ exit 0
 
 %dir %{_var}/log/thumbslug
 %ghost %attr(660, thumbslug, thumbslug) %{_var}/run/thumbslug.pid
+%ghost %attr(660, thumbslug, thumbslug) %{_var}/lock/subsys/thumbslug
 
 
 %changelog
