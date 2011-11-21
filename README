@@ -39,6 +39,9 @@ This assumes your candlepin is running on the same host as thumbslug. If that's
 not the case, you'll need to set some more config values. Check the 'Config
 Options' section below, and the contents of /etc/thumbslug/thumbslug.conf.
 
+You'll also have to configure your clients to talk to thumbslug. set baseurl in
+rhsm.conf to match your thumbslug host/port.
+
 == Config Options ==
 
 port = <integer> ................... :: the local address to listen for
