@@ -56,6 +56,25 @@ getent passwd thumbslug >/dev/null || \
     -c "thumbslug content and entitlement proxy" thumbslug 
 exit 0
 
+
+%post
+/sbin/chkconfig --add %{name}
+
+
+%postun common
+if [ "$1" -ge "1" ] ; then
+    /sbin/service %{name} condrestart >/dev/null 2>&1 || :
+fi
+
+
+%preun
+if [ $1 -eq 0 ] ; then
+    /sbin/service %{name} stop >/dev/null 2>&1
+    /sbin/chkconfig --del %{name}
+fi
+
+
+
 %files
 %defattr(-, root, thumbslug)
 %doc README

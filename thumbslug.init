@@ -58,6 +58,19 @@ stop() {
 	echo
 }
 
+status_q() {
+    status &> /dev/null
+    return $?
+}
+
+condrestart() {
+    if status_q; then
+        restart
+    else
+        RETVAL=0
+    fi
+}
+
 case "$1" in
     start)
     start
@@ -69,11 +82,14 @@ case "$1" in
     stop
     start
     ;;
+    condrestart)
+    condrestart
+    ;;
     status)
     status "thumbslug"
     ;;
     *)
-	echo $"Usage: $0 {start|stop|status|restart}"
+	echo $"Usage: $0 {start|stop|status|condrestart|restart}"
 	exit 2
 esac
 exit $RETVAL
