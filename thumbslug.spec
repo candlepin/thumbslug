@@ -61,7 +61,7 @@ exit 0
 /sbin/chkconfig --add %{name}
 
 
-%postun common
+%postun
 if [ "$1" -ge "1" ] ; then
     /sbin/service %{name} condrestart >/dev/null 2>&1 || :
 fi
