@@ -7,7 +7,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.16
+Version: 0.0.17
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -92,6 +92,21 @@ fi
 
 
 %changelog
+* Wed Nov 23 2011 James Bowes <jbowes@redhat.com> 0.0.17-1
+- add rpm scriptlets for init script (jbowes@redhat.com)
+- add a note about client configuration in the readme (jbowes@redhat.com)
+- update to latest akuma (jbowes@redhat.com)
+- change lock file (jbowes@redhat.com)
+- print ssl error to log file (jbowes@redhat.com)
+- fix ant packaging (jbowes@redhat.com)
+- add restart and status init targets (jbowes@redhat.com)
+- Add config file for etc (jbowes@redhat.com)
+- Set up thumbslug user (jbowes@redhat.com)
+- update spec to install init file (jbowes@redhat.com)
+- Allow overriding config values from thumbslug.conf (jbowes@redhat.com)
+- fill in spec description (jbowes@redhat.com)
+- update config documentation (jbowes@redhat.com)
+
 * Wed Nov 16 2011 jesus m. rodriguez <jesusr@redhat.com> 0.0.16-1
 - ibiblio moved. (jesusr@redhat.com)
 
