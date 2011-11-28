@@ -7,7 +7,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.17
+Version: 0.0.18
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -92,6 +92,9 @@ fi
 
 
 %changelog
+* Mon Nov 28 2011 James Bowes <jbowes@redhat.com> 0.0.18-1
+- Add chkconfig initscript lines (jbowes@redhat.com)
+
 * Wed Nov 23 2011 James Bowes <jbowes@redhat.com> 0.0.17-1
 - add rpm scriptlets for init script (jbowes@redhat.com)
 - add a note about client configuration in the readme (jbowes@redhat.com)
