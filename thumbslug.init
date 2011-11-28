@@ -1,4 +1,6 @@
 #!/bin/sh
+# chkconfig: - 86 14
+# description: startup script for Thumbslug
 #
 #     statup script for Thumbslug
 #     Adapted from Jenkins startup script by Pascal Bleser
