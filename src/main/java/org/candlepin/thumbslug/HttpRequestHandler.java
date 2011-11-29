@@ -14,23 +14,12 @@
  */
 package org.candlepin.thumbslug;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.*;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.security.cert.X509Certificate;
-
-import javax.net.ssl.SSLPeerUnverifiedException;
-
-import org.apache.log4j.Logger;
 import org.candlepin.thumbslug.HttpCandlepinClient.CandlepinClientResponseHandler;
 import org.candlepin.thumbslug.ssl.SslPemException;
+
+import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
@@ -47,6 +36,18 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
 
 /**
  * HttpRequestHandler
@@ -133,6 +134,22 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         }
         return null;
     }
+
+    private String getEntitlementId(SslHandler handler) {
+        try {
+            X509Certificate cert = convertCertificate(
+                handler.getEngine().getSession().getPeerCertificateChain()[0]);
+
+            String entitlementId = cert.getSubjectX500Principal().getName().split("=")[1];
+            return entitlementId;
+        }
+        catch (SSLPeerUnverifiedException e) {
+            // This isn't going to happen here, afaik.
+            log.error("Unverified peer!", e);
+        }
+        return null;
+    }
+
     
     private void requestStartReceived(final ChannelHandlerContext ctx, final MessageEvent e)
         throws Exception {
@@ -144,7 +161,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
         if (config.getBoolean("ssl.client.dynamicSsl")) {
             
-            String subscriptionId = getSubscriptionId(
+            final String subscriptionId = getSubscriptionId(
                 ctx.getChannel().getPipeline().get(SslHandler.class));
             
             if (subscriptionId == null) {
@@ -154,11 +171,16 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                 return;
             }
             
+            // Grab the entitlement UUID
+            String entitlementUuid = getEntitlementId(
+                ctx.getChannel().getPipeline().get(SslHandler.class));
+
             HttpCandlepinClient client = new HttpCandlepinClient(config,
                 new CandlepinClientResponseHandler() {
                     @Override
                     public void onResponse(String buffer) throws Exception {
-                        beginCdnCommunication(ctx, e, buffer);
+                        log.debug("Buffer for /entitlements call :" + buffer);
+                        retrieveUpstreamCertificate(ctx, e, subscriptionId);
                     }
                     
                     @Override
@@ -169,7 +191,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                     
                     @Override
                     public void onNotFound() {
-                        log.info("Subscription id not found on candlepin");
+                        log.error("Subscription cert has been revoked!");
                         sendResponseToClient(ctx, HttpResponseStatus.UNAUTHORIZED);
                     }
 
@@ -180,8 +202,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                     }
 
                 });
-            
-            client.getEntitlementCertificate(subscriptionId);
+
+            client.verifyEntitlementUuid(entitlementUuid);
         }
         else {
             String pem = "";
@@ -220,6 +242,38 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             
             beginCdnCommunication(ctx, e, pem);
         }
+    }
+
+    private void retrieveUpstreamCertificate(final ChannelHandlerContext ctx,
+        final MessageEvent e, String subscriptionId) {
+        HttpCandlepinClient client = new HttpCandlepinClient(config,
+            new CandlepinClientResponseHandler() {
+                @Override
+                public void onResponse(String buffer) throws Exception {
+                    beginCdnCommunication(ctx, e, buffer);
+                }
+
+                @Override
+                public void onError(Throwable reason) {
+                    log.error("Error talking to candlepin", reason);
+                    sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
+                }
+
+                @Override
+                public void onNotFound() {
+                    log.info("Subscription id not found on candlepin");
+                    sendResponseToClient(ctx, HttpResponseStatus.UNAUTHORIZED);
+                }
+
+                @Override
+                public void onOtherResponse(int code) {
+                    log.info("Unexpected response code from candlepin: ");
+                    sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
+                }
+
+            });
+
+        client.getSubscriptionCertificate(subscriptionId);
     }
 
     private void sendResponseToClient(ChannelHandlerContext ctx,

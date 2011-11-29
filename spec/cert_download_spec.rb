@@ -98,6 +98,19 @@ describe 'Certificate download from candlepin' do
     end
   end
 
+  it 'returns a 401 for a revoked certificate' do
+    cpin_proc = create_candlepin(Cert)
+
+    begin
+      response = get('https://127.0.0.1:8088/lorem.ipsum', headers = nil,
+                    pem = 'spec/data/spec/revoked-cert.pem')
+      response.code.should == '401'
+    ensure
+      Process.kill('INT', cpin_proc)
+      Process.wait(cpin_proc)
+    end
+  end
+
 end
 
 include WEBrick
@@ -136,6 +149,7 @@ def create_candlepin(cert_handler, params = {})
         # NOTE: this is the id hardcoded into our test cert.
         sub_id = 'ff808081338d898a01338d89eccc0097'
         server.mount "/candlepin/subscription/#{sub_id}/cert", cert_handler
+        server.mount "/candlepin/entitlements/ff808081338d898a01338f0247572038", ConsumerCheck
         wr.write "Started webrick"
       rescue Exception => e
         wr.write "Error starting webrick:\n"
@@ -185,3 +199,19 @@ class Garbage < WEBrick::HTTPServlet::AbstractServlet
   end
 end
 
+class ConsumerCheck < WEBrick::HTTPServlet::AbstractServlet
+
+  def do_GET(request, response)
+    if request.request_uri.path.split('/')[-1] == "ff808081338d898a01338f0247572038"
+        response.status = 200
+        response['Content-Type'] = "text/plain"
+        #the TS code does not care about the body, only the response status
+        response.body = "This is an unread entitlement cert"
+    else
+        response.status = 404
+        response['Content-Type'] = "text/plain"
+        #the TS code does not care about the body, only the response status
+        response.body = "no cert here"
+    end
+  end
+end
