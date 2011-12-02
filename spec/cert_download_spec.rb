@@ -148,7 +148,7 @@ def create_candlepin(cert_handler, params = {})
         trap('INT') { server.stop }
         # NOTE: this is the id hardcoded into our test cert.
         sub_id = 'ff808081338d898a01338d89eccc0097'
-        server.mount "/candlepin/subscription/#{sub_id}/cert", cert_handler
+        server.mount "/candlepin/subscriptions/#{sub_id}/cert", cert_handler
         server.mount "/candlepin/entitlements/ff808081338d898a01338f0247572038", ConsumerCheck
         wr.write "Started webrick"
       rescue Exception => e

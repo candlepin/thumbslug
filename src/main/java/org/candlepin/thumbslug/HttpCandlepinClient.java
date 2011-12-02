@@ -189,7 +189,7 @@ class HttpCandlepinClient {
     }
 
     private void onSubscriptionCertificate(Channel channel, String subscriptionId) {
-        String url = String.format("http%s://%s:%s/candlepin/subscription/%s/cert",
+        String url = String.format("http%s://%s:%s/candlepin/subscriptions/%s/cert",
             useSSL ? "s" : "", candlepinHost, candlepinPort, subscriptionId);
 
         onConnectedToCandlepin(channel, url);
