@@ -70,8 +70,6 @@ class HttpCandlepinClient {
     private String oAuthKey;
     private String oAuthSecret;
     
-    private boolean errorRaised;
-    
     public HttpCandlepinClient(Config config,
         CandlepinClientResponseHandler responseHandler) {
         this.responseHandler = responseHandler;
@@ -82,8 +80,6 @@ class HttpCandlepinClient {
         
         oAuthKey = config.getProperty("candlepin.oauth.key");
         oAuthSecret = config.getProperty("candlepin.oauth.secret");
-
-        errorRaised = false;
     }
 
     private ChannelPipeline getPipeline() {
@@ -121,13 +117,14 @@ class HttpCandlepinClient {
             log.debug("candlepin response: \n" + buffer);
             
             if (response.getStatus().equals(HttpResponseStatus.NOT_FOUND)) {
-                errorRaised = true;
                 responseHandler.onNotFound();
             }
             else if (!response.getStatus().equals(HttpResponseStatus.OK) &&
                 !response.getStatus().equals(HttpResponseStatus.PARTIAL_CONTENT)) {
-                errorRaised = true;
                 responseHandler.onOtherResponse(response.getStatus().getCode());
+            }
+            else {
+                responseHandler.onResponse(buffer);
             }
             
         }
@@ -135,7 +132,6 @@ class HttpCandlepinClient {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
             throws Exception {
-            errorRaised = true;
             responseHandler.onError(e.getCause());
         }
     }
@@ -185,17 +181,17 @@ class HttpCandlepinClient {
         String url = String.format("http%s://%s:%s/candlepin/entitlements/%s",
             useSSL ? "s" : "", candlepinHost, candlepinPort, entitlementUuid);
 
-        onConnectedToCandlepin(channel, url);
+        onConnectedToCandlepin(channel, url, false);
     }
 
     private void onSubscriptionCertificate(Channel channel, String subscriptionId) {
         String url = String.format("http%s://%s:%s/candlepin/subscriptions/%s/cert",
             useSSL ? "s" : "", candlepinHost, candlepinPort, subscriptionId);
 
-        onConnectedToCandlepin(channel, url);
+        onConnectedToCandlepin(channel, url, true);
     }
 
-    private void onConnectedToCandlepin(Channel channel, String url) {
+    private void onConnectedToCandlepin(Channel channel, String url, boolean textOnly) {
         // Prepare the HTTP request.
         
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
@@ -206,6 +202,9 @@ class HttpCandlepinClient {
         request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING,
             HttpHeaders.Values.GZIP);
 
+        if (textOnly) {
+            request.setHeader(HttpHeaders.Names.ACCEPT, "text/plain");
+        }
         
         OAuthConsumer consumer = new OAuthConsumer(null, oAuthKey, oAuthSecret, null);
         consumer.setProperty(OAuth.OAUTH_SIGNATURE_METHOD, OAuth.HMAC_SHA1);
@@ -235,23 +234,8 @@ class HttpCandlepinClient {
         
         // Send the HTTP request.
         channel.write(request);
-        
-        channel.getCloseFuture().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (!errorRaised) {
-                    onCandlepinConnectionClosed(future.getChannel());
-                }
-            }
-        });
     }
     
-    private void onCandlepinConnectionClosed(Channel channel) throws Exception {
-        // we're done talking to candlepin, so we have a response buffer.
-        // time to pass it on!
-        responseHandler.onResponse(buffer);
-    }
- 
     /**
      * CandlepinClientResponseHandler
      */
