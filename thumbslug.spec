@@ -7,7 +7,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.19
+Version: 0.0.20
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -92,6 +92,10 @@ fi
 
 
 %changelog
+* Tue Dec 06 2011 James Bowes <jbowes@redhat.com> 0.0.20-1
+- Fix accept type and order of operations for candlepin communication
+  (jbowes@redhat.com)
+
 * Mon Dec 05 2011 James Bowes <jbowes@redhat.com> 0.0.19-1
 - 759607: update url for subscriptions handler (jbowes@redhat.com)
 - update readme to reference changing rhsm ca certs (jbowes@redhat.com)
