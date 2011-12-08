@@ -1,9 +1,6 @@
 #!/bin/sh
 # chkconfig: - 86 14
 # description: startup script for Thumbslug
-#
-#     statup script for Thumbslug
-#     Adapted from Jenkins startup script by Pascal Bleser
 #          
 #     This library is free software; you can redistribute it and/or modify it
 #     under the terms of the GNU Lesser General Public License as published by
@@ -21,77 +18,88 @@
 #     USA.
 #
 
-# Check for missing binaries (stale symlinks should not happen)
-THUMBSLUG_JAR="/usr/share/thumbslug/thumbslug.jar"
-test -r "$THUMBSLUG_JAR" || { echo "$THUMBSLUG_JAR not installed"; 
-	if [ "$1" = "stop" ]; then exit 0;
-	else exit 5; fi; }
-
-
-THUMBSLUG_PID_FILE="/var/run/thumbslug.pid"
-
 # Source function library.
-. /etc/init.d/functions
+. /etc/rc.d/init.d/functions
 
-THUMBSLUG_JAVA_CMD="/usr/bin/java"
+exec="java -jar /usr/share/thumbslug/thumbslug.jar"
+prog=thumbslug
+config=/etc/thumbslug/thumbslug.conf
+pidfile=/var/run/thumbslug/thumbslug.pid
 
-THUMBSLUG_JAVA_OPTIONS=""
-JAVA_CMD="$THUMBSLUG_JAVA_CMD $THUMBSLUG_JAVA_OPTIONS -jar $THUMBSLUG_JAR"
-THUMBSLUG_USER="thumbslug"
-
-RETVAL=0
+lockfile=/var/lock/subsys/$prog
 
 start() {
-	echo -n "Starting Thumbslug "
-	daemon --user "$THUMBSLUG_USER" $JAVA_CMD $PARAMS
-	RETVAL=$?
-	if [ $RETVAL = 0 ]; then
-	    success
-	else
-	    failure
-	fi
-	echo
+    [ -f /usr/share/thumbslug/thumbslug.jar ] || exit 5
+    [ -f $config ] || exit 6
+    echo -n "Starting $prog: "
+    # if not running, start it up here, usually something like "daemon $exec"
+    daemon --user thumbslug "$exec"
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && touch $lockfile
+    return $retval
 }
 
 stop() {
-	echo -n "Shutting down Thumbslug "
-	killproc -p $THUMBSLUG_PID_FILE thumbslug
-	RETVAL=$?
-	echo
+    echo -n $"Stopping $prog: "
+    killproc -p $pidfile $prog
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile
+    return $retval
 }
 
-status_q() {
-    status &> /dev/null
-    return $?
+restart() {
+    stop
+    start
 }
 
-condrestart() {
-    if status_q; then
-        restart
-    else
-        RETVAL=0
-    fi
+reload() {
+    restart
 }
+
+force_reload() {
+    restart
+}
+
+rh_status() {
+    # run checks to determine if the service is running or use generic status
+    status -p $pidfile $prog
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
 
 case "$1" in
     start)
-    start
-	;;
+        rh_status_q && exit 0
+        $1
+        ;;
     stop)
-    stop
-	;;
+        rh_status_q || exit 0
+        $1
+        ;;
     restart)
-    stop
-    start
-    ;;
-    condrestart)
-    condrestart
-    ;;
+        $1
+        ;;
+    reload)
+        rh_status_q || exit 7
+        $1
+        ;;
+    force-reload)
+        force_reload
+        ;;
     status)
-    status "thumbslug"
-    ;;
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
+        ;;
     *)
-	echo $"Usage: $0 {start|stop|status|condrestart|restart}"
-	exit 2
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+        exit 2
 esac
-exit $RETVAL
+exit $?
