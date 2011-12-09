@@ -62,36 +62,36 @@ class HttpCandlepinClient {
 
     private String buffer;
     private CandlepinClientResponseHandler responseHandler;
-    
+
     private String candlepinHost;
     private int candlepinPort;
     private boolean useSSL;
-    
+
     private String oAuthKey;
     private String oAuthSecret;
-    
+
     public HttpCandlepinClient(Config config,
         CandlepinClientResponseHandler responseHandler) {
         this.responseHandler = responseHandler;
-        
+
         candlepinHost = config.getProperty("candlepin.host");
         candlepinPort = config.getInt("candlepin.port");
         useSSL = config.getBoolean("candlepin.ssl");
-        
+
         oAuthKey = config.getProperty("candlepin.oauth.key");
         oAuthSecret = config.getProperty("candlepin.oauth.secret");
     }
 
     private ChannelPipeline getPipeline() {
         ChannelPipeline pipeline = pipeline();
-        
+
         if (useSSL) {
             SSLEngine engine =
                 SslContextFactory.getCandlepinClientContext().createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }
-        
+
         pipeline.addLast("codec", new HttpClientCodec());
 
         pipeline.addLast("inflater", new HttpContentDecompressor());
@@ -115,7 +115,7 @@ class HttpCandlepinClient {
             log.debug("candlepin response: " + response.getStatus().getCode());
             log.debug("candlepin response: " + response.getHeaders());
             log.debug("candlepin response: \n" + buffer);
-            
+
             if (response.getStatus().equals(HttpResponseStatus.NOT_FOUND)) {
                 responseHandler.onNotFound();
             }
@@ -126,21 +126,21 @@ class HttpCandlepinClient {
             else {
                 responseHandler.onResponse(buffer);
             }
-            
+
         }
-        
+
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
             throws Exception {
             responseHandler.onError(e.getCause());
         }
     }
-    
+
     public void verifyEntitlementUuid(final String entitlementUuid) {
         ChannelFactory channelFactory = new NioClientSocketChannelFactory(
             Executors.newCachedThreadPool(),
             Executors.newCachedThreadPool());
-        
+
         Channel requestChannel = channelFactory.newChannel(getPipeline());
         // Set up the event pipeline factory.
 
@@ -155,7 +155,7 @@ class HttpCandlepinClient {
             }
         });
     }
-    
+
     public void getSubscriptionCertificate(final String subscriptionId) {
         ChannelFactory channelFactory = new NioClientSocketChannelFactory(
             Executors.newCachedThreadPool(),
@@ -193,7 +193,7 @@ class HttpCandlepinClient {
 
     private void onConnectedToCandlepin(Channel channel, String url, boolean textOnly) {
         // Prepare the HTTP request.
-        
+
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.GET, url);
         request.setHeader(HttpHeaders.Names.HOST, candlepinHost);
@@ -205,13 +205,13 @@ class HttpCandlepinClient {
         if (textOnly) {
             request.setHeader(HttpHeaders.Names.ACCEPT, "text/plain");
         }
-        
+
         OAuthConsumer consumer = new OAuthConsumer(null, oAuthKey, oAuthSecret, null);
         consumer.setProperty(OAuth.OAUTH_SIGNATURE_METHOD, OAuth.HMAC_SHA1);
         OAuthAccessor accessor = new OAuthAccessor(consumer);
 
         String errMsg = "OAuth error!";
-        
+
         try {
             OAuthMessage oAuthRequest = accessor.newRequestMessage(OAuthMessage.GET, url,
                 null);
@@ -230,12 +230,12 @@ class HttpCandlepinClient {
             // TODO Auto-generated catch block
             log.error(errMsg, e);
         }
-        
-        
+
+
         // Send the HTTP request.
         channel.write(request);
     }
-    
+
     /**
      * CandlepinClientResponseHandler
      */

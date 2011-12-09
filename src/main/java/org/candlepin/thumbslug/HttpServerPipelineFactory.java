@@ -33,20 +33,20 @@ import org.jboss.netty.handler.ssl.SslHandler;
  * HttpServerPipelineFactory
  */
 public class HttpServerPipelineFactory implements ChannelPipelineFactory {
-    
+
     private Config config;
     private ChannelFactory channelFactory;
     private HttpClientPipelineFactory httpClientPipelineFactory;
-    
+
     public HttpServerPipelineFactory(Config config) {
         this.config = config;
-        
+
         channelFactory = new NioClientSocketChannelFactory(
             Executors.newCachedThreadPool(),
             Executors.newCachedThreadPool());
         httpClientPipelineFactory = new HttpClientPipelineFactory(config);
     }
-        
+
     @Override
     public ChannelPipeline getPipeline() throws Exception {
         // Create a default pipeline implementation.
@@ -61,18 +61,18 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
             engine.setNeedClientAuth(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }
-        
+
         pipeline.addLast("decoder", new HttpRequestDecoder());
         // Uncomment the following line if you don't want to handle HttpChunks.
         // pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
         pipeline.addLast("encoder", new HttpResponseEncoder());
-        
+
         // we're explicitly not compressing here; the CDN takes care of that.
         // pipeline.addLast("deflater", new HttpContentCompressor());
 
-        
+
         pipeline.addLast("logger", new HttpRequestLogger(config.getProperty("log.access")));
-        
+
         pipeline.addLast("handler", new HttpRequestHandler(config, channelFactory,
             httpClientPipelineFactory));
         return pipeline;

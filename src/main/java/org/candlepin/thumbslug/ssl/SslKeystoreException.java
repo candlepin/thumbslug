@@ -22,6 +22,6 @@ public class SslKeystoreException extends Exception {
     public SslKeystoreException(String message, Exception exception) {
         super(message, exception);
     }
-    
+
     private static final long serialVersionUID = 5811055699784954551L;
 }

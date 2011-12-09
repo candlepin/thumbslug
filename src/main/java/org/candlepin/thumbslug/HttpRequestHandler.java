@@ -53,14 +53,14 @@ import javax.net.ssl.SSLPeerUnverifiedException;
  * HttpRequestHandler
  */
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
-    
+
     private static Logger log = Logger.getLogger(HttpRequestHandler.class);
 
 
     private HttpRequest request;
     private boolean readingChunks;
     private Channel cdnChannel;
-  
+
     private Config config;
     private ChannelFactory channelFactory;
     private HttpClientPipelineFactory clientFactory;
@@ -72,13 +72,13 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         this.channelFactory = channelFactory;
         this.clientFactory = clientFactory;
     }
-    
+
     @Override
     public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) {
         // Add to the global list of open channels for graceful shutdown
         Main.ALL_CHANNELS.add(ctx.getChannel());
     }
-    
+
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
@@ -113,15 +113,15 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         }
         return null;
     }
-    
+
     private String getSubscriptionId(SslHandler handler) {
         try {
             X509Certificate cert = convertCertificate(
                 handler.getEngine().getSession().getPeerCertificateChain()[0]);
-            
+
             // order number OID.
             byte[] raw = cert.getExtensionValue("1.3.6.1.4.1.2312.9.4.2");
-            
+
             String subId = DerDecoder.parseDerUtf8String(raw);
             if (subId != null) {
                 subId = subId.trim();
@@ -150,27 +150,27 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         return null;
     }
 
-    
+
     private void requestStartReceived(final ChannelHandlerContext ctx, final MessageEvent e)
         throws Exception {
         // configured to use a static ssl cert for all cdn communication. for testing only!
         // XXX we'll have to remove this at some point and just always do it
-       
+
         // prevent any more messages until we are connected to the cdn.
         e.getChannel().setReadable(false);
 
         if (config.getBoolean("ssl.client.dynamicSsl")) {
-            
+
             final String subscriptionId = getSubscriptionId(
                 ctx.getChannel().getPipeline().get(SslHandler.class));
-            
+
             if (subscriptionId == null) {
                 log.error("unreadable subscription id");
                 sendResponseToClient(ctx, HttpResponseStatus.UNAUTHORIZED);
-                
+
                 return;
             }
-            
+
             // Grab the entitlement UUID
             String entitlementUuid = getEntitlementId(
                 ctx.getChannel().getPipeline().get(SslHandler.class));
@@ -182,13 +182,13 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                         log.debug("Buffer for /entitlements call :" + buffer);
                         retrieveUpstreamCertificate(ctx, e, subscriptionId);
                     }
-                    
+
                     @Override
                     public void onError(Throwable reason) {
                         log.error("Error talking to candlepin", reason);
                         sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
                     }
-                    
+
                     @Override
                     public void onNotFound() {
                         log.error("Subscription cert has been revoked!");
@@ -212,7 +212,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             try {
                 fis = new FileInputStream(
                     new File(config.getProperty("ssl.client.keystore")));
-                
+
                 final char[] buffer = new char[0x10000];
                 StringBuilder out = new StringBuilder();
                 Reader in = new InputStreamReader(fis, "UTF-8");
@@ -223,7 +223,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                         out.append(buffer, 0, read);
                     }
                 } while (read >= 0);
-                
+
                 pem = out.toString();
             }
             catch (Exception exception) {
@@ -239,7 +239,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                     }
                 }
             }
-            
+
             beginCdnCommunication(ctx, e, pem);
         }
     }
@@ -301,7 +301,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         // A certain CDN provider is quite picky about this.
         request.setHeader("Host",
             config.getProperty("cdn.host") + ":" + config.getProperty("cdn.port"));
-        
+
         // Likewise, we have to reset the get path, just in case.
         URI uri = new URI(request.getUri());
         String rebuiltUri = uri.getRawPath();
@@ -322,7 +322,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         catch (SslPemException p) {
             sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
         }
-        
+
         ChannelFuture future = cdnChannel.connect(
             new InetSocketAddress(config.getProperty("cdn.host"),
                 config.getInt("cdn.port")));

@@ -23,11 +23,11 @@ import org.apache.log4j.Logger;
  */
 public class DerDecoder {
     private static Logger log = Logger.getLogger(DerDecoder.class);
-    
+
     private DerDecoder() {
-        
+
     }
-    
+
     public static String parseDerUtf8String(byte[] encoded) {
         if (encoded == null) {
             return null;
@@ -36,7 +36,7 @@ public class DerDecoder {
         if ((encoded[0] & 0x1F) != 0x0C && (encoded[0] & 0x1F) != 0x04) {
             return null;
         }
-        
+
         int length;
         int offset;
         // decode how many bytes we have for the length of this value
@@ -48,11 +48,11 @@ public class DerDecoder {
             int octets = encoded[1] & 0x7F;
             byte[] lengthBytes = new byte[octets];
             System.arraycopy(encoded, 2, lengthBytes, 0, octets);
-            
+
             length = new BigInteger(1, lengthBytes).intValue();
             offset = 2 + octets;
         }
-        
+
         try {
             return new String(encoded, offset, length, "UTF-8");
         }

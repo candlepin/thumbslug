@@ -42,20 +42,20 @@ class HttpRequestLogger extends SimpleChannelHandler {
     private final Logger accessLog = Logger.getLogger(
         HttpRequestLogger.class.getCanonicalName() + ".accessLog");
     private final Logger log = Logger.getLogger(HttpRequestLogger.class);
-    
-    private static boolean loggingConfigured = false; 
-    
+
+    private static boolean loggingConfigured = false;
+
     // CLF. see wikipedia ;)
     private static final String DEFAULT_LOG_FORMAT =
         "%1$s - - [%2$td/%2$tb/%2$tY:%2$tT %2$tz] \"%3$s %4$s %5$s\" %6$d %7$d";
-    
+
     private String inetAddress;
     private String method;
     private String uri;
     private String protocol;
     private int status;
     private Long contentLength;
-    
+
     HttpRequestLogger(String fileName) {
         clearState();
         configureAccessLog(fileName);
@@ -66,7 +66,7 @@ class HttpRequestLogger extends SimpleChannelHandler {
     public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
         if (e instanceof MessageEvent) {
             HttpRequest request = (HttpRequest) ((MessageEvent) e).getMessage();
-            
+
             // on the off chance that this isn't an ip connection,
             // we're going to check first
             inetAddress = "-";
@@ -76,7 +76,7 @@ class HttpRequestLogger extends SimpleChannelHandler {
                 if (inetAddress.startsWith("/")) {
                     inetAddress = inetAddress.substring(1);
                 }
-                
+
             }
             // maybe this request was proxied or load balanced.
             // try and get the real originating IP
@@ -102,13 +102,13 @@ class HttpRequestLogger extends SimpleChannelHandler {
         }
         super.handleUpstream(ctx, e);
     }
-    
+
     /**
      * handleDownstream - handle the http response
-     * 
+     *
      * in both cases, we can get the status and content length from the first reply message.
      * if the reply is chunked, we have to wait till we've sent back the last response
-     * before logging, so we can get an accurate time. 
+     * before logging, so we can get an accurate time.
      */
     @Override
     public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
@@ -119,10 +119,10 @@ class HttpRequestLogger extends SimpleChannelHandler {
             Object msg = ((MessageEvent) e).getMessage();
             if (msg instanceof HttpResponse) {
                 HttpResponse response = (HttpResponse) msg;
-            
+
                 status = response.getStatus().getCode();
                 contentLength = HttpHeaders.getContentLength(response);
-                
+
                 if (!response.isChunked()) {
                     logAccess();
                     clearState();
@@ -130,7 +130,7 @@ class HttpRequestLogger extends SimpleChannelHandler {
             }
             else if (msg instanceof HttpChunk) {
                 HttpChunk chunk = (HttpChunk) msg;
-                
+
                 if (chunk.isLast()) {
                     logAccess();
                     clearState();
@@ -138,7 +138,7 @@ class HttpRequestLogger extends SimpleChannelHandler {
             }
         }
     }
-    
+
     private void clearState() {
         inetAddress = null;
         method = null;
@@ -147,7 +147,7 @@ class HttpRequestLogger extends SimpleChannelHandler {
         status = -1;
         contentLength = -1L;
     }
-    
+
     private void logAccess() {
         // We've got to use the a default locale here, so that month name is
         // formatted properly for CLF, regardless of server locale. I've chosen Canada!
@@ -157,13 +157,13 @@ class HttpRequestLogger extends SimpleChannelHandler {
                 contentLength));
         }
     }
-    
+
     private synchronized void configureAccessLog(String fileName) {
         if (loggingConfigured) {
             return;
         }
         loggingConfigured = true;
-        
+
         accessLog.setLevel(org.apache.log4j.Level.INFO);
         try {
             Layout layout = new PatternLayout("%m%n");
@@ -177,7 +177,7 @@ class HttpRequestLogger extends SimpleChannelHandler {
             log.error("unable to open access.log for writing!", e);
         }
     }
-    
+
     // for testing
     String getInetAddress() {
         return this.inetAddress;

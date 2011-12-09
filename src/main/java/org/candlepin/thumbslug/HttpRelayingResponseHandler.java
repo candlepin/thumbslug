@@ -55,14 +55,14 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
          * happening because of a misconfiguration, and we've timedout trying to connect to
          * the cdn. Thus, the client hasn't even had a chance yet to send its request up.
          * Delay sending the 502 till after the client begins a write, then shut them down.
-         */ 
+         */
         pendingException = true;
 
         //e.getCause().printStackTrace();
     }
     /**
      * This is an event *to* the client coming *from* the cdn
-     * 
+     *
      * @throws Exception - an exception
      */
     @Override
@@ -93,7 +93,7 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
             ChannelFuture future = client.write(chunk);
             if (chunk.isLast()) {
                 readingChunks = false;
-                
+
                 if (!keepAlive) {
                     future.addListener(new ChannelFutureListener() {
                         @Override
@@ -105,13 +105,13 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
             }
         }
     }
-    
-    
+
+
     /**
      * A request going *from* the client *to* the cdn.
      * At the moment we only intercept these in this class to send back a bad gateway
      * reply if needed.
-     * 
+     *
      * @throws Exception - an exception
      */
     @Override

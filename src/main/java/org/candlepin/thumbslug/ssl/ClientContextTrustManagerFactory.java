@@ -14,7 +14,7 @@
  */
 
 /*
- * Adapted from Netty example code, which is 
+ * Adapted from Netty example code, which is
  *      Copyright (C) 2008  Trustin Heuiseung Lee
  */
 
@@ -33,7 +33,7 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * ClientContextTrustManagerFactory
- * 
+ *
  * The TrustManager Provided by this class is used to verify that the CDN we are talking to
  * as a client is a valid and recognized CDN. Thus, the checkClientTrusted call will always
  * fail.
@@ -50,7 +50,7 @@ public class ClientContextTrustManagerFactory extends TrustManagerFactorySpi {
             throw new CertificateException(
                 "Using ClientContextTrustManager when acting as a server " +
                 "- programmer error!");
-            
+
         }
 
         public void checkServerTrusted(
