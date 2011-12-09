@@ -38,83 +38,81 @@ public class HttpRequestLoggerTest {
     @Test
     public void testIpAddressIsSet() throws Exception {
         HttpRequestLogger logger = new HttpRequestLogger("nofile");
-        
+
         ChannelHandlerContext ctx = mock(ChannelHandlerContext.class);
         MessageEvent e = mock(MessageEvent.class);
         DefaultHttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.GET, "/");
         when(e.getMessage()).thenReturn(request);
-        
+
         InetSocketAddress mockAddress = createIpAddress();
         when(e.getRemoteAddress()).thenReturn(mockAddress);
-        
+
         logger.handleUpstream(ctx, e);
-        
+
         assertEquals("192.168.0.3", logger.getInetAddress());
     }
-    
+
     @Test
     public void testIpAddressIsSetFromHeader() throws Exception {
         HttpRequestLogger logger = new HttpRequestLogger("nofile");
-        
+
         ChannelHandlerContext ctx = mock(ChannelHandlerContext.class);
         MessageEvent e = mock(MessageEvent.class);
         DefaultHttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.GET, "/");
         when(e.getMessage()).thenReturn(request);
-           
+
         request.addHeader("X-Forwarded-For", "192.168.0.7");
-        
+
         InetSocketAddress mockAddress = createIpAddress();
         when(e.getRemoteAddress()).thenReturn(mockAddress);
-        
+
         logger.handleUpstream(ctx, e);
-        
+
         assertEquals("192.168.0.7", logger.getInetAddress());
     }
 
     @Test
     public void testIpAddressIsSetFromHeaderWithProxyChain() throws Exception {
         HttpRequestLogger logger = new HttpRequestLogger("nofile");
-        
+
         ChannelHandlerContext ctx = mock(ChannelHandlerContext.class);
         MessageEvent e = mock(MessageEvent.class);
         DefaultHttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.GET, "/");
         when(e.getMessage()).thenReturn(request);
-           
+
         request.addHeader("X-Forwarded-For", "192.168.0.7, 24.222.0.22");
-        
+
         InetSocketAddress mockAddress = createIpAddress();
         when(e.getRemoteAddress()).thenReturn(mockAddress);
-        
+
         logger.handleUpstream(ctx, e);
-        
+
         assertEquals("192.168.0.7", logger.getInetAddress());
     }
 
     @Test
     public void testIpAddressStillUsedIfEmptyProxyHeader() throws Exception {
         HttpRequestLogger logger = new HttpRequestLogger("nofile");
-        
+
         ChannelHandlerContext ctx = mock(ChannelHandlerContext.class);
         MessageEvent e = mock(MessageEvent.class);
         DefaultHttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.GET, "/");
         when(e.getMessage()).thenReturn(request);
-           
+
         request.addHeader("X-Forwarded-For", "");
-        
+
         InetSocketAddress mockAddress = createIpAddress();
         when(e.getRemoteAddress()).thenReturn(mockAddress);
-        
+
         logger.handleUpstream(ctx, e);
-        
+
         assertEquals("192.168.0.3", logger.getInetAddress());
     }
 
-    
-    
     /**
      * @return
      * @throws UnknownHostException

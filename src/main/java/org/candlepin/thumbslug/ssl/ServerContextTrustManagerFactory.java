@@ -14,7 +14,7 @@
  */
 
 /*
- * Adapted from Netty example code, which is 
+ * Adapted from Netty example code, which is
  *      Copyright (C) 2008  Trustin Heuiseung Lee
  */
 
@@ -33,7 +33,7 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * ServerContextTrustManagerFactory
- * 
+ *
  * The TrustManager Provided by this class is used to verify that clients connecting to
  * thumbslug are valid clients. As such, you'll notice that the checkServerTrusted call
  * always fails. we don't want to use this trust manager when acting as a client to

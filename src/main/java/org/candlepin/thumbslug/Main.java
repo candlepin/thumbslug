@@ -37,15 +37,14 @@ import com.sun.akuma.Daemon;
  * Main
  */
 public class Main {
-    
+
     private static Logger log = Logger.getLogger(Main.class);
-    
+
     private static final int ERROR_DAEMON_INIT = -1;
     private static final int ERROR_DAEMON_DAEMONIZE = -2;
     private static final int ERROR_CONFIGURE_SSL = -3;
     private static final int ERROR_NO_CONFIG = -4;
-    
-    
+
     // maintain a list of open channels so we can shut them down on app exit
     static final ChannelGroup ALL_CHANNELS = new DefaultChannelGroup("thumbslug");
 
@@ -56,14 +55,14 @@ public class Main {
     /**
      * Do an initial bootstrap setup of the server SSL Context, so we can shake out any
      * errors early, and abort if needed.
-     * 
+     *
      * @param config our Config
      */
     private static boolean configureSSL(Config config) {
         if (!config.getBoolean("ssl")) {
             return true;
         }
-        
+
         try {
             SslContextFactory.getServerContext(config.getProperty("ssl.keystore"),
                 config.getProperty("ssl.keystore.password"));
@@ -73,9 +72,9 @@ public class Main {
             log.error("Unable to load the ssl keystore. " +
                 "Check that ssl.keystore and ssl.keystore.password are set correctly.", e);
             return false;
-        } 
+        }
     }
-    
+
     private static void configureLogging(String fileName) {
         try {
             Layout layout = Logger.getRootLogger().getAppender("RootAppender").getLayout();
@@ -87,13 +86,13 @@ public class Main {
             // we'll just ignore this, and allow logging to happen to the cli.
         }
     }
-    
+
     /**
      * @param args
      */
     public static void main(String[] args) {
         Config config = null;
-        
+
         try {
             config = new Config();
         }
@@ -101,9 +100,9 @@ public class Main {
             log.error("Unable to load config!", e);
             System.exit(ERROR_NO_CONFIG);
         }
-        
+
         configureLogging(config.getProperty("log.error"));
-        
+
         int port = config.getInt("port");
         boolean shouldDaemonize = config.getBoolean("daemonize");
 
@@ -133,11 +132,11 @@ public class Main {
                 System.exit(0);
             }
         }
-        
+
         if (!configureSSL(config)) {
             System.exit(ERROR_CONFIGURE_SSL);
         }
-        
+
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
@@ -152,15 +151,14 @@ public class Main {
         log.warn("Running Thumbslug on port " + port);
 
         ALL_CHANNELS.add(channel);
-        
-        //intercept shutdown signal from VM and shut-down gracefully. 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() { 
-            public void run() { 
+
+        //intercept shutdown signal from VM and shut-down gracefully.
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
                 log.warn("Shutting down...");
                 ChannelGroupFuture future = ALL_CHANNELS.close();
                 future.awaitUninterruptibly();
-            } 
-        }, "shutdownHook")); 
+            }
+        }, "shutdownHook"));
     }
-
 }

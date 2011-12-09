@@ -30,7 +30,7 @@ import org.jboss.netty.handler.ssl.SslHandler;
  */
 class HttpClientPipelineFactory {
     private Config config;
-    
+
     public HttpClientPipelineFactory(Config config) {
         this.config = config;
 
@@ -39,14 +39,14 @@ class HttpClientPipelineFactory {
     public ChannelPipeline getPipeline(Channel client, boolean useSSL,
         boolean keepAlive, String pem) throws SslPemException {
         ChannelPipeline pipeline = pipeline();
-        
+
         if (useSSL) {
             SSLEngine engine = SslContextFactory.getClientContext(
                 pem).createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }
-        
+
         pipeline.addLast("codec", new HttpClientCodec());
 
         // we're explicitly not decompressing here, because we don't read the body,
@@ -59,5 +59,4 @@ class HttpClientPipelineFactory {
         pipeline.addLast("handler", new HttpRelayingResponseHandler(client, keepAlive));
         return pipeline;
     }
-
 }

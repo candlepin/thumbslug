@@ -28,11 +28,11 @@ import java.util.Set;
  */
 public class Config {
     private static final String REQUIRED = "XX_REQUIRED_VALUE_XX";
-
     private static final String CONFIG_FILE = "/etc/thumbslug/thumbslug.conf";
     private static final String DEFAULT_CONFIG_RESOURCE = "config/thumbslug.conf";
+
     private Properties props;
-    
+
     private Set<Object> requiredKeys;
 
     public Config() {
@@ -41,7 +41,6 @@ public class Config {
         try {
             InputStream is = null;
 
-            
             URL url = this.getClass().getClassLoader().getResource(
                 DEFAULT_CONFIG_RESOURCE);
             is = url.openStream();
@@ -49,11 +48,10 @@ public class Config {
             props = new Properties();
 
             props.load(is);
-            
+
             // figure out the keys that we need. in the resources config file,
             // they'll be listed but not set.
             requiredKeys = props.keySet();
-            
 
             // override any defaults with the config file
             File configFile = new File(CONFIG_FILE);
@@ -68,7 +66,7 @@ public class Config {
         catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
         Set<String> missingKeys = new HashSet<String>();
         for (Object key : requiredKeys) {
             if (REQUIRED.equals(getProperty((String) key))) {
@@ -94,11 +92,11 @@ public class Config {
             return props.getProperty(key);
         }
     }
-    
+
     public int getInt(String key) {
         return Integer.parseInt(getProperty(key));
     }
-    
+
     public boolean getBoolean(String key) {
         String prop = getProperty(key);
         boolean value = false;
@@ -106,8 +104,7 @@ public class Config {
             prop.equals("1")) {
             value = true;
         }
-        
+
         return value;
     }
-
 }

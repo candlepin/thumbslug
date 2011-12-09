@@ -14,7 +14,7 @@
  */
 
 /*
- * Adapted from Netty example code, which is 
+ * Adapted from Netty example code, which is
  *      Copyright (C) 2008  Trustin Heuiseung Lee
  */
 
@@ -41,22 +41,22 @@ import org.apache.log4j.Logger;
 public class SslContextFactory {
     private static Logger log = Logger.getLogger(SslContextFactory.class);
 
-
     private static final String PROTOCOL = "TLS";
-    
+
     // we only want to initialize the server context once.
     private static SSLContext serverContext = null;
 
     private SslContextFactory() {
         // for checkstyle
     }
-    
+
     public static SSLContext getServerContext(String keystoreUrl, String keystorePassword)
         throws SslKeystoreException {
+
         if (serverContext != null) {
             return serverContext;
         }
-        
+
         String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
         if (algorithm == null) {
             algorithm = "SunX509";
@@ -105,10 +105,10 @@ public class SslContextFactory {
         if (algorithm == null) {
             algorithm = "SunX509";
         }
-    
+
         try {
             log.info("loading thumbslug to cdn entitlement certificate (pem encoded)");
-            
+
             // split the pem into its two parts, then figure out which is
             // the private and which is the public part
             log.info("Cert is: \n" + pem);
@@ -120,17 +120,17 @@ public class SslContextFactory {
                 privateKey = certificate;
                 certificate = tmp;
             }
-                
+
             PEMx509KeyManager [] managers = new PEMx509KeyManager[1];
             managers[0] = new PEMx509KeyManager();
             managers[0].addPEM(certificate, privateKey);
-            
+
             // Initialize the SSLContext to work with our key managers.
             clientContext = SSLContext.getInstance(PROTOCOL);
             clientContext.init(
                     managers,
                     ClientContextTrustManagerFactory.getTrustManagers(), null);
-            
+
             log.info("SSL context initialized!");
         }
         catch (Exception e) {
@@ -141,7 +141,7 @@ public class SslContextFactory {
 
         return clientContext;
     }
-    
+
     public static SSLContext getCandlepinClientContext() {
         // Candlepin client context, we won't be sending up an ssl cert,
         // just verifying that of candlepin

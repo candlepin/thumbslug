@@ -37,33 +37,32 @@ import net.oauth.signature.pem.PKCS1EncodedKeySpec;
 
 /**
  * PEMx509KeyManager - An X509 Key Manager for SSL Context backed by PEM files.
- * 
+ *
  * This class is pretty dumb, we just store a single x509 certificate from the pem file,
- * and return it for any request. 
- * 
+ * and return it for any request.
+ *
  * ** NOTE ** We have to extend X509ExtendedKeyManager (vs implementing X509KeyManager)
  * for the two chooseEngine* methods. These are the *only way* that our ssl connection will
  * select an alias (and thus get a private key/certificate) to use.
  */
 public class PEMx509KeyManager extends X509ExtendedKeyManager {
     private static Logger log = Logger.getLogger(PEMx509KeyManager.class);
-    
+
     private static String [] aliases = {"alias"};
-    
+
     private PrivateKey privateKey;
     // we're assuming only a single certificate in the pem (so not a chain at all,
     // just the certificate for the subject).
     private X509Certificate [] certificateChain = new X509Certificate[1];
-    
+
     public void addPEM(String certificate, String privateKey)
         throws GeneralSecurityException, IOException {
         certificateChain[0] = getX509CertificateFromPem(certificate);
         this.privateKey = getPrivateKeyFromPem(privateKey);
-        
+
         log.info("cert info! " + certificateChain[0].getSubjectDN().getName());
     }
 
-    
     /* taken from oauth's RSA_SHA1.java */
     private PrivateKey getPrivateKeyFromPem(String pem)
         throws GeneralSecurityException, IOException {
@@ -106,10 +105,10 @@ public class PEMx509KeyManager extends X509ExtendedKeyManager {
         CertificateFactory fac = CertificateFactory.getInstance("X509");
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         X509Certificate cert = (X509Certificate) fac.generateCertificate(in);
-        
+
         return cert;
-    }   
-    
+    }
+
     @Override
     public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
         return aliases[0];
@@ -142,16 +141,15 @@ public class PEMx509KeyManager extends X509ExtendedKeyManager {
         return null;
         //return aliases;
     }
-    
+
     public String chooseEngineClientAlias(String[] keyType,
         Principal[] issuers, SSLEngine engine) {
         return aliases[0];
     }
-    
+
     @Override
     public String chooseEngineServerAlias(String keyType, Principal[] issuers,
         SSLEngine engine) {
         return null;
     }
-
 }

@@ -19,9 +19,9 @@ package org.candlepin.thumbslug.ssl;
  */
 public class SslPemException extends Exception {
 
+    private static final long serialVersionUID = -3749294764898944402L;
+
     public SslPemException(String message, Exception exception) {
         super(message, exception);
     }
-    
-    private static final long serialVersionUID = -3749294764898944402L;
 }

@@ -27,7 +27,7 @@ public class DerDecoderTest {
     @Test
     public void testNullByteReturnsNull() {
         byte[] hello = null;
-        
+
         assertEquals(null, DerDecoder.parseDerUtf8String(hello));
     }
 
@@ -35,7 +35,7 @@ public class DerDecoderTest {
     public void testDerDecodeGoodAsciiShortString() {
         byte[] hello = {(byte) 0x04, (byte) 0x05, (byte) 0x68, (byte) 0x65, (byte) 0x6c,
             (byte) 0x6c, (byte) 0x6f};
-        
+
         assertEquals("hello", DerDecoder.parseDerUtf8String(hello));
     }
 
@@ -43,7 +43,7 @@ public class DerDecoderTest {
     public void testDerDecodeGoodShortString() {
         byte[] hello = {(byte) 0x0C, (byte) 0x05, (byte) 0x68, (byte) 0x65, (byte) 0x6c,
             (byte) 0x6c, (byte) 0x6f};
-        
+
         assertEquals("hello", DerDecoder.parseDerUtf8String(hello));
     }
 
@@ -53,22 +53,21 @@ public class DerDecoderTest {
         hello[0] = (byte) 0x0C;
         hello[1] = (byte) 0x81;
         hello[2] = (byte) 0x80;
-        
+
         String expected = "";
         for (int i = 3; i < hello.length; i++) {
             expected += "o";
             hello[i] = 0x6f;
         }
-        
+
         assertEquals(expected, DerDecoder.parseDerUtf8String(hello));
     }
 
-    
     @Test
     public void testDerDecodeUnknownType() {
         byte[] hello = {(byte) 0x0a, (byte) 0x05, (byte) 0x68, (byte) 0x65, (byte) 0x6c,
             (byte) 0x6c, (byte) 0x6f};
-        
+
         assertEquals(null, DerDecoder.parseDerUtf8String(hello));
     }
 
@@ -76,7 +75,7 @@ public class DerDecoderTest {
     public void testDerDecodeBadLength() {
         byte[] hello = {(byte) 0x0a, (byte) 0x05, (byte) 0x68, (byte) 0x65, (byte) 0x6c,
             (byte) 0x6c};
-        
+
         assertEquals(null, DerDecoder.parseDerUtf8String(hello));
     }
 
@@ -86,15 +85,13 @@ public class DerDecoderTest {
         hello[0] = (byte) 0x0C;
         hello[1] = (byte) 0x81;
         hello[2] = (byte) 0xFF;
-        
+
         String expected = "";
         for (int i = 3; i < hello.length; i++) {
             expected += "o";
             hello[i] = 0x6f;
         }
-        
+
         assertEquals(null, DerDecoder.parseDerUtf8String(hello));
     }
-
-    
 }
