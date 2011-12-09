@@ -63,7 +63,6 @@ public class DerDecoderTest {
         assertEquals(expected, DerDecoder.parseDerUtf8String(hello));
     }
 
-
     @Test
     public void testDerDecodeUnknownType() {
         byte[] hello = {(byte) 0x0a, (byte) 0x05, (byte) 0x68, (byte) 0x65, (byte) 0x6c,
@@ -95,6 +94,4 @@ public class DerDecoderTest {
 
         assertEquals(null, DerDecoder.parseDerUtf8String(hello));
     }
-
-
 }

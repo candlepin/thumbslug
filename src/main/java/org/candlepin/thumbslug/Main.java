@@ -45,7 +45,6 @@ public class Main {
     private static final int ERROR_CONFIGURE_SSL = -3;
     private static final int ERROR_NO_CONFIG = -4;
 
-
     // maintain a list of open channels so we can shut them down on app exit
     static final ChannelGroup ALL_CHANNELS = new DefaultChannelGroup("thumbslug");
 
@@ -162,5 +161,4 @@ public class Main {
             }
         }, "shutdownHook"));
     }
-
 }

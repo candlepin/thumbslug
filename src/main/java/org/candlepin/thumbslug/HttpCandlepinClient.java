@@ -126,7 +126,6 @@ class HttpCandlepinClient {
             else {
                 responseHandler.onResponse(buffer);
             }
-
         }
 
         @Override
@@ -174,7 +173,6 @@ class HttpCandlepinClient {
                 onSubscriptionCertificate(future.getChannel(), subscriptionId);
             }
         });
-
     }
 
     private void onVerifyEntitlementUuid(Channel channel, String entitlementUuid) {
@@ -230,7 +228,6 @@ class HttpCandlepinClient {
             // TODO Auto-generated catch block
             log.error(errMsg, e);
         }
-
 
         // Send the HTTP request.
         channel.write(request);

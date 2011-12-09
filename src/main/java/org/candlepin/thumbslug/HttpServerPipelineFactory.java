@@ -70,7 +70,6 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         // we're explicitly not compressing here; the CDN takes care of that.
         // pipeline.addLast("deflater", new HttpContentCompressor());
 
-
         pipeline.addLast("logger", new HttpRequestLogger(config.getProperty("log.access")));
 
         pipeline.addLast("handler", new HttpRequestHandler(config, channelFactory,

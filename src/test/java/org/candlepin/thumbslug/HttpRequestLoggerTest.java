@@ -113,8 +113,6 @@ public class HttpRequestLoggerTest {
         assertEquals("192.168.0.3", logger.getInetAddress());
     }
 
-
-
     /**
      * @return
      * @throws UnknownHostException

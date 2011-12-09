@@ -76,7 +76,6 @@ class HttpRequestLogger extends SimpleChannelHandler {
                 if (inetAddress.startsWith("/")) {
                     inetAddress = inetAddress.substring(1);
                 }
-
             }
             // maybe this request was proxied or load balanced.
             // try and get the real originating IP
@@ -113,6 +112,7 @@ class HttpRequestLogger extends SimpleChannelHandler {
     @Override
     public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
         throws Exception {
+
         super.handleDownstream(ctx, e);
 
         if (e instanceof MessageEvent) {

@@ -59,5 +59,4 @@ class HttpClientPipelineFactory {
         pipeline.addLast("handler", new HttpRelayingResponseHandler(client, keepAlive));
         return pipeline;
     }
-
 }

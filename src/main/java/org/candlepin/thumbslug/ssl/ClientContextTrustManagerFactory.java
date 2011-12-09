@@ -50,7 +50,6 @@ public class ClientContextTrustManagerFactory extends TrustManagerFactorySpi {
             throw new CertificateException(
                 "Using ClientContextTrustManager when acting as a server " +
                 "- programmer error!");
-
         }
 
         public void checkServerTrusted(

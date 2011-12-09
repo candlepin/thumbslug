@@ -35,7 +35,6 @@ import org.jboss.netty.channel.ExceptionEvent;
 public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
     private static Logger log = Logger.getLogger(HttpRelayingResponseHandler.class);
 
-
     private boolean readingChunks;
     private Channel client;
     private boolean keepAlive;
@@ -60,6 +59,7 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
 
         //e.getCause().printStackTrace();
     }
+
     /**
      * This is an event *to* the client coming *from* the cdn
      *
@@ -105,7 +105,6 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
             }
         }
     }
-
 
     /**
      * A request going *from* the client *to* the cdn.

@@ -63,7 +63,6 @@ public class PEMx509KeyManager extends X509ExtendedKeyManager {
         log.info("cert info! " + certificateChain[0].getSubjectDN().getName());
     }
 
-
     /* taken from oauth's RSA_SHA1.java */
     private PrivateKey getPrivateKeyFromPem(String pem)
         throws GeneralSecurityException, IOException {
@@ -153,5 +152,4 @@ public class PEMx509KeyManager extends X509ExtendedKeyManager {
         SSLEngine engine) {
         return null;
     }
-
 }

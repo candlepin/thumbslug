@@ -56,7 +56,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     private static Logger log = Logger.getLogger(HttpRequestHandler.class);
 
-
     private HttpRequest request;
     private boolean readingChunks;
     private Channel cdnChannel;
@@ -64,7 +63,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private Config config;
     private ChannelFactory channelFactory;
     private HttpClientPipelineFactory clientFactory;
-
 
     public HttpRequestHandler(Config config, ChannelFactory channelFactory,
         HttpClientPipelineFactory clientFactory) {
@@ -149,7 +147,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         }
         return null;
     }
-
 
     private void requestStartReceived(final ChannelHandlerContext ctx, final MessageEvent e)
         throws Exception {

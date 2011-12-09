@@ -41,7 +41,6 @@ import org.apache.log4j.Logger;
 public class SslContextFactory {
     private static Logger log = Logger.getLogger(SslContextFactory.class);
 
-
     private static final String PROTOCOL = "TLS";
 
     // we only want to initialize the server context once.
@@ -53,6 +52,7 @@ public class SslContextFactory {
 
     public static SSLContext getServerContext(String keystoreUrl, String keystorePassword)
         throws SslKeystoreException {
+
         if (serverContext != null) {
             return serverContext;
         }
