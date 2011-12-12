@@ -43,6 +43,7 @@ install -m 640 thumbslug.conf \
             $RPM_BUILD_ROOT/%{_sysconfdir}/thumbslug/thumbslug.conf
 
 install -d -m 775 $RPM_BUILD_ROOT/%{_var}/log/thumbslug
+install -d -m 775 $RPM_BUILD_ROOT/%{_var}/run/thumbslug
 
 
 %clean
@@ -87,7 +88,8 @@ fi
 %{_datadir}/%{name}/thumbslug.jar
 
 %dir %{_var}/log/thumbslug
-%ghost %attr(660, thumbslug, thumbslug) %{_var}/run/thumbslug.pid
+%dir %{_var}/run/thumbslug
+%ghost %attr(660, thumbslug, thumbslug) %{_var}/run/thumbslug/thumbslug.pid
 %ghost %attr(660, thumbslug, thumbslug) %{_var}/lock/subsys/thumbslug
 
 

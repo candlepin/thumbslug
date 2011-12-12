@@ -109,7 +109,7 @@ public class Main {
         Daemon daemon = new Daemon();
         if (daemon.isDaemonized()) {
             try {
-                daemon.init(config.getProperty("lock.file"));
+                daemon.init(config.getProperty("pid.file"));
                 // XXX I am not sure if it is possible to get to this line:
                 log.debug("Daemonized");
             }
