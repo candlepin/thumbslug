@@ -1,0 +1,7 @@
+/etc/rc.d/init.d/thumbslug gen_context(system_u:object_r:thumbslug_initrc_exec_t,s0)
+
+/usr/bin/thumbslug gen_context(system_u:object_r:thumbslug_exec_t,s0)
+
+/var/run/thumbslug/thumbslug.pid gen_context(system_u:object_r:thumbslug_var_run_t,s0)
+/var/lock/subsys/thumbslug gen_context(system_u:object_r:thumbslug_rw_t,s0)
+/var/log/thumbslug/(/.*)? gen_context(system_u:object_r:thumbslug_log_t,s0)

@@ -1,0 +1,64 @@
+policy_module(thumbslug, 1.0.0)
+
+########################################
+#
+# Declarations
+#
+
+type thumbslug_t;
+type thumbslug_exec_t;
+init_daemon_domain(thumbslug_t, thumbslug_exec_t)
+
+permissive thumbslug_t;
+
+type thumbslug_initrc_exec_t;
+init_script_file(thumbslug_initrc_exec_t)
+
+type thumbslug_log_t;
+logging_log_file(thumbslug_log_t)
+
+type thumbslug_rw_t;
+files_type(thumbslug_rw_t)
+
+type thumbslug_var_run_t;
+files_pid_file(thumbslug_var_run_t)
+
+########################################
+#
+# thumbslug local policy
+#
+
+type thumbslug_port_t;
+corenet_port(thumbslug_port_t)
+
+allow thumbslug_t self:fifo_file rw_fifo_file_perms;
+allow thumbslug_t self:unix_stream_socket create_stream_socket_perms;
+
+manage_dirs_pattern(thumbslug_t, thumbslug_log_t, thumbslug_log_t)
+manage_files_pattern(thumbslug_t, thumbslug_log_t, thumbslug_log_t)
+logging_log_filetrans(thumbslug_t, thumbslug_log_t, { dir file })
+
+manage_dirs_pattern(thumbslug_t, thumbslug_rw_t, thumbslug_rw_t)
+manage_files_pattern(thumbslug_t, thumbslug_rw_t, thumbslug_rw_t)
+
+manage_dirs_pattern(thumbslug_t, thumbslug_var_run_t, thumbslug_var_run_t)
+manage_files_pattern(thumbslug_t, thumbslug_var_run_t, thumbslug_var_run_t)
+files_pid_filetrans(thumbslug_t, thumbslug_var_run_t, { dir file })
+
+sysnet_dns_name_resolve(thumbslug_t)
+corenet_all_recvfrom_unlabeled(thumbslug_t)
+
+allow thumbslug_t self:tcp_socket create_stream_socket_perms;
+corenet_tcp_sendrecv_generic_if(thumbslug_t)
+corenet_tcp_sendrecv_generic_node(thumbslug_t)
+corenet_tcp_sendrecv_all_ports(thumbslug_t)
+corenet_tcp_bind_generic_node(thumbslug_t)
+allow thumbslug_t thumbslug_port_t:tcp_socket name_bind;
+allow thumbslug_t thumbslug_port_t:tcp_socket name_connect;
+corenet_tcp_connect_http_port(thumbslug_t)
+
+domain_use_interactive_fds(thumbslug_t)
+
+files_read_etc_files(thumbslug_t)
+
+miscfiles_read_localization(thumbslug_t)

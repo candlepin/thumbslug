@@ -3,6 +3,11 @@
 %global _binary_payload w9.gzdio
 %global _source_payload w9.gzdio
 
+%global selinux_variants mls strict targeted
+%global selinux_policyver %(%{__sed} -e 's,.*selinux-policy-\\([^/]*\\)/.*,\\1,' /usr/share/selinux/devel/policyhelp || echo 0.0.0)
+%global modulename thumbslug
+
+
 Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
@@ -25,15 +30,51 @@ BuildRequires: thumbslug-deps >= 0.0.8
 %description
 Thumbslug is a content and entitlement proxy for on premesis Candlepin installs.
 
+
+%package selinux
+Summary:        SELinux policy module supporting thumbslug
+Group:          System Environment/Base
+BuildRequires:  checkpolicy
+BuildRequires:  selinux-policy-devel
+BuildRequires:  /usr/share/selinux/devel/policyhelp
+BuildRequires:  hardlink
+
+%if "%{selinux_policyver}" != ""
+Requires:       selinux-policy >= %{selinux_policyver}
+%endif
+Requires:       %{name} = %{version}-%{release}
+Requires(post):   /usr/sbin/semodule
+Requires(post):   /sbin/restorecon
+Requires(postun): /usr/sbin/semodule
+Requires(postun): /sbin/restorecon
+
+
+%description selinux
+SELinux policy module supporting thumbslug
+
+
 %prep
 %setup -q 
 
 %build
 ant -Dlibdir=/usr/share/thumbslug/lib/ clean package
 
+cd selinux
+for selinuxvariant in %{selinux_variants}
+do
+  make NAME=${selinuxvariant} -f /usr/share/selinux/devel/Makefile
+  mv %{modulename}.pp %{modulename}.pp.${selinuxvariant}
+  make NAME=${selinuxvariant} -f /usr/share/selinux/devel/Makefile clean
+done
+cd -
+
+
 %install
 install -d -m 755 $RPM_BUILD_ROOT/%{_datadir}/%{name}/
 install -m 644 target/%{name}.jar $RPM_BUILD_ROOT/%{_datadir}/%{name}
+
+install -d -m 755 $RPM_BUILD_ROOT/%{_bindir}/
+install -m 755 %{name}.bin $RPM_BUILD_ROOT/%{_bindir}/%{name}
 
 install -d -m 755 $RPM_BUILD_ROOT/%{_initddir}
 install -m 755 thumbslug.init $RPM_BUILD_ROOT/%{_initddir}/%{name}
@@ -45,6 +86,15 @@ install -m 640 thumbslug.conf \
 install -d -m 775 $RPM_BUILD_ROOT/%{_var}/log/thumbslug
 install -d -m 775 $RPM_BUILD_ROOT/%{_var}/run/thumbslug
 
+cd selinux
+for selinuxvariant in %{selinux_variants}
+do
+  install -d $RPM_BUILD_ROOT/%{_datadir}/selinux/${selinuxvariant}
+  install -p -m 644 %{modulename}.pp.${selinuxvariant} \
+    $RPM_BUILD_ROOT/%{_datadir}/selinux/${selinuxvariant}/%{modulename}.pp
+done
+cd -
+/usr/sbin/hardlink -cv $RPM_BUILD_ROOT/%{_datadir}/selinux
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -75,11 +125,32 @@ if [ $1 -eq 0 ] ; then
 fi
 
 
+%post selinux
+for selinuxvariant in %{selinux_variants}
+do
+  /usr/sbin/semodule -s ${selinuxvariant} -i \
+    %{_datadir}/selinux/${selinuxvariant}/%{modulename}.pp &> /dev/null || :
+done
+/sbin/restorecon %{_localstatedir}/cache/thumbslug || :
+/usr/sbin/semanage port -a -t thumbslug_port_t -p tcp 8088 || :
+
+%postun selinux
+if [ $1 -eq 0 ] ; then
+  for selinuxvariant in %{selinux_variants}
+  do
+     /usr/sbin/semodule -s ${selinuxvariant} -r %{modulename} &> /dev/null || :
+  done
+  [ -d %{_localstatedir}/cache/thumbslug ]  && \
+    /sbin/restorecon -R %{_localstatedir}/cache/thumbslug &> /dev/null || :
+  /usr/sbin/semanage port -a -t thumbslug_port_t -p tcp 8088 || :
+fi
+
 
 %files
 %defattr(-, root, thumbslug)
 %doc README
 %{_initddir}/%{name}
+%{_bindir}/%{name}
 
 %dir %{_sysconfdir}/thumbslug
 %config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
@@ -91,6 +162,11 @@ fi
 %dir %{_var}/run/thumbslug
 %ghost %attr(660, thumbslug, thumbslug) %{_var}/run/thumbslug/thumbslug.pid
 %ghost %attr(660, thumbslug, thumbslug) %{_var}/lock/subsys/thumbslug
+
+%files selinux
+%defattr(-,root,root,0755)
+%doc selinux/*
+%{_datadir}/selinux/*/%{modulename}.pp
 
 
 %changelog
