@@ -1,0 +1,245 @@
+
+## <summary>policy for thumbslug</summary>
+
+
+########################################
+## <summary>
+##	Transition to thumbslug.
+## </summary>
+## <param name="domain">
+## <summary>
+##	Domain allowed to transition.
+## </summary>
+## </param>
+#
+interface(`thumbslug_domtrans',`
+	gen_require(`
+		type thumbslug_t, thumbslug_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	domtrans_pattern($1, thumbslug_exec_t, thumbslug_t)
+')
+
+
+########################################
+## <summary>
+##	Execute thumbslug server in the thumbslug domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`thumbslug_initrc_domtrans',`
+	gen_require(`
+		type thumbslug_initrc_exec_t;
+	')
+
+	init_labeled_script_domtrans($1, thumbslug_initrc_exec_t)
+')
+
+
+########################################
+## <summary>
+##	Read thumbslug's log files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`thumbslug_read_log',`
+	gen_require(`
+		type thumbslug_log_t;
+	')
+
+	logging_search_logs($1)
+	read_files_pattern($1, thumbslug_log_t, thumbslug_log_t)
+')
+
+########################################
+## <summary>
+##	Append to thumbslug log files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`thumbslug_append_log',`
+	gen_require(`
+		type thumbslug_log_t;
+	')
+
+	logging_search_logs($1)
+	append_files_pattern($1, thumbslug_log_t, thumbslug_log_t)
+')
+
+########################################
+## <summary>
+##	Manage thumbslug log files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`thumbslug_manage_log',`
+	gen_require(`
+		type thumbslug_log_t;
+	')
+
+	logging_search_logs($1)
+	manage_dirs_pattern($1, thumbslug_log_t, thumbslug_log_t)
+	manage_files_pattern($1, thumbslug_log_t, thumbslug_log_t)
+	manage_lnk_files_pattern($1, thumbslug_log_t, thumbslug_log_t)
+')
+
+########################################
+## <summary>
+##	Search thumbslug rw directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`thumbslug_search_rw_dir',`
+	gen_require(`
+		type thumbslug_rw_t;
+	')
+
+	allow $1 thumbslug_rw_t:dir search_dir_perms;
+	files_search_rw($1)
+')
+
+########################################
+## <summary>
+##	Read thumbslug rw files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`thumbslug_read_rw_files',`
+	gen_require(`
+		type thumbslug_rw_t;
+	')
+
+	allow $1 thumbslug_rw_t:file read_file_perms;
+	allow $1 thumbslug_rw_t:dir list_dir_perms;
+	files_search_rw($1)
+')
+
+########################################
+## <summary>
+##	Manage thumbslug rw files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`thumbslug_manage_rw_files',`
+	gen_require(`
+		type thumbslug_rw_t;
+	')
+
+	manage_files_pattern($1, thumbslug_rw_t, thumbslug_rw_t)
+')
+
+########################################
+## <summary>
+##	Create, read, write, and delete
+##	thumbslug rw dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`thumbslug_manage_rw_dirs',`
+	gen_require(`
+		type thumbslug_rw_t;
+	')
+
+	manage_dirs_pattern($1, thumbslug_rw_t, thumbslug_rw_t)
+')
+
+
+########################################
+## <summary>
+##	Read thumbslug PID files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`thumbslug_read_pid_files',`
+	gen_require(`
+		type thumbslug_var_run_t;
+	')
+
+	files_search_pids($1)
+	allow $1 thumbslug_var_run_t:file read_file_perms;
+')
+
+
+########################################
+## <summary>
+##	All of the rules required to administrate
+##	an thumbslug environment
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	Role allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`thumbslug_admin',`
+	gen_require(`
+		type thumbslug_t;
+	type thumbslug_initrc_exec_t;
+	type thumbslug_log_t;
+	type thumbslug_rw_t;
+	type thumbslug_var_run_t;
+	')
+
+	allow $1 thumbslug_t:process { ptrace signal_perms };
+	ps_process_pattern($1, thumbslug_t)
+
+	thumbslug_initrc_domtrans($1)
+	domain_system_change_exemption($1)
+	role_transition $2 thumbslug_initrc_exec_t system_r;
+	allow $2 system_r;
+
+	logging_search_logs($1)
+	admin_pattern($1, thumbslug_log_t)
+
+	files_search_etc($1)
+	admin_pattern($1, thumbslug_rw_t)
+
+	files_search_pids($1)
+	admin_pattern($1, thumbslug_var_run_t)
+
+')
+
