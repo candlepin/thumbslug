@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.20
+Version: 0.0.21
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -170,6 +170,14 @@ fi
 
 
 %changelog
+* Wed Dec 21 2011 Bryan Kearney <bkearney@redhat.com> 0.0.21-1
+- Add initial selinux policy (jbowes@redhat.com)
+- 759598: teach thumbslug init how to show status and stop (jbowes@redhat.com)
+- bunch of minor whitespace cleanup (jmrodri@gmail.com)
+- remove all trailing whitespace, configure checkstyle to verify.
+  (jmrodri@gmail.com)
+- add emma tasks to buildfile for code coverage (jmrodri@gmail.com)
+
 * Tue Dec 06 2011 James Bowes <jbowes@redhat.com> 0.0.20-1
 - Fix accept type and order of operations for candlepin communication
   (jbowes@redhat.com)
