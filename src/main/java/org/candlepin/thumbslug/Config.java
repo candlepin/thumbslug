@@ -14,6 +14,8 @@
  */
 package org.candlepin.thumbslug;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,36 +37,57 @@ public class Config {
 
     private Set<Object> requiredKeys;
 
+    private static Logger log = Logger.getLogger(Config.class);
+
+
     public Config() {
 
-        // Load system properties file, otherwise use the default:
-        try {
-            InputStream is = null;
+        // load default properties, and then attempt to overwrite
+        // with system properties
+        InputStream is = null;
+        props = new Properties();
 
+        try {
             URL url = this.getClass().getClassLoader().getResource(
                 DEFAULT_CONFIG_RESOURCE);
             is = url.openStream();
-
-            props = new Properties();
-
             props.load(is);
-
-            // figure out the keys that we need. in the resources config file,
-            // they'll be listed but not set.
-            requiredKeys = props.keySet();
-
-            // override any defaults with the config file
-            File configFile = new File(CONFIG_FILE);
-            if (configFile.exists()) {
-                is = new FileInputStream(configFile);
-                props.load(is);
-                is.close();
-            }
-
-            is.close();
         }
         catch (IOException e) {
+            // we need to bail out if we can't read the default props
             throw new RuntimeException(e);
+        }
+        finally {
+            try {
+                is.close();
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // figure out the keys that we need. in the resources config file,
+        // they'll be listed but not set.
+        requiredKeys = props.keySet();
+
+        // override any defaults with the config file
+        try {
+            File configFile = new File(CONFIG_FILE);
+            is = new FileInputStream(configFile);
+            props.load(is);
+        }
+        catch (IOException e) {
+            // no need to bail out here, just log it
+            log.warn("Could not read " + CONFIG_FILE, e);
+        }
+        finally {
+            try {
+                is.close();
+            }
+            catch (IOException e) {
+                // no need to bail out here, just log it
+                log.warn("Could not close handle for " + CONFIG_FILE, e);
+            }
         }
 
         Set<String> missingKeys = new HashSet<String>();

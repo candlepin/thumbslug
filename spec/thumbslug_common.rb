@@ -118,7 +118,6 @@ module ThumbslugMethods
                  " -Dcdn.sendTSheader=" + config[:cdn_sendTSHeader] +
                  " -Dcandlepin.oauth.key=" + config[:candlepin_oauth_key] +
                  " -Dcandlepin.oauth.secret=" + config[:candlepin_oauth_secret] +
-
                  " -jar " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
     pipe = IO.popen(tslug_exec_string, "w+")
     #this is perlesque
