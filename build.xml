@@ -83,7 +83,14 @@
     <jar destfile="${ts.jar}">
       <fileset dir="${target.dir}/classes"/>
       <fileset dir="${target.dir}/resources"/>
-      <zipgroupfileset dir="${lib.dir}" includes="*.jar"/>
+
+      <zipgroupfileset dir="${lib.dir}">
+        <include name="netty.jar"/>
+        <include name="log4j.jar"/>
+        <include name="akuma.jar"/>
+        <include name="jna.jar"/>
+        <include name="oauth-consumer.jar"/>
+      </zipgroupfileset>
       <manifest>
         <attribute name="Implementation-Vendor" value="" />
         <attribute name="Manifest-Version" value="1.0" />

@@ -17,7 +17,7 @@ repositories.remote << "http://oauth.googlecode.com/svn/code/maven/"
 require 'buildr/checkstyle'
 require 'rspec/core/rake_task'
 
-NETTY = transitive 'org.jboss.netty:netty:jar:3.2.4.Final'
+NETTY = transitive 'org.jboss.netty:netty:jar:3.2.6.Final'
 LOG4J = 'log4j:log4j:jar:1.2.14'
 DAEMON = transitive 'org.kohsuke:akuma:jar:1.7'
 OAUTH = transitive 'net.oauth.core:oauth-consumer:jar:20100527'

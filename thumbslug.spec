@@ -17,13 +17,17 @@ Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-Vendor: Red Hat, Inc
+Vendor: Red Hat, Inc.
 BuildArch: noarch
 
 Requires(pre): shadow-utils
 
 BuildRequires: ant >= 1.7.0
-BuildRequires: thumbslug-deps >= 0.0.8
+BuildRequires: akuma >= 1.7
+BuildRequires: jna >= 3.2.4
+BuildRequires: log4j >= 1.2
+BuildRequires: netty >= 3.2.3
+BuildRequires: oauth
 
 %define __jar_repack %{nil}
 
@@ -57,7 +61,7 @@ SELinux policy module supporting thumbslug
 %setup -q 
 
 %build
-ant -Dlibdir=/usr/share/thumbslug/lib/ clean package
+ant -Dlibdir=/usr/share/java clean package
 
 cd selinux
 for selinuxvariant in %{selinux_variants}

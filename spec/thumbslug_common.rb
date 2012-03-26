@@ -40,8 +40,8 @@ module ThumbslugMethods
         :SSLCertificate => server_cert,
         :SSLCACertificateFile => ca_cert,
         #comment out these two lines to enable webrick logging
-        #:Logger => WEBrick::Log.new('/dev/null'),
-        #:AccessLog => [nil, nil],
+        :Logger => WEBrick::Log.new('/dev/null'),
+        :AccessLog => [nil, nil],
       }
     else
       config = {
