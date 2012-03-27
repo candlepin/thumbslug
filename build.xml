@@ -80,6 +80,20 @@
   </target>
 
   <target name="package" depends="compile">
+      <fail message="unable to find needed jar">
+        <condition>
+         <not>
+          <and>
+             <available file="${lib.dir}/netty.jar" type="file"/>
+             <available file="${lib.dir}/log4j.jar" type="file"/>
+             <available file="${lib.dir}/akuma.jar" type="file"/>
+             <available file="${lib.dir}/jna.jar" type="file"/>
+             <available file="${lib.dir}/oauth-consumer.jar" type="file"/>
+          </and>
+          </not>
+         </condition>
+      </fail>
+
     <jar destfile="${ts.jar}">
       <fileset dir="${target.dir}/classes"/>
       <fileset dir="${target.dir}/resources"/>
