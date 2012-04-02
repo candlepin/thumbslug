@@ -60,7 +60,7 @@ public class PEMx509KeyManager extends X509ExtendedKeyManager {
         certificateChain[0] = getX509CertificateFromPem(certificate);
         this.privateKey = getPrivateKeyFromPem(privateKey);
 
-        log.info("cert info! " + certificateChain[0].getSubjectDN().getName());
+        log.debug("cert info! " + certificateChain[0].getSubjectDN().getName());
     }
 
     /* taken from oauth's RSA_SHA1.java */
@@ -122,7 +122,7 @@ public class PEMx509KeyManager extends X509ExtendedKeyManager {
 
     @Override
     public X509Certificate[] getCertificateChain(String alias) {
-        log.info("returning x509 certificate");
+        log.debug("returning x509 certificate");
         return certificateChain;
     }
 

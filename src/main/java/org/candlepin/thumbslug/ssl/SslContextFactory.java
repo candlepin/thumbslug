@@ -107,11 +107,11 @@ public class SslContextFactory {
         }
 
         try {
-            log.info("loading thumbslug to cdn entitlement certificate (pem encoded)");
+            log.debug("loading thumbslug to cdn entitlement certificate (pem encoded)");
 
             // split the pem into its two parts, then figure out which is
             // the private and which is the public part
-            log.info("Cert is: \n" + pem);
+            log.debug("Cert is: \n" + pem);
             int endOfFirstPart = pem.indexOf("\n", pem.indexOf("END"));
             String certificate = pem.substring(0, endOfFirstPart);
             String privateKey = pem.substring(endOfFirstPart);
@@ -130,8 +130,7 @@ public class SslContextFactory {
             clientContext.init(
                     managers,
                     ClientContextTrustManagerFactory.getTrustManagers(), null);
-
-            log.info("SSL context initialized!");
+            log.debug("SSL context initialized!");
         }
         catch (Exception e) {
             log.error("Unable to load pem file!", e);

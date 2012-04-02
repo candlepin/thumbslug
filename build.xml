@@ -88,6 +88,7 @@
              <available file="${lib.dir}/log4j.jar" type="file"/>
              <available file="${lib.dir}/akuma.jar" type="file"/>
              <available file="${lib.dir}/jna.jar" type="file"/>
+             <available file="${lib.dir}/oauth.jar" type="file"/>
              <available file="${lib.dir}/oauth-consumer.jar" type="file"/>
           </and>
           </not>
@@ -103,6 +104,7 @@
         <include name="log4j.jar"/>
         <include name="akuma.jar"/>
         <include name="jna.jar"/>
+        <include name="oauth.jar"/>
         <include name="oauth-consumer.jar"/>
       </zipgroupfileset>
       <manifest>
