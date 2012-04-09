@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.21
+Version: 0.0.22
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -174,6 +174,14 @@ fi
 
 
 %changelog
+* Mon Apr 09 2012 Chris Duryee (beav) <cduryee@redhat.com>
+- just build x86_64 in fedora for now (cduryee@redhat.com)
+- jar inclusion and log fix (cduryee@redhat.com)
+- do not package the jar if deps are missing (cduryee@redhat.com)
+- 790802: thumbslug deps not built in brew (cduryee@redhat.com)
+- Rework try/catch block on config file reading (cduryee@redhat.com)
+- Modify the mock target to use the mirror lists (bkearney@redhat.com)
+
 * Wed Dec 21 2011 Bryan Kearney <bkearney@redhat.com> 0.0.21-1
 - Add initial selinux policy (jbowes@redhat.com)
 - 759598: teach thumbslug init how to show status and stop (jbowes@redhat.com)
