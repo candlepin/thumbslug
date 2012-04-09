@@ -98,6 +98,7 @@ public class Main {
         }
         catch (Exception e) {
             log.error("Unable to load config!", e);
+            log.warn("Shutting down...");
             System.exit(ERROR_NO_CONFIG);
         }
 
@@ -115,6 +116,7 @@ public class Main {
             }
             catch (Exception e) {
                 log.error("Exception caught during daemon initialization!", e);
+                log.warn("Shutting down...");
                 System.exit(ERROR_DAEMON_INIT);
             }
         }
@@ -129,6 +131,7 @@ public class Main {
                     log.error("Unable to daemonize properly", e);
                     System.exit(ERROR_DAEMON_DAEMONIZE);
                 }
+                log.warn("Shutting down...");
                 System.exit(0);
             }
         }
