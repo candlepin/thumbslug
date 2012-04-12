@@ -44,10 +44,13 @@ define "thumbslug" do
   eclipse.builders 'org.eclipse.jdt.core.javabuilder'
 
   # include netty (and deps) in the jar, so it can run standalone
-  package(:jar).merge NETTY
-  package(:jar).merge LOG4J
-  package(:jar).merge DAEMON
-  package(:jar).merge OAUTH
+  # we exclude the manifests of the sub-jars so they don't overwrite
+  # our own manifest.mf
+  package(:jar).merge(NETTY).exclude("META-INF/MANIFEST.MF")
+  package(:jar).merge(LOG4J).exclude("META-INF/MANIFEST.MF")
+  package(:jar).merge(DAEMON).exclude("META-INF/MANIFEST.MF")
+  package(:jar).merge(OAUTH).exclude("META-INF/MANIFEST.MF")
+  package(:jar).with(:manifest => manifest)
 end
 
 task :serve do
