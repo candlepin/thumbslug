@@ -90,6 +90,7 @@
              <available file="${lib.dir}/jna.jar" type="file"/>
              <available file="${lib.dir}/oauth.jar" type="file"/>
              <available file="${lib.dir}/oauth-consumer.jar" type="file"/>
+             <available file="${lib.dir}/commons-codec.jar" type="file"/>
           </and>
           </not>
          </condition>
@@ -106,6 +107,7 @@
         <include name="jna.jar"/>
         <include name="oauth.jar"/>
         <include name="oauth-consumer.jar"/>
+        <include name="commons-codec.jar"/>
       </zipgroupfileset>
       <manifest>
         <attribute name="Implementation-Vendor" value="" />

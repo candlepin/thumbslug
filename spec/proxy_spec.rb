@@ -59,6 +59,11 @@ describe 'HTTP proxying' do
     response.code.should == '500'
   end
 
+  it 'pull a 500 from the cdn' do
+    response = get('http://127.0.0.1:8088/this_will_500')
+    response.code.should == '500'
+  end
+
   it 'check that headers are being passed through' do
     response = get('http://127.0.0.1:8088/trace', {'captain'=>'sub'})
     header_idx = response.body =~ /sub/

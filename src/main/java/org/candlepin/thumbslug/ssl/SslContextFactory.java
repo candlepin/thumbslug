@@ -113,6 +113,9 @@ public class SslContextFactory {
             // the private and which is the public part
             log.debug("Cert is: \n" + pem);
             int endOfFirstPart = pem.indexOf("\n", pem.indexOf("END"));
+            if (endOfFirstPart == -1) {
+                throw new IllegalArgumentException("unable to parse PEM data");
+            }
             String certificate = pem.substring(0, endOfFirstPart);
             String privateKey = pem.substring(endOfFirstPart);
             if (!certificate.startsWith(PEMReader.CERTIFICATE_X509_MARKER)) {

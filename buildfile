@@ -21,6 +21,7 @@ NETTY = transitive 'org.jboss.netty:netty:jar:3.2.6.Final'
 LOG4J = 'log4j:log4j:jar:1.2.14'
 DAEMON = transitive 'org.kohsuke:akuma:jar:1.7'
 OAUTH = transitive 'net.oauth.core:oauth-consumer:jar:20100527'
+COMMONSCODEC = 'commons-codec:commons-codec:jar:1.4'
 
 JUNIT = 'junit:junit:jar:4.5'
 MOCKITO = 'org.mockito:mockito-all:jar:1.8.5'
@@ -32,8 +33,8 @@ define "thumbslug" do
   project.group = GROUP
   manifest["Implementation-Vendor"] = COPYRIGHT
   manifest["Main-Class"] = "org.candlepin.thumbslug.Main"
-  compile.with [NETTY, LOG4J, DAEMON, OAUTH]
-  test.compile.with [NETTY, LOG4J, DAEMON, OAUTH]
+  compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC]
+  test.compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC]
   test.with [JUNIT, MOCKITO]
 
   #
@@ -50,6 +51,7 @@ define "thumbslug" do
   package(:jar).merge(LOG4J).exclude("META-INF/MANIFEST.MF")
   package(:jar).merge(DAEMON).exclude("META-INF/MANIFEST.MF")
   package(:jar).merge(OAUTH).exclude("META-INF/MANIFEST.MF")
+  package(:jar).merge(COMMONSCODEC).exclude("META-INF/MANIFEST.MF")
   package(:jar).with(:manifest => manifest)
 end
 

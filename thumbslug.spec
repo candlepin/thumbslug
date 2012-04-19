@@ -27,6 +27,7 @@ BuildRequires: akuma >= 1.7
 BuildRequires: jna >= 3.2.4
 BuildRequires: log4j >= 1.2
 BuildRequires: netty >= 3.2.3
+BuildRequires: jakarta-commons-codec
 BuildRequires: oauth
 
 %define __jar_repack %{nil}

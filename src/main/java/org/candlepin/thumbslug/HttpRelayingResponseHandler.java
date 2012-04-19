@@ -57,7 +57,7 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
          */
         pendingException = true;
 
-        //e.getCause().printStackTrace();
+        e.getCause().printStackTrace();
     }
 
     /**

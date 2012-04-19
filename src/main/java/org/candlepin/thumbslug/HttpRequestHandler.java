@@ -17,11 +17,11 @@ package org.candlepin.thumbslug;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 
 import org.candlepin.thumbslug.HttpCandlepinClient.CandlepinClientResponseHandler;
+import org.candlepin.thumbslug.HttpCdnClientChannelFactory.OnCdnConnectedCallback;
 import org.candlepin.thumbslug.ssl.SslPemException;
 
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -43,7 +43,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 
@@ -61,13 +60,10 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private Channel cdnChannel;
 
     private Config config;
-    private ChannelFactory channelFactory;
-    private HttpClientPipelineFactory clientFactory;
+    private HttpCdnClientChannelFactory clientFactory;
 
-    public HttpRequestHandler(Config config, ChannelFactory channelFactory,
-        HttpClientPipelineFactory clientFactory) {
+    public HttpRequestHandler(Config config, HttpCdnClientChannelFactory clientFactory) {
         this.config = config;
-        this.channelFactory = channelFactory;
         this.clientFactory = clientFactory;
     }
 
@@ -161,6 +157,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             final String subscriptionId = getSubscriptionId(
                 ctx.getChannel().getPipeline().get(SslHandler.class));
 
+
             if (subscriptionId == null) {
                 log.error("unreadable subscription id");
                 sendResponseToClient(ctx, HttpResponseStatus.UNAUTHORIZED);
@@ -171,6 +168,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             // Grab the entitlement UUID
             String entitlementUuid = getEntitlementId(
                 ctx.getChannel().getPipeline().get(SslHandler.class));
+
 
             HttpCandlepinClient client = new HttpCandlepinClient(config,
                 new CandlepinClientResponseHandler() {
@@ -311,25 +309,29 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         request.setUri(rebuiltUri);
 
         try {
-            cdnChannel = channelFactory.newChannel(
                 clientFactory.getPipeline(e.getChannel(),
-                    config.getBoolean("cdn.ssl"),
-                    isKeepAlive(request), pem));
+                    isKeepAlive(request), pem, new OnCdnConnectedCallback() {
+                        @Override
+                        public void onCdnConnected(Channel channel) {
+                            channel.write(request);
+                            inbound.setReadable(true);
+                        }
+                        @Override
+                        public void onCdnError(Channel channel) {
+                            // this is where we send a 502 back if we could not interpret the cert from candlepin
+                            HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_GATEWAY);
+                            inbound.write(response);
+                            inbound.setReadable(true);
+                            inbound.close();
+                            channel.close();
+                        }
+                    });
         }
         catch (SslPemException p) {
+            // thrown when we can't build an ssl engine from the pem cert.
+            // that is, before a connection is established.
             sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
         }
-
-        ChannelFuture future = cdnChannel.connect(
-            new InetSocketAddress(config.getProperty("cdn.host"),
-                config.getInt("cdn.port")));
-        future.addListener(new ChannelFutureListener() {
-            public void operationComplete(final ChannelFuture future)
-                throws Exception {
-                future.getChannel().write(request);
-                inbound.setReadable(true);
-            }
-        });
 
         if (request.isChunked()) {
             readingChunks = true;

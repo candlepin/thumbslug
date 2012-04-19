@@ -36,7 +36,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 
     private Config config;
     private ChannelFactory channelFactory;
-    private HttpClientPipelineFactory httpClientPipelineFactory;
+    private HttpCdnClientChannelFactory httpClientPipelineFactory;
 
     public HttpServerPipelineFactory(Config config) {
         this.config = config;
@@ -44,7 +44,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         channelFactory = new NioClientSocketChannelFactory(
             Executors.newCachedThreadPool(),
             Executors.newCachedThreadPool());
-        httpClientPipelineFactory = new HttpClientPipelineFactory(config);
+        httpClientPipelineFactory = new HttpCdnClientChannelFactory(config, channelFactory);
     }
 
     @Override
@@ -72,8 +72,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 
         pipeline.addLast("logger", new HttpRequestLogger(config.getProperty("log.access")));
 
-        pipeline.addLast("handler", new HttpRequestHandler(config, channelFactory,
-            httpClientPipelineFactory));
+        pipeline.addLast("handler", new HttpRequestHandler(config, httpClientPipelineFactory));
         return pipeline;
     }
 }

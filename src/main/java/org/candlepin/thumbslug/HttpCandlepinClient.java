@@ -115,7 +115,6 @@ class HttpCandlepinClient {
             log.debug("candlepin response: " + response.getStatus().getCode());
             log.debug("candlepin response: " + response.getHeaders());
             log.debug("candlepin response: \n" + buffer);
-
             if (response.getStatus().equals(HttpResponseStatus.NOT_FOUND)) {
                 responseHandler.onNotFound();
             }
@@ -124,6 +123,7 @@ class HttpCandlepinClient {
                 responseHandler.onOtherResponse(response.getStatus().getCode());
             }
             else {
+                //we got a 200 here, but not necessarily a valid cert.
                 responseHandler.onResponse(buffer);
             }
         }
