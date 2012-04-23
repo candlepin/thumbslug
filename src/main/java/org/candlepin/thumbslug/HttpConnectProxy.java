@@ -14,9 +14,8 @@
  */
 package org.candlepin.thumbslug;
 
-import org.apache.log4j.Logger;
 import org.apache.commons.codec.binary.Base64;
-
+import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -26,11 +25,9 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 
 /**
@@ -38,25 +35,28 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
  */
 public class HttpConnectProxy extends SimpleChannelUpstreamHandler {
 
+    /**
+     * OnProxyConnectedCallback
+     */
     // XXX pass exceptions back through interface
     interface OnProxyConnectedCallback {
         void onConnected(ChannelHandlerContext ctx);
         //void onError(ChannelHandlerContext ctx, Throwable reason);
     };
-    
+
     private OnProxyConnectedCallback callback;
     private String uri;
     private String proxyAuth;
-    
+
     private static Logger log = Logger.getLogger(HttpConnectProxy.class);
 
-    
+
     public HttpConnectProxy(Config config, OnProxyConnectedCallback callback) {
         this.callback = callback;
         uri = config.getProperty("cdn.host") + ":" +
             config.getProperty("cdn.port");
-        
-        if (config.getProperty("cdn.proxy.user") != null && 
+
+        if (config.getProperty("cdn.proxy.user") != null &&
             !config.getProperty("cdn.proxy.user").equals("")) {
             proxyAuth = config.getProperty("cdn.proxy.user") + ":" +
                 config.getProperty("cdn.proxy.password");
@@ -65,12 +65,12 @@ public class HttpConnectProxy extends SimpleChannelUpstreamHandler {
             proxyAuth = null;
         }
     }
-    
+
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent event)
         throws Exception {
         Channel channel = ctx.getChannel();
-        
+
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.CONNECT, uri);
 
@@ -82,7 +82,7 @@ public class HttpConnectProxy extends SimpleChannelUpstreamHandler {
         channel.write(request);
         ctx.sendUpstream(event);
     }
-    
+
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent event)
         throws Exception {
@@ -100,18 +100,19 @@ public class HttpConnectProxy extends SimpleChannelUpstreamHandler {
             callback.onConnected(ctx);
         }
         else {
-            throw new RuntimeException("Programmer error. Proxy Connection not initialized properly!");
+            throw new RuntimeException("Programmer error. Proxy Connection " +
+                "not initialized properly!");
         }
     }
-    
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
         log.error("Exception caught!", e.getCause());
 
         //we shouldn't be getting here..
         e.getChannel().close();
-        
+
     }
-    
-    
+
+
 }

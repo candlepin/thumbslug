@@ -309,23 +309,25 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         request.setUri(rebuiltUri);
 
         try {
-                clientFactory.getPipeline(e.getChannel(),
-                    isKeepAlive(request), pem, new OnCdnConnectedCallback() {
-                        @Override
-                        public void onCdnConnected(Channel channel) {
-                            channel.write(request);
-                            inbound.setReadable(true);
-                        }
-                        @Override
-                        public void onCdnError(Channel channel) {
-                            // this is where we send a 502 back if we could not interpret the cert from candlepin
-                            HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_GATEWAY);
-                            inbound.write(response);
-                            inbound.setReadable(true);
-                            inbound.close();
-                            channel.close();
-                        }
-                    });
+            clientFactory.getPipeline(e.getChannel(),
+                isKeepAlive(request), pem, new OnCdnConnectedCallback() {
+                    @Override
+                    public void onCdnConnected(Channel channel) {
+                        channel.write(request);
+                        inbound.setReadable(true);
+                    }
+                    @Override
+                    public void onCdnError(Channel channel) {
+                        // this is where we send a 502 back if we could not
+                        // interpret the cert from candlepin
+                        HttpResponse response = new DefaultHttpResponse(
+                            HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_GATEWAY);
+                        inbound.write(response);
+                        inbound.setReadable(true);
+                        inbound.close();
+                        channel.close();
+                    }
+                });
         }
         catch (SslPemException p) {
             // thrown when we can't build an ssl engine from the pem cert.

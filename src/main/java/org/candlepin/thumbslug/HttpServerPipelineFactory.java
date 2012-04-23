@@ -72,7 +72,8 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 
         pipeline.addLast("logger", new HttpRequestLogger(config.getProperty("log.access")));
 
-        pipeline.addLast("handler", new HttpRequestHandler(config, httpClientPipelineFactory));
+        pipeline.addLast("handler", new HttpRequestHandler(config,
+                                            httpClientPipelineFactory));
         return pipeline;
     }
 }
