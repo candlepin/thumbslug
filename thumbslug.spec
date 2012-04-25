@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.22
+Version: 0.0.23
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -175,6 +175,12 @@ fi
 
 
 %changelog
+* Wed Apr 25 2012 Chris Duryee (beav) <cduryee@redhat.com>
+- Initial proxy support for thumbslug (cduryee@redhat.com)
+- Exclude manifest.mf files for sub-jars from being included in thumbslug.jar
+  (cduryee@redhat.com)
+- print shutdown message during error conditions (cduryee@redhat.com)
+
 * Mon Apr 09 2012 Chris Duryee (beav) <cduryee@redhat.com>
 - just build x86_64 in fedora for now (cduryee@redhat.com)
 - jar inclusion and log fix (cduryee@redhat.com)
