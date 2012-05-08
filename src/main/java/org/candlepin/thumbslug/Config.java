@@ -122,6 +122,9 @@ public class Config {
 
     public boolean getBoolean(String key) {
         String prop = getProperty(key);
+        if (prop == null) {
+            throw new RuntimeException("unable to find value for config property " + key);
+        }
         boolean value = false;
         if (prop.toLowerCase().equals("true") || prop.toLowerCase().equals("yes") ||
             prop.equals("1")) {
