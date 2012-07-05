@@ -8,12 +8,12 @@ module ThumbslugMethods
   def get(url_str, headers = nil, pem = nil)
     uri = URI.parse(url_str)
     client = Net::HTTP.new uri.host, uri.port
-    if uri.scheme == 'https':
+    if uri.scheme == 'https'
       client.use_ssl = true
       client.verify_mode = OpenSSL::SSL::VERIFY_NONE #TODO: verify server
       client.ca_file = "CA/cacert.pem"
 
-      if pem.nil?:
+      if pem.nil?
         pem = "spec/data/spec/test-entitlement.pem"
       end
 
