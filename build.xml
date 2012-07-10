@@ -80,35 +80,10 @@
   </target>
 
   <target name="package" depends="compile">
-      <fail message="unable to find needed jar">
-        <condition>
-         <not>
-          <and>
-             <available file="${lib.dir}/netty.jar" type="file"/>
-             <available file="${lib.dir}/log4j.jar" type="file"/>
-             <available file="${lib.dir}/akuma.jar" type="file"/>
-             <available file="${lib.dir}/jna.jar" type="file"/>
-             <available file="${lib.dir}/oauth.jar" type="file"/>
-             <available file="${lib.dir}/oauth-consumer.jar" type="file"/>
-             <available file="${lib.dir}/commons-codec.jar" type="file"/>
-          </and>
-          </not>
-         </condition>
-      </fail>
-
     <jar destfile="${ts.jar}">
       <fileset dir="${target.dir}/classes"/>
       <fileset dir="${target.dir}/resources"/>
 
-      <zipgroupfileset dir="${lib.dir}">
-        <include name="netty.jar"/>
-        <include name="log4j.jar"/>
-        <include name="akuma.jar"/>
-        <include name="jna.jar"/>
-        <include name="oauth.jar"/>
-        <include name="oauth-consumer.jar"/>
-        <include name="commons-codec.jar"/>
-      </zipgroupfileset>
       <manifest>
         <attribute name="Implementation-Vendor" value="" />
         <attribute name="Manifest-Version" value="1.0" />
