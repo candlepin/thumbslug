@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.24
+Version: 0.0.25
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -181,6 +181,11 @@ fi
 
 
 %changelog
+* Wed Jul 11 2012 Chris Duryee (beav) <cduryee@redhat.com>
+- 837386: do not package jars with thumbslug (cduryee@redhat.com)
+- fixups for ruby 1.9 and java 1.7 (cduryee@redhat.com)
+- adding test config with fake values to test Config (jmrodri@gmail.com)
+
 * Tue May 08 2012 Chris Duryee (beav) <cduryee@redhat.com>
 - 819662: missing default for cdn.proxy value (cduryee@redhat.com)
 
