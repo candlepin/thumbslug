@@ -2,7 +2,7 @@
 # CHECKSTYLE task, a Buildr plugin would be better, but this is faster
 #
 
-require 'buildr/java'
+#require 'buildr/java'
 
 CHECKSTYLE = transitive('checkstyle:checkstyle:jar:5.0')
 
