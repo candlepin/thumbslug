@@ -22,6 +22,7 @@ repositories.remote << "http://oauth.googlecode.com/svn/code/maven/"
 
 require './buildr/checkstyle'
 require 'rspec/core/rake_task'
+require 'buildr/java/emma'
 
 NETTY = transitive 'org.jboss.netty:netty:jar:3.2.6.Final'
 LOG4J = 'log4j:log4j:jar:1.2.14'
