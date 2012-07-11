@@ -80,6 +80,12 @@ module ThumbslugMethods
   end
 
   def create_thumbslug(params={})
+
+    classpath = "/usr/share/java/netty.jar:/usr/share/java/log4j.jar:/usr/share/java/jna.jar"
+    classpath << ":/usr/share/java/commons-codec.jar:/usr/share/java/akuma.jar"
+    classpath << ":/usr/share/java/oauth/oauth.jar:/usr/share/java/oauth/oauth-consumer.jar"
+    classpath << ":" + Dir.pwd + "/target/thumbslug-1.0.0.jar"
+
     #these need to all be strings
     config = {
      :port => '8088',
@@ -102,7 +108,8 @@ module ThumbslugMethods
       config[key] = value
     end
 
-    tslug_exec_string = "java " + 
+    tslug_exec_string = "java " +
+                 " -cp #{classpath}" +
                  " -Ddaemonize=false" +
                  " -Dport=" + config[:port] +
                  " -Dssl=" + config[:ssl] +
@@ -121,7 +128,7 @@ module ThumbslugMethods
                  " -Dcdn.proxy=false" +
                  #" -Dcdn.proxy.host=proxy-ip-here" +
                  #" -Dcdn.proxy.port=proxy-port-here" +
-                 " -jar " +  Dir.pwd + "/target/thumbslug-1.0.0.jar"
+                 " org.candlepin.thumbslug.Main"
     pipe = IO.popen(tslug_exec_string, "w+")
     #this is perlesque
     while pipe.gets()
