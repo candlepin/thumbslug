@@ -11,7 +11,7 @@ COPYRIGHT = ""
 
 classpath = "/usr/share/java/netty.jar:/usr/share/java/log4j.jar:/usr/share/java/jna.jar"
 classpath << ":/usr/share/java/commons-codec.jar:/usr/share/java/akuma.jar"
-classpath << ":/usr/share/java/oauth/oauth.jar:/usr/share/java/oauth/oauth-consumer.jar"
+classpath << ":/usr/share/java/oauth.jar:/usr/share/java/oauth-consumer.jar"
 classpath << ":target/#{GROUP}-#{VERSION_NUMBER}.jar"
 
 # Specify Maven 2.0 remote repositories here, like this:
