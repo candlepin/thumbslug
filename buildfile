@@ -35,6 +35,10 @@ define "thumbslug" do
   project.group = GROUP
   manifest["Implementation-Vendor"] = COPYRIGHT
   manifest["Main-Class"] = "org.candlepin.thumbslug.Main"
+
+  compile.options.target = '1.6'
+  compile.options.source = '1.6'
+
   compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC]
   test.compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC]
   test.with [JUNIT, MOCKITO]
