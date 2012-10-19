@@ -14,6 +14,8 @@
  */
 package org.candlepin.thumbslug;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelEvent;
@@ -54,10 +56,19 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
          * happening because of a misconfiguration, and we've timedout trying to connect to
          * the cdn. Thus, the client hasn't even had a chance yet to send its request up.
          * Delay sending the 502 till after the client begins a write, then shut them down.
+         *
+         * If the exception is SSL connection related, like unable to verify a cert, then
+         * just close things out right away. otherwise we don't seem to hit the
+         * messageReceived call.
          */
-        pendingException = true;
 
-        e.getCause().printStackTrace();
+        log.error("Exception caught!", e.getCause());
+        if (e.getCause() instanceof SSLHandshakeException) {
+            throwFiveOhTwo();
+        }
+        else {
+            pendingException = true;
+        }
     }
 
     /**
@@ -117,18 +128,23 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
     public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
         throws Exception {
         if (pendingException) {
-            HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-                HttpResponseStatus.BAD_GATEWAY);
-            ChannelFuture future = client.write(response);
-            if (!keepAlive) {
-                future.addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture arg0) throws Exception {
-                        client.close();
-                    }
-                });
-            }
+            pendingException = false;
+            throwFiveOhTwo();
         }
         super.handleUpstream(ctx, e);
+    }
+
+    private void throwFiveOhTwo() {
+        HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
+            HttpResponseStatus.BAD_GATEWAY);
+        ChannelFuture future = client.write(response);
+        if (!keepAlive) {
+            future.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture arg0) throws Exception {
+                    client.close();
+                }
+            });
+        }
     }
 }

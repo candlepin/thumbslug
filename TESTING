@@ -1,0 +1,59 @@
+# Thumbslug needs a lot of SSL certs in place for spec testing.
+# Rather than generate them at test time, we have them stored in the repo.
+# If you need to regenerate them, this is how!
+
+
+# create a CA that will sign the cdn cert:
+openssl req \
+  -x509 -nodes -days 3650 \
+    -subj '/C=US/L=Raleigh/CN=a.fake.cdn' \
+      -newkey rsa:1024 -keyout spec/data/CA/cdn-ca-key.pem -out \
+      spec/data/CA/cdn-ca.pem
+
+
+# create a cert for the cdn, and sign it with the CA cert from above:
+openssl req \
+  -new -newkey rsa:1024 -nodes \
+    -subj '/CN=www.mycdn.com/C=US/L=Raleigh' \
+      -keyout spec/data/cdn-key.pem -out spec/data/cdn.pem.req
+
+openssl x509 -in spec/data/cdn.pem.req -out spec/data/cdn.pem -req \
+    -days 3650 \
+    -CA spec/data/CA/cdn-ca.pem \
+    -CAkey spec/data/CA/cdn-ca-key.pem \
+    -CAcreateserial
+
+# create a cert for the cdn client and sign it with the CA cert from above:
+openssl req \
+  -new -newkey rsa:1024 -nodes \
+    -subj '/CN=cdn.client/C=US/L=Raleigh' \
+      -keyout spec/data/cdn-client-key.pem -out spec/data/cdn-client.pem.req
+
+openssl x509 -in spec/data/cdn-client.pem.req -out spec/data/cdn-client.pem -req \
+    -days 3650 \
+    -CA spec/data/CA/cdn-ca.pem \
+    -CAkey spec/data/CA/cdn-ca-key.pem \jkj
+    -CAcreateserial
+cat spec/data/cdn-client-key.pem >> spec/data/cdn-client.pem
+
+#create a self-signed cert for the client to use (unknown ca)
+#and to act as a CA that will not be able to auth the CDN
+openssl req \
+  -x509 -nodes -days 3650 \
+    -subj '/C=US/L=Raleigh/CN=unknown.ca' \
+      -newkey rsa:1024 -keyout spec/data/unknown-ca-key.pem \
+      -out spec/data/unknown-ca.pem
+ cat spec/data/unknown-ca-key.pem >> spec/data/unknown-ca.pem
+
+
+# to generate the pkcs12 server keystore:
+openssl req -x509 -new -out CERT.crt -keyout KEY.key -days 3650 \
+    -subj "/CN=localhost/C=US/L=Raleigh/"
+# enter password/password
+openssl pkcs12 -export -in CERT.crt -inkey KEY.key -out keystore.p12 \
+    -name thumbslug -chain -password pass:password
+# enter password
+# if you see 'unable to write random state, you might need to sudo rm ~/.rnd
+
+#to make a pkcs12 cert for use on thumbslug as a client talkign to the cdn
+openssl pkcs12 -export -inkey cakeypair.pem -in cacert.pem -out keystore-spec.p12 -name thumbslug

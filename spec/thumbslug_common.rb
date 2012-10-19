@@ -24,9 +24,9 @@ module ThumbslugMethods
   end
 
   def create_httpd(secure=false)
-    privkey = OpenSSL::PKey::RSA.new(File.read("spec/data/webrick/webrick-server_keypair.pem"), '5678')
-    server_cert = OpenSSL::X509::Certificate.new(File.read("spec/data/webrick/cert_webrick-server.pem"))
-    ca_cert = "spec/data/CA/cacert.pem" 
+    privkey = OpenSSL::PKey::RSA.new(File.read("spec/data/cdn-key.pem"))
+    server_cert = OpenSSL::X509::Certificate.new(File.read("spec/data/cdn.pem"))
+    ca_cert = "spec/data/CA/cdn-ca.pem" 
     if secure
       config = {
         :Port => 9090,
@@ -81,10 +81,7 @@ module ThumbslugMethods
 
   def create_thumbslug(params={})
 
-    classpath = "/usr/share/java/netty.jar:/usr/share/java/log4j.jar:/usr/share/java/jna.jar"
-    classpath << ":/usr/share/java/commons-codec.jar:/usr/share/java/akuma.jar"
-    classpath << ":/usr/share/java/oauth/oauth.jar:/usr/share/java/oauth/oauth-consumer.jar"
-    classpath << ":" + Dir.pwd + "/target/thumbslug-1.0.0.jar"
+    jar = " -jar " + Dir.pwd + "/target/thumbslug-1.0.0.jar"
 
     #these need to all be strings
     config = {
@@ -92,11 +89,13 @@ module ThumbslugMethods
      :ssl => 'true',
      :ssl_keystore => 'spec/data/keystore-spec.p12',
      :ssl_keystore_password => 'pass',
-     :ssl_client_keystore => 'spec/data/cdnclient.pem',
+     :ssl_ca_keystore => 'spec/data/CA/cpin-cacert.pem',
+     :ssl_client_keystore => 'spec/data/cdn-client.pem',
      :ssl_client_dynamic_ssl => 'false',
      :cdn_port => '9090',
      :cdn_host => 'localhost',
      :cdn_ssl => 'true',
+     :cdn_ssl_ca_keystore => 'spec/data/CA/cdn-ca.pem',
      :cdn_sendTSHeader => 'false',
      :candlepin_host => 'localhost',
      :candlepin_port => '9898',
@@ -109,7 +108,6 @@ module ThumbslugMethods
     end
 
     tslug_exec_string = "java " +
-                 " -cp #{classpath}" +
                  " -Ddaemonize=false" +
                  " -Dport=" + config[:port] +
                  " -Dssl=" + config[:ssl] +
@@ -117,18 +115,22 @@ module ThumbslugMethods
                  " -Dssl.client.dynamicSsl=" + config[:ssl_client_dynamic_ssl] +
                  " -Dssl.keystore=" + config[:ssl_keystore] +
                  " -Dssl.keystore.password=" + config[:ssl_keystore_password] +
+                 " -Dssl.ca.keystore=" + config[:ssl_ca_keystore] +
                  " -Dcdn.port=" + config[:cdn_port] +
                  " -Dcdn.host=" + config[:cdn_host] +
                  " -Dcdn.ssl=" + config[:cdn_ssl] +
+                 " -Dcdn.ssl.ca.keystore=" + config[:cdn_ssl_ca_keystore] +
                  " -Dcandlepin.host=" + config[:candlepin_host] +
                  " -Dcandlepin.port=" + config[:candlepin_port] +
                  " -Dcdn.sendTSheader=" + config[:cdn_sendTSHeader] +
                  " -Dcandlepin.oauth.key=" + config[:candlepin_oauth_key] +
                  " -Dcandlepin.oauth.secret=" + config[:candlepin_oauth_secret] +
                  " -Dcdn.proxy=false" +
+                 " -Dlog.error=error.log" +
+                 " -Dlog.access=access.log" +
                  #" -Dcdn.proxy.host=proxy-ip-here" +
                  #" -Dcdn.proxy.port=proxy-port-here" +
-                 " org.candlepin.thumbslug.Main"
+                 jar
     pipe = IO.popen(tslug_exec_string, "w+")
     #this is perlesque
     while pipe.gets()

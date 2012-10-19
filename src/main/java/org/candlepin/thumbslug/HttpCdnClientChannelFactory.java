@@ -65,8 +65,8 @@ class HttpCdnClientChannelFactory {
 
         if (config.getBoolean("cdn.ssl")) {
             //this is where we bomb if we can't read the PEM data from cpin
-            SSLEngine engine = SslContextFactory.getClientContext(pem)
-                                        .createSSLEngine();
+            SSLEngine engine = SslContextFactory.getClientContext(pem,
+                config.getProperty("cdn.ssl.ca.keystore")).createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }

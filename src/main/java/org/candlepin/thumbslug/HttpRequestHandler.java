@@ -192,7 +192,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
                     @Override
                     public void onOtherResponse(int code) {
-                        log.error("Unexpected response code from candlepin: ");
+                        log.error("Unexpected response code from candlepin: " + code);
                         sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
                     }
 
@@ -262,7 +262,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
                 @Override
                 public void onOtherResponse(int code) {
-                    log.info("Unexpected response code from candlepin: ");
+                    log.error("Unexpected response code from candlepin: " + code);
                     sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
                 }
 
