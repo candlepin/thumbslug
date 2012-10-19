@@ -9,11 +9,6 @@ VERSION_NUMBER = "1.0.0"
 GROUP = "thumbslug"
 COPYRIGHT = ""
 
-classpath = "/usr/share/java/netty.jar:/usr/share/java/log4j.jar:/usr/share/java/jna.jar"
-classpath << ":/usr/share/java/commons-codec.jar:/usr/share/java/akuma.jar"
-classpath << ":/usr/share/java/oauth.jar:/usr/share/java/oauth-consumer.jar"
-classpath << ":target/#{GROUP}-#{VERSION_NUMBER}.jar"
-
 # Specify Maven 2.0 remote repositories here, like this:
 repositories.remote << "http://mirrors.ibiblio.org/pub/mirrors/maven2/"
 repositories.remote << "https://repository.jboss.org/nexus/content/repositories/releases/"
@@ -39,6 +34,7 @@ define "thumbslug" do
   project.version = VERSION_NUMBER
   project.group = GROUP
   manifest["Implementation-Vendor"] = COPYRIGHT
+  manifest["Main-Class"] = "org.candlepin.thumbslug.Main"
   compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC]
   test.compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC]
   test.with [JUNIT, MOCKITO]
@@ -49,11 +45,20 @@ define "thumbslug" do
   #
   eclipse.natures 'org.eclipse.jdt.core.javanature'
   eclipse.builders 'org.eclipse.jdt.core.javabuilder'
+
+  # include netty (and deps) in the jar, so it can run standalone
+  # we exclude the manifests of the sub-jars so they don't overwrite
+  # our own manifest.mf
+  package(:jar).merge(NETTY).exclude("META-INF/MANIFEST.MF")
+  package(:jar).merge(LOG4J).exclude("META-INF/MANIFEST.MF")
+  package(:jar).merge(DAEMON).exclude("META-INF/MANIFEST.MF")
+  package(:jar).merge(OAUTH).exclude("META-INF/MANIFEST.MF")
+  package(:jar).merge(COMMONSCODEC).exclude("META-INF/MANIFEST.MF")
   package(:jar).with(:manifest => manifest)
 end
 
 task :serve do
-    sh "java -cp #{classpath} org.candlepin.thumbslug.Main"
+    sh "java -jar target/#{GROUP}-#{VERSION_NUMBER}.jar"
 end
 task :serve => :package
 
