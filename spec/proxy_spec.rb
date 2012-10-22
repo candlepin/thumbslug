@@ -1,7 +1,7 @@
 require 'webrick'
 require 'net/http'
 require 'uri'
-require_relative 'thumbslug_common'
+require 'thumbslug_common'
 
 include WEBrick
 

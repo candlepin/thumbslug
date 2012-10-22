@@ -1,4 +1,4 @@
-require_relative 'thumbslug_common'
+require 'thumbslug_common'
 require 'openssl'
 require 'socket'
 
