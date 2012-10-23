@@ -116,9 +116,9 @@ end
 include WEBrick
 
 def create_candlepin(cert_handler, params = {})
-    privkey = OpenSSL::PKey::RSA.new(File.read("spec/data/webrick/webrick-server_keypair.pem"), '5678')
-    server_cert = OpenSSL::X509::Certificate.new(File.read("spec/data/webrick/cert_webrick-server.pem"))
-    ca_cert = "spec/data/CA/cacert.pem" 
+    privkey = OpenSSL::PKey::RSA.new(File.read("spec/data/cdn-key.pem"))
+    server_cert = OpenSSL::X509::Certificate.new(File.read("spec/data/cdn.pem"))
+    ca_cert = "spec/data/CA/ca-cert.pem" 
       config = {
         :Port => 9898,
         :BindAddress => '127.0.0.1',
@@ -147,9 +147,10 @@ def create_candlepin(cert_handler, params = {})
         server = HTTPServer.new(config)
         trap('INT') { server.stop }
         # NOTE: this is the id hardcoded into our test cert.
-        sub_id = 'ff808081338d898a01338d89eccc0097'
+        sub_id = 'ff8080813a73d4b6013a73d5b82e01f4'
+        ent_id = 'ff8080813a73d4b6013a7ae77cbf2f4c'
         server.mount "/candlepin/subscriptions/#{sub_id}/cert", cert_handler
-        server.mount "/candlepin/entitlements/ff808081338d898a01338f0247572038", ConsumerCheck
+        server.mount "/candlepin/entitlements/#{ent_id}", ConsumerCheck
         wr.write "Started webrick"
       rescue Exception => e
         wr.write "Error starting webrick:\n"
@@ -182,7 +183,7 @@ class Cert < WEBrick::HTTPServlet::AbstractServlet
     response.status = 200
     response['Content-Type'] = "text/plain"
     body = ""
-    File.open("spec/data/cdnclient.pem", 'r') do |file|
+    File.open("spec/data/cdn-client.pem", 'r') do |file|
         body = file.read
     end
     response.body = body
@@ -202,16 +203,9 @@ end
 class ConsumerCheck < WEBrick::HTTPServlet::AbstractServlet
 
   def do_GET(request, response)
-    if request.request_uri.path.split('/')[-1] == "ff808081338d898a01338f0247572038"
-        response.status = 200
-        response['Content-Type'] = "text/plain"
-        #the TS code does not care about the body, only the response status
-        response.body = "This is an unread entitlement cert"
-    else
-        response.status = 404
-        response['Content-Type'] = "text/plain"
-        #the TS code does not care about the body, only the response status
-        response.body = "no cert here"
-    end
+    response.status = 200
+    response['Content-Type'] = "text/plain"
+    #the TS code does not care about the body, only the response status
+    response.body = "This is an unread entitlement cert"
   end
 end

@@ -32,7 +32,7 @@ describe 'HTTPS proxying' do
 
   it 'validate mocked env' do
     filename = Dir.pwd + '/spec/data/random.10k'
-    response = get('https://127.0.0.1:9090/random.10k', nil, 'spec/data/cdnclient.pem')
+    response = get('https://127.0.0.1:9090/random.10k', nil, 'spec/data/cdn-client.pem')
 
     file_digest = Digest::MD5.hexdigest(File.read(filename))
     uri_digest = Digest::MD5.hexdigest(response.body)
