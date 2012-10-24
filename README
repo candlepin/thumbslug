@@ -32,6 +32,8 @@ You'll need to do a bit of setup first, before thumbslug will work.
    candlepin.auth.oauth.consumer.thumbslug.secret = <SECRET>
    In /etc/thumbslug/thumbslug.conf, set
    candlepin.oauth.secret = <SECRET>
+ - copy your candlepin's CA cert (what your entitlement certs are signed with)
+   to /etc/thumbslug/client-ca.pem
 
 That's it!
 
@@ -54,6 +56,9 @@ ssl = <true|false> ................. :: use ssl for client to thumbslug
 ssl.keystore = <string> ............ :: pkcs12 keystore for client to thumbslug
                                         ssl verification
 ssl.keystore.password = <string> ... :: password for above
+ssl.ca.keystore = <string> ......... :: pem formatted x509 certificate to use
+                                        to verify client entitlment
+                                        certificates
 
 ssl.client.dynamicSsl = <true|false> :: grab entitlement certificates from
                                         candlepin for thumbslug to cdn
@@ -64,6 +69,8 @@ ssl.client.keystore = <string> ..... :: pem formatted x509 certifcate to use
 cdn.port = <integer> ............... :: the remote cdn port to connect to
 cdn.host = <string> ................ :: hostname of the cdn
 cdn.ssl = <true|false> ............. :: use ssl for connecting to the cdn
+cdn.ssl.ca.keystore = <string> ..... :: pem formatted x509 certificate to use
+                                        to verify the cdn's certificate
 cdn.sendTSheader = <true|false> .... :: add thumbslug version to cdn request
 
 log.access = <string> .............. :: client to thumbslug http access log

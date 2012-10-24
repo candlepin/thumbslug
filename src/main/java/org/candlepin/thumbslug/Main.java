@@ -28,8 +28,10 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 import org.candlepin.thumbslug.ssl.SslContextFactory;
 import org.candlepin.thumbslug.ssl.SslKeystoreException;
+import org.candlepin.thumbslug.ssl.SslPemException;
 
 import com.sun.akuma.Daemon;
 
@@ -65,7 +67,8 @@ public class Main {
 
         try {
             SslContextFactory.getServerContext(config.getProperty("ssl.keystore"),
-                config.getProperty("ssl.keystore.password"));
+                config.getProperty("ssl.keystore.password"),
+                config.getProperty("ssl.ca.keystore"));
             return true;
         }
         catch (SslKeystoreException e) {
@@ -73,10 +76,16 @@ public class Main {
                 "Check that ssl.keystore and ssl.keystore.password are set correctly.", e);
             return false;
         }
+        catch (SslPemException e) {
+            log.error("Unable to load the CA certificate. " +
+                "Check that ssl.ca.keystore is set correctly.", e);
+            return false;
+        }
     }
 
     private static void configureLogging(String fileName) {
         try {
+            Logger.getRootLogger().setLevel(Level.ALL);
             Layout layout = Logger.getRootLogger().getAppender("RootAppender").getLayout();
             FileAppender fileAppender = new FileAppender(layout, fileName);
             Logger.getRootLogger().addAppender(fileAppender);
