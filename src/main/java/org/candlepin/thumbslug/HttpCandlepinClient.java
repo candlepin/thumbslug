@@ -155,26 +155,6 @@ class HttpCandlepinClient {
         });
     }
 
-    public void getSubscriptionCertificate(final String subscriptionId) {
-        ChannelFactory channelFactory = new NioClientSocketChannelFactory(
-            Executors.newCachedThreadPool(),
-            Executors.newCachedThreadPool());
-
-        Channel requestChannel = channelFactory.newChannel(getPipeline());
-        // Set up the event pipeline factory.
-
-        // Start the connection attempt.
-        ChannelFuture future = requestChannel.connect(new InetSocketAddress(candlepinHost,
-            candlepinPort));
-
-        future.addListener(new ChannelFutureListener() {
-            public void operationComplete(final ChannelFuture future)
-                throws Exception {
-                onSubscriptionCertificate(future.getChannel(), subscriptionId);
-            }
-        });
-    }
-
     public void getSubscriptionCertificateViaEntitlementId(final String entitlementId) {
         ChannelFactory channelFactory = new NioClientSocketChannelFactory(
             Executors.newCachedThreadPool(),
@@ -201,13 +181,6 @@ class HttpCandlepinClient {
             useSSL ? "s" : "", candlepinHost, candlepinPort, entitlementUuid);
 
         onConnectedToCandlepin(channel, url, false);
-    }
-
-    private void onSubscriptionCertificate(Channel channel, String subscriptionId) {
-        String url = String.format("http%s://%s:%s/candlepin/subscriptions/%s/cert",
-            useSSL ? "s" : "", candlepinHost, candlepinPort, subscriptionId);
-
-        onConnectedToCandlepin(channel, url, true);
     }
 
     private void onSubscriptionCertificateViaEntitlementId(Channel channel,

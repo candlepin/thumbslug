@@ -108,48 +108,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         return null;
     }
 
-    private String getSubscriptionId(SslHandler handler) {
-        try {
-            X509Certificate cert = convertCertificate(
-                handler.getEngine().getSession().getPeerCertificateChain()[0]);
-
-            // order number OID.
-            byte[] raw = cert.getExtensionValue("1.3.6.1.4.1.2312.9.4.2");
-
-            String subId = DerDecoder.parseDerUtf8String(raw);
-            if (subId != null) {
-                subId = subId.trim();
-            }
-            return subId;
-        }
-        catch (SSLPeerUnverifiedException e) {
-            // This isn't going to happen here, afaik.
-            log.error("Unverified peer!", e);
-        }
-        return null;
-    }
-
-    private String getVersionId(SslHandler handler) {
-        try {
-            X509Certificate cert = convertCertificate(
-                handler.getEngine().getSession().getPeerCertificateChain()[0]);
-
-            // order number OID.
-            byte[] raw = cert.getExtensionValue("1.3.6.1.4.1.2312.9.6");
-
-            String subId = DerDecoder.parseDerUtf8String(raw);
-            if (subId != null) {
-                subId = subId.trim();
-            }
-            return subId;
-        }
-        catch (SSLPeerUnverifiedException e) {
-            // This isn't going to happen here, afaik.
-            log.error("Unverified peer!", e);
-        }
-        return null;
-    }
-
     private String getEntitlementId(SslHandler handler) {
         try {
             X509Certificate cert = convertCertificate(
@@ -174,20 +132,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         e.getChannel().setReadable(false);
 
         if (config.getBoolean("ssl.client.dynamicSsl")) {
-
-            final String versionId = getVersionId(
-                ctx.getChannel().getPipeline().get(SslHandler.class));
-
-            final String subscriptionId = getSubscriptionId(
-                ctx.getChannel().getPipeline().get(SslHandler.class));
-
-            if (subscriptionId == null && versionId.startsWith("1.")) {
-                log.error("unreadable subscription id");
-                sendResponseToClient(ctx, HttpResponseStatus.UNAUTHORIZED);
-
-                return;
-            }
-
             // Grab the entitlement UUID
             final String entitlementUuid = getEntitlementId(
                 ctx.getChannel().getPipeline().get(SslHandler.class));
@@ -197,8 +141,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                     @Override
                     public void onResponse(String buffer) throws Exception {
                         log.debug("Buffer for /entitlements call :" + buffer);
-                        retrieveUpstreamCertificate(ctx, e, subscriptionId,
-                            entitlementUuid);
+                        retrieveUpstreamCertificate(ctx, e, entitlementUuid);
                     }
 
                     @Override
@@ -263,7 +206,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     }
 
     private void retrieveUpstreamCertificate(final ChannelHandlerContext ctx,
-        final MessageEvent e, String subscriptionId, String entitlementId) {
+        final MessageEvent e, String entitlementId) {
         HttpCandlepinClient client = new HttpCandlepinClient(config,
             new CandlepinClientResponseHandler() {
                 @Override
@@ -291,12 +234,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
             });
 
-        if (subscriptionId != null) {
-            client.getSubscriptionCertificate(subscriptionId);
-        }
-        else {
-            client.getSubscriptionCertificateViaEntitlementId(entitlementId);
-        }
+        client.getSubscriptionCertificateViaEntitlementId(entitlementId);
     }
 
     private void sendResponseToClient(ChannelHandlerContext ctx,

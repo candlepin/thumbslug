@@ -72,30 +72,18 @@ describe 'Certificate download from candlepin' do
     end
   end
 
-  it 'returns a 401 for a certificate with no order number' do
+  it 'allows downloading content with a valid V3 certificate' do
     cpin_proc = create_candlepin(Cert)
 
     begin
       response = get('https://127.0.0.1:8088/lorem.ipsum', headers = nil,
-                     pem = 'spec/data/spec/no-order-cert.pem')
-      response.code.should == '401'
+                     pem = 'spec/data/spec/cert-v3.pem')
+      response.code.should == '200'
     ensure
       Process.kill('INT', cpin_proc)
       Process.wait(cpin_proc)
     end
 
-  end
-
-  it 'returns a 401 for a certificate with an unknown order number' do
-    cpin_proc = create_candlepin(FourOhFour)
-
-    begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum')
-      response.code.should == '401'
-    ensure
-      Process.kill('INT', cpin_proc)
-      Process.wait(cpin_proc)
-    end
   end
 
   it 'returns a 401 for a revoked certificate' do
@@ -149,8 +137,11 @@ def create_candlepin(cert_handler, params = {})
         # NOTE: this is the id hardcoded into our test cert.
         sub_id = 'ff8080813a73d4b6013a73d5b82e01f4'
         ent_id = 'ff8080813a73d4b6013a7ae77cbf2f4c'
-        server.mount "/candlepin/subscriptions/#{sub_id}/cert", cert_handler
+        ent_id_v3 = 'ff8080813a73d4b6013a7a1b959d2f38'
+        server.mount "/candlepin/entitlements/#{ent_id}/upstream_cert", cert_handler
+        server.mount "/candlepin/entitlements/#{ent_id_v3}/upstream_cert", cert_handler
         server.mount "/candlepin/entitlements/#{ent_id}", ConsumerCheck
+        server.mount "/candlepin/entitlements/#{ent_id_v3}", ConsumerCheck
         wr.write "Started webrick"
       rescue Exception => e
         wr.write "Error starting webrick:\n"
