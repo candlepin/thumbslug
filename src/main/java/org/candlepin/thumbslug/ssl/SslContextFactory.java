@@ -27,6 +27,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+import java.util.Scanner;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -43,15 +44,16 @@ public class SslContextFactory {
 
     private static final String PROTOCOL = "TLS";
 
-    // we only want to initialize the server context once.
+    // we only want to initialize the server and client context once.
     private static SSLContext serverContext = null;
+    private static SSLContext clientContext = null;
 
     private SslContextFactory() {
         // for checkstyle
     }
 
-    public static SSLContext getServerContext(String keystoreUrl, String keystorePassword)
-        throws SslKeystoreException {
+    public static SSLContext getServerContext(String keystoreUrl, String keystorePassword,
+        String caUrl) throws SslKeystoreException, SslPemException {
 
         if (serverContext != null) {
             return serverContext;
@@ -73,11 +75,18 @@ public class SslContextFactory {
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
             kmf.init(ks, keystorePassword.toCharArray());
 
+            Scanner scanner = new Scanner(new File(caUrl));
+            scanner.useDelimiter("\\Z");
+            String caPem = scanner.next();
+
             // Initialize the SSLContext to work with our key managers.
             serverContext = SSLContext.getInstance(PROTOCOL);
-            serverContext.init(
-                    kmf.getKeyManagers(),
-                    ServerContextTrustManagerFactory.getTrustManagers(), null);
+            serverContext.init(kmf.getKeyManagers(),
+                ServerContextTrustManager.getTrustManagers(
+                    PemChainLoader.loadChain(caPem)), null);
+        }
+        catch (SslPemException e) {
+            throw e;
         }
         catch (Exception e) {
             throw new SslKeystoreException(
@@ -99,11 +108,11 @@ public class SslContextFactory {
         return serverContext;
     }
 
-    public static SSLContext getClientContext(String pem) throws SslPemException {
-        SSLContext clientContext = null;
-        String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
-        if (algorithm == null) {
-            algorithm = "SunX509";
+    public static SSLContext getClientContext(String pem, String caUrl)
+        throws SslPemException {
+
+        if (clientContext != null) {
+            return clientContext;
         }
 
         try {
@@ -128,11 +137,15 @@ public class SslContextFactory {
             managers[0] = new PEMx509KeyManager();
             managers[0].addPEM(certificate, privateKey);
 
+            Scanner scanner = new Scanner(new File(caUrl));
+            scanner.useDelimiter("\\Z");
+            String caPem = scanner.next();
+
             // Initialize the SSLContext to work with our key managers.
             clientContext = SSLContext.getInstance(PROTOCOL);
-            clientContext.init(
-                    managers,
-                    ClientContextTrustManagerFactory.getTrustManagers(), null);
+            clientContext.init(managers,
+                    ClientContextTrustManager.getTrustManagers(
+                        PemChainLoader.loadChain(caPem)), null);
             log.debug("SSL context initialized!");
         }
         catch (Exception e) {
@@ -148,15 +161,11 @@ public class SslContextFactory {
         // Candlepin client context, we won't be sending up an ssl cert,
         // just verifying that of candlepin
         SSLContext clientContext = null;
-        String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
-        if (algorithm == null) {
-            algorithm = "SunX509";
-        }
 
         try {
             clientContext = SSLContext.getInstance(PROTOCOL);
-            clientContext.init(null,
-                ClientContextTrustManagerFactory.getTrustManagers(), null);
+            clientContext.init(null, ClientContextTrustManager.getTrustManagers(null),
+                null);
         }
         catch (NoSuchAlgorithmException e) {
             throw new Error("Failed to initialize the thumbslug to candlepin ssl context",

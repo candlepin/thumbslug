@@ -1,0 +1,37 @@
+= Making Your Thumbslug Connections Secure =
+
+Thumbslug should be run with all SSL options turned on. If you are running
+Thumbslug and Candlepin on the same system, you could run that connection
+without SSL, but do so with caution.
+
+An overview of the different communication paths, and each side verifies
+identity (communication is assumed to be secure by virtue of using SSL):
+
+ * _Client to Thumbslug_: Thumbslug runs this SSL connection with a certificate
+   signed by a CA that is configured on the client, allowing the client to
+   verify the server's identity (ssl.keystore). Thumbslug verifies that the
+   client certificate is valid both by checking that it has been signed by a
+   known CA (ssl.ca.keystore), and by confirming that Candlepin knows about the
+   provided certificate (which covers revocation).
+ 
+ * _Thumbslug to Candlepin_: No certificate verification is done on either side.
+   However, since OAuth is used for communication, both sides verify each
+   other's identity by virtue of a shared secret.
+ 
+ * _Thumbslug to CDN_: Thumbslug makes the CDN request using the entitlement
+   certificate it gets from Candlepin. This certificate has been signed by the
+   upstream CA that is paired with the CDN, so the CDN is able to verify it.
+   The CDN also checks a CRL to make sure the certificate is still valid.
+   Thumbslug verifies the identity of the CDN by checking that its certificate
+   is signed by a known CA (cdn.ssl.ca.keystore).
+
+Additionally, typical content that the client consumes (RPMS), are signed with
+a GPG key.
+
+Except when examining the two entitlement certificates, no revocations are
+considered.
+
+No hostname checks are done against any certificates.
+
+No certificates are considered valid if they are outside of their not
+before/not after periods.

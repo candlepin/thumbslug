@@ -19,9 +19,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-/**
- * HttpRequestLoggerTests
- */
 public class DerDecoderTest {
 
     @Test
@@ -86,9 +83,7 @@ public class DerDecoderTest {
         hello[1] = (byte) 0x81;
         hello[2] = (byte) 0xFF;
 
-        String expected = "";
         for (int i = 3; i < hello.length; i++) {
-            expected += "o";
             hello[i] = 0x6f;
         }
 

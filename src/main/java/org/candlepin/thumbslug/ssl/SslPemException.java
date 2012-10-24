@@ -24,4 +24,8 @@ public class SslPemException extends Exception {
     public SslPemException(String message, Exception exception) {
         super(message, exception);
     }
+
+    public SslPemException(String message) {
+        super(message);
+    }
 }

@@ -22,7 +22,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.Principal;
 import java.security.PrivateKey;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -53,11 +52,11 @@ public class PEMx509KeyManager extends X509ExtendedKeyManager {
     private PrivateKey privateKey;
     // we're assuming only a single certificate in the pem (so not a chain at all,
     // just the certificate for the subject).
-    private X509Certificate [] certificateChain = new X509Certificate[1];
+    private X509Certificate [] certificateChain;
 
     public void addPEM(String certificate, String privateKey)
-        throws GeneralSecurityException, IOException {
-        certificateChain[0] = getX509CertificateFromPem(certificate);
+        throws GeneralSecurityException, IOException, SslPemException {
+        certificateChain = PemChainLoader.loadChain(certificate);
         this.privateKey = getPrivateKeyFromPem(privateKey);
 
         log.debug("cert info! " + certificateChain[0].getSubjectDN().getName());
@@ -87,26 +86,6 @@ public class PEMx509KeyManager extends X509ExtendedKeyManager {
 
         KeyFactory fac = KeyFactory.getInstance("RSA");
         return fac.generatePrivate(keySpec);
-    }
-
-    private X509Certificate getX509CertificateFromPem(String pem)
-        throws GeneralSecurityException, IOException {
-
-        InputStream stream = new ByteArrayInputStream(pem.getBytes("UTF-8"));
-
-        PEMReader reader = new PEMReader(stream);
-        byte[] bytes = reader.getDerBytes();
-
-        if (!PEMReader.CERTIFICATE_X509_MARKER.equals(reader.getBeginMarker())) {
-            throw new IOException("Invalid PEM file: Unknown marker for " +
-                " public key or cert " + reader.getBeginMarker());
-        }
-
-        CertificateFactory fac = CertificateFactory.getInstance("X509");
-        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        X509Certificate cert = (X509Certificate) fac.generateCertificate(in);
-
-        return cert;
     }
 
     @Override
