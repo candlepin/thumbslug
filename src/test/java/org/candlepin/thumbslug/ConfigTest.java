@@ -15,8 +15,12 @@
 
 package org.candlepin.thumbslug;
 
+import java.util.Properties;
+
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * ConfigTest
@@ -35,5 +39,27 @@ public class ConfigTest {
         String result = config.getProperty("log.access");
         assertEquals(result, "/var/log/thumbslug/access.log");
     }
+
+    @Test
+    public void testConfigGetLogging() {
+        Config config = new Config();
+        Properties props = config.getLoggingConfig();
+        // No logging in default config
+        assertTrue(props.isEmpty());
+    }
+
+    @Test
+    public void TestConfigGetNamespaceProperties() {
+        Config config = new Config();
+        Properties props = config.getNamespaceProperties("");
+        assertFalse(props.isEmpty());
+
+        Properties noProps = config.getNamespaceProperties("this.does.not.exist");
+        assertTrue(noProps.isEmpty());
+
+        Properties sslProps = config.getNamespaceProperties("ssl.client");
+        assertEquals(2, sslProps.entrySet().size());
+    }
+
 
 }
