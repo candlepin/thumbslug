@@ -22,6 +22,7 @@ import org.candlepin.thumbslug.ssl.SslPemException;
 
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -61,10 +62,13 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     private Config config;
     private HttpCdnClientChannelFactory clientFactory;
+    private ChannelFactory channelFactory;
 
-    HttpRequestHandler(Config config, HttpCdnClientChannelFactory clientFactory) {
+    HttpRequestHandler(Config config, HttpCdnClientChannelFactory clientFactory,
+        ChannelFactory channelFactory) {
         this.config = config;
         this.clientFactory = clientFactory;
+        this.channelFactory = channelFactory;
     }
 
     @Override
@@ -162,7 +166,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                         sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
                     }
 
-                });
+                }, channelFactory);
 
             client.getSubscriptionCertificateViaEntitlementId(entitlementUuid);
         }

@@ -16,6 +16,7 @@ package org.candlepin.thumbslug;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -24,6 +25,7 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
@@ -149,14 +151,18 @@ public class Main {
             System.exit(ERROR_CONFIGURE_SSL);
         }
 
+        Executor executor = Executors.newCachedThreadPool();
+
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
-                new NioServerSocketChannelFactory(
-                        Executors.newCachedThreadPool(),
-                        Executors.newCachedThreadPool()));
+                new NioServerSocketChannelFactory(executor, executor));
+
+        OrderedMemoryAwareThreadPoolExecutor eventExecutor =
+            new OrderedMemoryAwareThreadPoolExecutor(16, 0, 0);
 
         // Set up the event pipeline factory.
-        bootstrap.setPipelineFactory(new HttpServerPipelineFactory(config));
+        bootstrap.setPipelineFactory(new HttpServerPipelineFactory(config, executor,
+            eventExecutor));
 
         // Bind and start to accept incoming connections.
         Channel channel = bootstrap.bind(new InetSocketAddress(port));

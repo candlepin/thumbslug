@@ -19,7 +19,6 @@ import static org.jboss.netty.channel.Channels.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
-import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLEngine;
 
@@ -40,7 +39,6 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpClientCodec;
@@ -70,9 +68,12 @@ class HttpCandlepinClient {
     private String oAuthKey;
     private String oAuthSecret;
 
+    private ChannelFactory channelFactory;
+
     HttpCandlepinClient(Config config,
-        CandlepinClientResponseHandler responseHandler) {
+        CandlepinClientResponseHandler responseHandler, ChannelFactory channelFactory) {
         this.responseHandler = responseHandler;
+        this.channelFactory = channelFactory;
 
         candlepinHost = config.getProperty("candlepin.host");
         candlepinPort = config.getInt("candlepin.port");
@@ -126,20 +127,18 @@ class HttpCandlepinClient {
                 //we got a 200 here, but not necessarily a valid cert.
                 responseHandler.onResponse(buffer);
             }
+            ctx.getChannel().close();
         }
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
             throws Exception {
             responseHandler.onError(e.getCause());
+            ctx.getChannel().close();
         }
     }
 
     public void getSubscriptionCertificateViaEntitlementId(final String entitlementId) {
-        ChannelFactory channelFactory = new NioClientSocketChannelFactory(
-            Executors.newCachedThreadPool(),
-            Executors.newCachedThreadPool());
-
         Channel requestChannel = channelFactory.newChannel(getPipeline());
         // Set up the event pipeline factory.
 

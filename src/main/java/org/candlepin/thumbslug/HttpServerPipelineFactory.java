@@ -14,9 +14,9 @@
  */
 package org.candlepin.thumbslug;
 
-import static org.jboss.netty.channel.Channels.*;
+import static org.jboss.netty.channel.Channels.pipeline;
 
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 
 import javax.net.ssl.SSLEngine;
 
@@ -27,6 +27,7 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
+import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
@@ -37,13 +38,14 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
     private Config config;
     private ChannelFactory channelFactory;
     private HttpCdnClientChannelFactory httpClientPipelineFactory;
+    private Executor eventExecutor;
 
-    public HttpServerPipelineFactory(Config config) {
+    public HttpServerPipelineFactory(Config config, Executor executor,
+        Executor eventExecutor) {
         this.config = config;
+        this.eventExecutor = eventExecutor;
 
-        channelFactory = new NioClientSocketChannelFactory(
-            Executors.newCachedThreadPool(),
-            Executors.newCachedThreadPool());
+        channelFactory = new NioClientSocketChannelFactory(executor, executor);
         httpClientPipelineFactory = new HttpCdnClientChannelFactory(config, channelFactory);
     }
 
@@ -73,8 +75,9 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 
         pipeline.addLast("logger", new HttpRequestLogger(config.getProperty("log.access")));
 
+        pipeline.addLast("pipelineExecutor", new ExecutionHandler(eventExecutor));
         pipeline.addLast("handler", new HttpRequestHandler(config,
-                                            httpClientPipelineFactory));
+                                            httpClientPipelineFactory, channelFactory));
         return pipeline;
     }
 }
