@@ -16,7 +16,7 @@
 package org.candlepin.thumbslug;
 
 import org.junit.Test;
-
+import static org.junit.Assert.assertEquals;
 
 /**
  * ConfigTest
@@ -27,6 +27,13 @@ public class ConfigTest {
     public void testRuntimeExceptionOnBadConfigLookup() {
         Config config = new Config();
         config.getBoolean("foofoofoofoo");
+    }
+
+    @Test
+    public void testConfigGetString() {
+        Config config = new Config();
+        String result = config.getProperty("log.access");
+        assertEquals(result, "/var/log/thumbslug/access.log");
     }
 
 }
