@@ -19,6 +19,14 @@ require './buildr/checkstyle'
 require 'rspec/core/rake_task'
 require 'buildr/java/emma'
 
+# dont require findbugs by default
+# needs "buildr-findBugs" gem installed
+# (and findbugs and it's large set of deps)
+findbugs = ENV['findbugs']
+if not findbugs.nil?
+    require 'buildr-findBugs'
+end
+
 NETTY = transitive 'org.jboss.netty:netty:jar:3.2.6.Final'
 LOG4J = 'log4j:log4j:jar:1.2.14'
 DAEMON = transitive 'org.kohsuke:akuma:jar:1.7'
