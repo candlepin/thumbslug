@@ -42,14 +42,14 @@ public class ConfigTest {
 
     @Test
     public void testConfigGetLogging() {
-        Config config = new Config();
+        Config config = new Config(null);
         Properties props = config.getLoggingConfig();
         // No logging in default config
         assertTrue(props.isEmpty());
     }
 
     @Test
-    public void TestConfigGetNamespaceProperties() {
+    public void testConfigGetNamespaceProperties() {
         Config config = new Config();
         Properties props = config.getNamespaceProperties("");
         assertFalse(props.isEmpty());
