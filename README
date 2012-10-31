@@ -81,3 +81,12 @@ candlepin.port = <integer> ......... :: candlepin port
 candlepin.ssl = <true|false> ....... :: use ssl to talk to candlepin
 candlepin.oauth.key = <string> ..... :: shared secret with candlepin
 candlepin.oauth.secret = <string> .. :: shared secret password with candlepin
+
+== logging properties ==
+
+Logging levels and properties can be set at runtime in the thumbslug.conf.
+
+For ex:
+
+log4j.logger.org.candlepin.thumbslug=INFO
+log4j.logger.org.candlepin.thumbslug.HttpRequestHandler=DEBUG
