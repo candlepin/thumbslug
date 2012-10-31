@@ -16,7 +16,6 @@ package org.candlepin.thumbslug;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.Executors;

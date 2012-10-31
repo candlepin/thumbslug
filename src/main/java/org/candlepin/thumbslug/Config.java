@@ -21,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -122,9 +121,9 @@ public class Config {
     }
 
     @SuppressWarnings("unchecked")
-    private TreeMap<String,String> propsToConfiguration(Properties loadedProps)
+    private TreeMap<String, String> propsToConfiguration(Properties loadedProps)
     {
-        TreeMap<String,String> configMap;
+        TreeMap<String, String> configMap;
         configMap = new TreeMap<String, String>();
         configMap.putAll((Map) loadedProps);
         return configMap;
