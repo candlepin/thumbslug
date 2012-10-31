@@ -41,11 +41,11 @@ public class Config {
 
     // NavigableMap based for finding subMap of config
     protected TreeMap<String, String> configuration = null;
+    private String configFile = null;
 
     private static Logger log = Logger.getLogger(Config.class);
 
-
-    public Config() {
+    public Config(String configFile) {
 
         Properties props;
         // load default properties, and then attempt to overwrite
@@ -75,25 +75,8 @@ public class Config {
         // they'll be listed but not set.
         requiredKeys = props.keySet();
 
-        // override any defaults with the config file
-        // and include any new props
-        try {
-            File configFile = new File(CONFIG_FILE);
-            is = new FileInputStream(configFile);
-            props.load(is);
-        }
-        catch (IOException e) {
-            // no need to bail out here, just log it
-            log.warn("Could not read " + CONFIG_FILE, e);
-        }
-        finally {
-            try {
-                is.close();
-            }
-            catch (IOException e) {
-                // no need to bail out here, just log it
-                log.warn("Could not close handle for " + CONFIG_FILE, e);
-            }
+        if (configFile  != null) {
+            loadConfigFile(props, configFile);
         }
 
         Set<String> missingKeys = new HashSet<String>();
@@ -118,6 +101,40 @@ public class Config {
         // search for logging properties, etc, override default
         // and config
         configuration.putAll(propsToConfiguration(System.getProperties()));
+    }
+
+    public Config() {
+        this(CONFIG_FILE);
+
+    }
+    /**
+     * @param properties file to extend with values from
+     *        config file
+     * @param configFilePath path to config file to load
+     */
+    private void loadConfigFile(Properties props, String configFilePath) {
+        FileInputStream is = null;
+
+        // override any defaults with the config file
+        // and include any new props
+        try {
+            File configFile = new File(configFilePath);
+            is = new FileInputStream(configFile);
+            props.load(is);
+        }
+        catch (IOException e) {
+            // no need to bail out here, just log it
+            log.warn("Could not read " + configFilePath, e);
+        }
+        finally {
+            try {
+                is.close();
+            }
+            catch (IOException e) {
+                // no need to bail out here, just log it
+                log.warn("Could not close handle for " + configFilePath, e);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
