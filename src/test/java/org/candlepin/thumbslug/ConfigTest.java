@@ -27,15 +27,16 @@ import static org.junit.Assert.assertTrue;
  */
 public class ConfigTest {
 
+    //Config(null) to not read the default config file
     @Test(expected = RuntimeException.class)
     public void testRuntimeExceptionOnBadConfigLookup() {
-        Config config = new Config();
+        Config config = new Config(null);
         config.getBoolean("foofoofoofoo");
     }
 
     @Test
     public void testConfigGetString() {
-        Config config = new Config();
+        Config config = new Config(null);
         String result = config.getProperty("log.access");
         assertEquals(result, "/var/log/thumbslug/access.log");
     }
@@ -50,7 +51,7 @@ public class ConfigTest {
 
     @Test
     public void testConfigGetNamespaceProperties() {
-        Config config = new Config();
+        Config config = new Config(null);
         Properties props = config.getNamespaceProperties("");
         assertFalse(props.isEmpty());
 
