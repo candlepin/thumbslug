@@ -140,8 +140,6 @@ def create_candlepin(cert_handler, params = {})
         ent_id_v3 = 'ff8080813a73d4b6013a7a1b959d2f38'
         server.mount "/candlepin/entitlements/#{ent_id}/upstream_cert", cert_handler
         server.mount "/candlepin/entitlements/#{ent_id_v3}/upstream_cert", cert_handler
-        server.mount "/candlepin/entitlements/#{ent_id}", ConsumerCheck
-        server.mount "/candlepin/entitlements/#{ent_id_v3}", ConsumerCheck
         wr.write "Started webrick"
       rescue Exception => e
         wr.write "Error starting webrick:\n"
@@ -188,15 +186,5 @@ class Garbage < WEBrick::HTTPServlet::AbstractServlet
     response.status = 200
     response['Content-Type'] = "text/plain"
     response.body = "THIS IS NOT A CERT"
-  end
-end
-
-class ConsumerCheck < WEBrick::HTTPServlet::AbstractServlet
-
-  def do_GET(request, response)
-    response.status = 200
-    response['Content-Type'] = "text/plain"
-    #the TS code does not care about the body, only the response status
-    response.body = "This is an unread entitlement cert"
   end
 end
