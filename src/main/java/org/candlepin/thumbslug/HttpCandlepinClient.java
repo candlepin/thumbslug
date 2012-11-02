@@ -70,7 +70,7 @@ class HttpCandlepinClient {
     private String oAuthKey;
     private String oAuthSecret;
 
-    public HttpCandlepinClient(Config config,
+    HttpCandlepinClient(Config config,
         CandlepinClientResponseHandler responseHandler) {
         this.responseHandler = responseHandler;
 
@@ -135,26 +135,6 @@ class HttpCandlepinClient {
         }
     }
 
-    public void verifyEntitlementUuid(final String entitlementUuid) {
-        ChannelFactory channelFactory = new NioClientSocketChannelFactory(
-            Executors.newCachedThreadPool(),
-            Executors.newCachedThreadPool());
-
-        Channel requestChannel = channelFactory.newChannel(getPipeline());
-        // Set up the event pipeline factory.
-
-        // Start the connection attempt.
-        ChannelFuture future = requestChannel.connect(new InetSocketAddress(candlepinHost,
-            candlepinPort));
-
-        future.addListener(new ChannelFutureListener() {
-            public void operationComplete(final ChannelFuture future)
-                throws Exception {
-                onVerifyEntitlementUuid(future.getChannel(), entitlementUuid);
-            }
-        });
-    }
-
     public void getSubscriptionCertificateViaEntitlementId(final String entitlementId) {
         ChannelFactory channelFactory = new NioClientSocketChannelFactory(
             Executors.newCachedThreadPool(),
@@ -174,13 +154,6 @@ class HttpCandlepinClient {
                     future.getChannel(), entitlementId);
             }
         });
-    }
-
-    private void onVerifyEntitlementUuid(Channel channel, String entitlementUuid) {
-        String url = String.format("http%s://%s:%s/candlepin/entitlements/%s",
-            useSSL ? "s" : "", candlepinHost, candlepinPort, entitlementUuid);
-
-        onConnectedToCandlepin(channel, url, false);
     }
 
     private void onSubscriptionCertificateViaEntitlementId(Channel channel,
