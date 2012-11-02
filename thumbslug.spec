@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.25
+Version: 0.0.26
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -186,6 +186,18 @@ fi
 
 
 %changelog
+* Fri Nov 02 2012 William Poteat <wpoteat@redhat.com> 0.0.26-1
+- Add findbugs target (alikins@redhat.com)
+- 868290: Verify signature on client and CDN X.509 certificates
+  (jbowes@redhat.com)
+- Target java 1.6 (jbowes@redhat.com)
+- Go back to a megajar for use with the buildfile (jbowes@redhat.com)
+- Allow Thumbslug to operate with V3 entitlement certs (wpoteat@redhat.com)
+- adding internal koji repo (jesusr@redhat.com)
+- Add back 5Server and 6Server (jbowes@redhat.com)
+- update releasers to f17 (jbowes@redhat.com)
+- include require for emma so emma target works (alikins@redhat.com)
+
 * Wed Jul 11 2012 Chris Duryee (beav) <cduryee@redhat.com>
 - 837386: do not package jars with thumbslug (cduryee@redhat.com)
 - fixups for ruby 1.9 and java 1.7 (cduryee@redhat.com)
