@@ -27,6 +27,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+import java.security.cert.X509Certificate;
 import java.util.Scanner;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -44,9 +45,8 @@ public class SslContextFactory {
 
     private static final String PROTOCOL = "TLS";
 
-    // we only want to initialize the server and client context once.
-    private static SSLContext serverContext = null;
-    private static SSLContext clientContext = null;
+    private static KeyStore ks;
+    private static X509Certificate [] chain;
 
     private SslContextFactory() {
         // for checkstyle
@@ -55,9 +55,7 @@ public class SslContextFactory {
     public static SSLContext getServerContext(String keystoreUrl, String keystorePassword,
         String caUrl) throws SslKeystoreException, SslPemException {
 
-        if (serverContext != null) {
-            return serverContext;
-        }
+        SSLContext serverContext;
 
         String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
         if (algorithm == null) {
@@ -66,24 +64,26 @@ public class SslContextFactory {
 
         FileInputStream fis = null;
         try {
-            log.info("reading keystore");
-            fis = new FileInputStream(new File(keystoreUrl));
-            KeyStore ks = KeyStore.getInstance("PKCS12");
-            ks.load(fis, keystorePassword.toCharArray());
+            if (ks == null) {
+                log.info("reading keystore");
+                fis = new FileInputStream(new File(keystoreUrl));
+                ks = KeyStore.getInstance("PKCS12");
+                ks.load(fis, keystorePassword.toCharArray());
+
+                Scanner scanner = new Scanner(new File(caUrl));
+                scanner.useDelimiter("\\Z");
+                String caPem = scanner.next();
+                chain = PemChainLoader.loadChain(caPem);
+            }
 
             // Set up key manager factory to use our key store
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
             kmf.init(ks, keystorePassword.toCharArray());
 
-            Scanner scanner = new Scanner(new File(caUrl));
-            scanner.useDelimiter("\\Z");
-            String caPem = scanner.next();
-
             // Initialize the SSLContext to work with our key managers.
             serverContext = SSLContext.getInstance(PROTOCOL);
             serverContext.init(kmf.getKeyManagers(),
-                ServerContextTrustManager.getTrustManagers(
-                    PemChainLoader.loadChain(caPem)), null);
+                ServerContextTrustManager.getTrustManagers(chain), null);
         }
         catch (SslPemException e) {
             throw e;
@@ -110,10 +110,7 @@ public class SslContextFactory {
 
     public static SSLContext getClientContext(String pem, String caUrl)
         throws SslPemException {
-
-        if (clientContext != null) {
-            return clientContext;
-        }
+        SSLContext clientContext = null;
 
         try {
             log.debug("loading thumbslug to cdn entitlement certificate (pem encoded)");
@@ -160,12 +157,13 @@ public class SslContextFactory {
     public static SSLContext getCandlepinClientContext() {
         // Candlepin client context, we won't be sending up an ssl cert,
         // just verifying that of candlepin
-        SSLContext clientContext = null;
+
+        SSLContext candlepinClientContext;
 
         try {
-            clientContext = SSLContext.getInstance(PROTOCOL);
-            clientContext.init(null, ClientContextTrustManager.getTrustManagers(null),
-                null);
+            candlepinClientContext = SSLContext.getInstance(PROTOCOL);
+            candlepinClientContext.init(null,
+                ClientContextTrustManager.getTrustManagers(null), null);
         }
         catch (NoSuchAlgorithmException e) {
             throw new Error("Failed to initialize the thumbslug to candlepin ssl context",
@@ -176,6 +174,6 @@ public class SslContextFactory {
                 e);
         }
 
-        return clientContext;
+        return candlepinClientContext;
     }
 }
