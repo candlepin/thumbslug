@@ -14,7 +14,7 @@ require 'net/https'
 
 TS_SERVER = "localhost"
 TS_PORT = 8088
-TS_FILE = "/"
+TS_FILE = ARGV[3]
 
 def debug(msg)
   STDERR.write Thread.current[:name]
@@ -29,9 +29,8 @@ def grab_file(server, port)
   client = Net::HTTP.new server, port
   client.use_ssl = true
   client.verify_mode = OpenSSL::SSL::VERIFY_NONE #TODO: verify server
-  client.ca_file = "CA/cacert.pem"
-  client.key = OpenSSL::PKey::RSA.new(File.read("spec/data/spec/spec-client_keypair.pem"))
-  client.cert = OpenSSL::X509::Certificate.new(File.read("spec/data/spec/cert_spec-client.pem"))
+  client.key = OpenSSL::PKey::RSA.new(File.read(ARGV[2]))
+  client.cert = OpenSSL::X509::Certificate.new(File.read(ARGV[2]))
   
   client.request_get(TS_FILE) do |response|
     response.read_body do |segment|
