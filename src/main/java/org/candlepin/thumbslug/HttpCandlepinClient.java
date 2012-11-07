@@ -155,12 +155,32 @@ class HttpCandlepinClient {
         });
     }
 
+    public void getCandlepinStatus() {
+        Channel requestChannel = channelFactory.newChannel(getPipeline());
+        ChannelFuture future = requestChannel.connect(new InetSocketAddress(candlepinHost,
+            candlepinPort));
+
+        future.addListener(new ChannelFutureListener() {
+            public void operationComplete(final ChannelFuture future)
+                throws Exception {
+                onGetStatus(future.getChannel());
+            }
+        });
+    }
+
     private void onSubscriptionCertificateViaEntitlementId(Channel channel,
         String entitlementId) {
         String url = String.format("http%s://%s:%s/candlepin/entitlements/%s/upstream_cert",
             useSSL ? "s" : "", candlepinHost, candlepinPort, entitlementId);
 
         onConnectedToCandlepin(channel, url, true);
+    }
+
+    private void onGetStatus(Channel channel) {
+        String url = String.format("http%s://%s:%s/candlepin/status",
+            useSSL ? "s" : "", candlepinHost, candlepinPort);
+
+        onConnectedToCandlepin(channel, url, false);
     }
 
     private void onConnectedToCandlepin(Channel channel, String url, boolean textOnly) {
