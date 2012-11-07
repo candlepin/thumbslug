@@ -138,7 +138,7 @@ class HttpCandlepinClient {
         }
     }
 
-    public void getSubscriptionCertificateViaEntitlementId(final String entitlementId) {
+    Channel getSubscriptionCertificateViaEntitlementId(final String entitlementId) {
         Channel requestChannel = channelFactory.newChannel(getPipeline());
         // Set up the event pipeline factory.
 
@@ -153,6 +153,8 @@ class HttpCandlepinClient {
                     future.getChannel(), entitlementId);
             }
         });
+
+        return requestChannel;
     }
 
     private void onSubscriptionCertificateViaEntitlementId(Channel channel,
