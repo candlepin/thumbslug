@@ -15,18 +15,52 @@
 
 package org.candlepin.thumbslug;
 
-import org.junit.Test;
+import java.util.Properties;
 
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * ConfigTest
  */
 public class ConfigTest {
 
+    //Config(null) to not read the default config file
     @Test(expected = RuntimeException.class)
     public void testRuntimeExceptionOnBadConfigLookup() {
-        Config config = new Config();
+        Config config = new Config(null);
         config.getBoolean("foofoofoofoo");
     }
+
+    @Test
+    public void testConfigGetString() {
+        Config config = new Config(null);
+        String result = config.getProperty("log.access");
+        assertEquals(result, "/var/log/thumbslug/access.log");
+    }
+
+    @Test
+    public void testConfigGetLogging() {
+        Config config = new Config(null);
+        Properties props = config.getLoggingConfig();
+        // No logging in default config
+        assertTrue(props.isEmpty());
+    }
+
+    @Test
+    public void testConfigGetNamespaceProperties() {
+        Config config = new Config(null);
+        Properties props = config.getNamespaceProperties("");
+        assertFalse(props.isEmpty());
+
+        Properties noProps = config.getNamespaceProperties("this.does.not.exist");
+        assertTrue(noProps.isEmpty());
+
+        Properties sslProps = config.getNamespaceProperties("ssl.client");
+        assertEquals(2, sslProps.entrySet().size());
+    }
+
 
 }

@@ -17,6 +17,8 @@ package org.candlepin.thumbslug;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -85,7 +87,7 @@ public class Main {
         }
     }
 
-    private static void configureLogging(String fileName) {
+    private static void configureLogging(String fileName, Properties loggingProperties) {
         try {
             Logger.getRootLogger().setLevel(Level.ALL);
             Layout layout = Logger.getRootLogger().getAppender("RootAppender").getLayout();
@@ -95,6 +97,12 @@ public class Main {
         catch (Exception e) {
             log.error("unable to open error.log for writing!", e);
             // we'll just ignore this, and allow logging to happen to the cli.
+        }
+
+
+        for (Entry<Object, Object> entry : loggingProperties.entrySet()) {
+            String key = (String) entry.getKey();
+            Logger.getLogger(key).setLevel(Level.toLevel((String) entry.getValue()));
         }
     }
 
@@ -113,7 +121,7 @@ public class Main {
             System.exit(ERROR_NO_CONFIG);
         }
 
-        configureLogging(config.getProperty("log.error"));
+        configureLogging(config.getProperty("log.error"), config.getLoggingConfig());
 
         int port = config.getInt("port");
         boolean shouldDaemonize = config.getBoolean("daemonize");

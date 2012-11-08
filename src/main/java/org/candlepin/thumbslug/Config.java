@@ -22,8 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Config
@@ -32,21 +35,23 @@ public class Config {
     private static final String REQUIRED = "XX_REQUIRED_VALUE_XX";
     private static final String CONFIG_FILE = "/etc/thumbslug/thumbslug.conf";
     private static final String DEFAULT_CONFIG_RESOURCE = "config/thumbslug.conf";
-
-    private Properties props;
+    private static final String LOGGER_PREFIX = "log4j.logger.";
 
     private Set<Object> requiredKeys;
 
+    // NavigableMap based for finding subMap of config
+    protected TreeMap<String, String> configuration = null;
+    private String configFile = null;
+
     private static Logger log = Logger.getLogger(Config.class);
 
+    public Config(String configFile) {
 
-    public Config() {
-
+        Properties props;
         // load default properties, and then attempt to overwrite
         // with system properties
         InputStream is = null;
         props = new Properties();
-
         try {
             URL url = this.getClass().getClassLoader().getResource(
                 DEFAULT_CONFIG_RESOURCE);
@@ -70,29 +75,13 @@ public class Config {
         // they'll be listed but not set.
         requiredKeys = props.keySet();
 
-        // override any defaults with the config file
-        try {
-            File configFile = new File(CONFIG_FILE);
-            is = new FileInputStream(configFile);
-            props.load(is);
-        }
-        catch (IOException e) {
-            // no need to bail out here, just log it
-            log.warn("Could not read " + CONFIG_FILE, e);
-        }
-        finally {
-            try {
-                is.close();
-            }
-            catch (IOException e) {
-                // no need to bail out here, just log it
-                log.warn("Could not close handle for " + CONFIG_FILE, e);
-            }
+        if (configFile  != null) {
+            loadConfigFile(props, configFile);
         }
 
         Set<String> missingKeys = new HashSet<String>();
         for (Object key : requiredKeys) {
-            if (REQUIRED.equals(getProperty((String) key))) {
+            if (REQUIRED.equals(System.getProperty((String) key))) {
                 missingKeys.add((String) key);
             }
         }
@@ -103,6 +92,58 @@ public class Config {
             }
             throw new Error(errorMessage);
         }
+
+        // Convert the loaded Properties to a TreeMap so we
+        // can do a submap to find entries for a given prefix
+        configuration = propsToConfiguration(props);
+
+        // add system properties, so we can find them when we
+        // search for logging properties, etc, override default
+        // and config
+        configuration.putAll(propsToConfiguration(System.getProperties()));
+    }
+
+    public Config() {
+        this(CONFIG_FILE);
+
+    }
+    /**
+     * @param properties file to extend with values from
+     *        config file
+     * @param configFilePath path to config file to load
+     */
+    private void loadConfigFile(Properties props, String configFilePath) {
+        FileInputStream is = null;
+
+        // override any defaults with the config file
+        // and include any new props
+        try {
+            File configFile = new File(configFilePath);
+            is = new FileInputStream(configFile);
+            props.load(is);
+        }
+        catch (IOException e) {
+            // no need to bail out here, just log it
+            log.warn("Could not read " + configFilePath, e);
+        }
+        finally {
+            try {
+                is.close();
+            }
+            catch (IOException e) {
+                // no need to bail out here, just log it
+                log.warn("Could not close handle for " + configFilePath, e);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private TreeMap<String, String> propsToConfiguration(Properties loadedProps)
+    {
+        TreeMap<String, String> configMap;
+        configMap = new TreeMap<String, String>();
+        configMap.putAll((Map) loadedProps);
+        return configMap;
     }
 
     public String getProperty(String key) {
@@ -112,7 +153,7 @@ public class Config {
             return value;
         }
         else {
-            return props.getProperty(key);
+            return configuration.get(key);
         }
     }
 
@@ -133,4 +174,45 @@ public class Config {
 
         return value;
     }
+
+    /**
+     * Return configuration entry for the given prefix.
+     *
+     * @param prefix prefix for the entry sought.
+     * @return configuration entry for the given prefix.
+     */
+    public Map<String, String> configurationWithPrefix(String prefix) {
+        return configuration.subMap(prefix, prefix + Character.MAX_VALUE);
+    }
+
+    /**
+     * Return configuration entry for the given prefix.
+     *
+     * @param prefix prefix for the entry sought.
+     * @return configuration entry for the given prefix.
+     */
+    public Properties getNamespaceProperties(String prefix) {
+        Properties p = new Properties();
+
+        p.putAll(configurationWithPrefix(prefix));
+        return p;
+    }
+
+
+    /**
+     * Return the log4j config properties
+     * @return log4j related config properties
+     *
+     */
+    public Properties getLoggingConfig() {
+        Properties loggingProperties = getNamespaceProperties(LOGGER_PREFIX);
+        Properties p = new Properties();
+        for (Entry<Object, Object> entry : loggingProperties.entrySet()) {
+            String loggingKey = (String) entry.getKey();
+            String key = loggingKey.replace(LOGGER_PREFIX, "");
+            p.put(key, entry.getValue());
+        }
+        return p;
+    }
+
 }
