@@ -16,7 +16,6 @@ package org.candlepin.thumbslug;
 
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_GATEWAY;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import org.candlepin.thumbslug.HttpCandlepinClient.CandlepinClientResponseHandler;
@@ -34,7 +33,7 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
 /**
- * Simple handler to intercept calls to /ping and return a 204. This let's the
+ * Simple handler to intercept calls to /ping and return a 204. This lets the
  * user know that Thumbslug is actually running.
  */
 public class PingHandler extends SimpleChannelUpstreamHandler {
@@ -75,8 +74,8 @@ public class PingHandler extends SimpleChannelUpstreamHandler {
 
                         @Override
                         public void onNotFound() {
-                            log.error("Unauthorized to talk to candlepin!");
-                            sendResponseToClient(ctx, UNAUTHORIZED);
+                            log.error("Resource not found!");
+                            sendResponseToClient(ctx, BAD_GATEWAY);
                         }
 
                         @Override
