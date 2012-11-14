@@ -23,7 +23,7 @@
 
 CLASSPATH="/usr/share/java/netty.jar:/usr/share/java/log4j.jar:/usr/share/java/jna.jar"
 CLASSPATH="$CLASSPATH:/usr/share/java/commons-codec.jar:/usr/share/java/akuma.jar"
-CLASSPATH="$CLASSPATH:/usr/share/java/oauth/oauth.jar:/usr/share/java/oauth/oauth-consumer.jar"
+CLASSPATH="$CLASSPATH:/usr/share/java/oauth.jar:/usr/share/java/oauth-consumer.jar"
 CLASSPATH="$CLASSPATH:/usr/share/thumbslug/thumbslug.jar"
 exec="java -cp $CLASSPATH org.candlepin.thumbslug.Main"
 prog=thumbslug
