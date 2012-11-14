@@ -74,8 +74,8 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         // pipeline.addLast("deflater", new HttpContentCompressor());
 
         pipeline.addLast("logger", new HttpRequestLogger(config.getProperty("log.access")));
-
         pipeline.addLast("pipelineExecutor", new ExecutionHandler(eventExecutor));
+        pipeline.addLast("ping", new PingHandler(config, channelFactory));
         pipeline.addLast("handler", new HttpRequestHandler(config,
                                             httpClientPipelineFactory, channelFactory));
         return pipeline;
