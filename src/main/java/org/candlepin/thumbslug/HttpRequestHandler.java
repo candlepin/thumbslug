@@ -21,6 +21,7 @@ import org.candlepin.thumbslug.HttpCdnClientChannelFactory.OnCdnConnectedCallbac
 import org.candlepin.thumbslug.ssl.SslPemException;
 
 import org.apache.log4j.Logger;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
@@ -59,6 +60,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private HttpRequest request;
     private boolean readingChunks;
     private Channel cdnChannel;
+    private Channel candlepinChannel;
 
     private Config config;
     private HttpCdnClientChannelFactory clientFactory;
@@ -69,6 +71,9 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         this.config = config;
         this.clientFactory = clientFactory;
         this.channelFactory = channelFactory;
+
+        this.candlepinChannel = null;
+        this.cdnChannel = null;
     }
 
     @Override
@@ -168,7 +173,8 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
                 }, channelFactory);
 
-            client.getSubscriptionCertificateViaEntitlementId(entitlementUuid);
+            candlepinChannel =
+                client.getSubscriptionCertificateViaEntitlementId(entitlementUuid);
         }
         else {
             String pem = "";
@@ -213,12 +219,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         HttpResponseStatus status) {
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
         ChannelFuture future = ctx.getChannel().write(response);
-        future.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                future.getChannel().close();
-            }
-        });
+        future.addListener(ChannelFutureListener.CLOSE);
     }
 
     private void beginCdnCommunication(ChannelHandlerContext ctx, MessageEvent e,
@@ -251,8 +252,14 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                 isKeepAlive(request), pem, new OnCdnConnectedCallback() {
                     @Override
                     public void onCdnConnected(Channel channel) {
-                        channel.write(request);
-                        inbound.setReadable(true);
+                        cdnChannel = channel;
+                        cdnChannel.write(request).addListener(new ChannelFutureListener() {
+                            @Override
+                            public void operationComplete(ChannelFuture arg0)
+                                throws Exception {
+                                inbound.setReadable(true);
+                            }
+                        });
                     }
                     @Override
                     public void onCdnError(Channel channel) {
@@ -260,10 +267,16 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                         // interpret the cert from candlepin
                         HttpResponse response = new DefaultHttpResponse(
                             HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_GATEWAY);
-                        inbound.write(response);
-                        inbound.setReadable(true);
-                        inbound.close();
-                        channel.close();
+
+                        cdnChannel = channel;
+                        inbound.write(response).addListener(new ChannelFutureListener() {
+                            @Override
+                            public void operationComplete(ChannelFuture arg0)
+                                throws Exception {
+                                inbound.setReadable(true)
+                                    .addListener(ChannelFutureListener.CLOSE);
+                            }
+                        });
                     }
                 });
         }
@@ -292,6 +305,20 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
         throws Exception {
         log.error("Exception caught!", e.getCause());
-        e.getChannel().close();
+        ctx.getChannel().close();
+    }
+
+    @Override
+    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent event)
+        throws Exception {
+        if (cdnChannel != null && cdnChannel.isConnected()) {
+            cdnChannel.write(ChannelBuffers.EMPTY_BUFFER)
+                .addListener(ChannelFutureListener.CLOSE);
+        }
+
+        if (candlepinChannel != null && candlepinChannel.isConnected()) {
+            candlepinChannel.write(ChannelBuffers.EMPTY_BUFFER)
+                .addListener(ChannelFutureListener.CLOSE);
+        }
     }
 }

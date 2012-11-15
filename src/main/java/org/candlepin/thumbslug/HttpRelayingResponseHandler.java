@@ -17,11 +17,13 @@ package org.candlepin.thumbslug;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.log4j.Logger;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
@@ -79,7 +81,6 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
-        log.debug("message received!");
         if (!readingChunks) {
             HttpResponse response = (HttpResponse) e.getMessage();
 
@@ -90,12 +91,7 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
             }
             else {
                 if (!keepAlive) {
-                    future.addListener(new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture arg0) throws Exception {
-                            client.close();
-                        }
-                    });
+                    future.addListener(ChannelFutureListener.CLOSE);
                 }
             }
         }
@@ -106,12 +102,7 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
                 readingChunks = false;
 
                 if (!keepAlive) {
-                    future.addListener(new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture arg0) throws Exception {
-                            client.close();
-                        }
-                    });
+                    future.addListener(ChannelFutureListener.CLOSE);
                 }
             }
         }
@@ -134,17 +125,21 @@ public class HttpRelayingResponseHandler extends SimpleChannelUpstreamHandler {
         super.handleUpstream(ctx, e);
     }
 
+    @Override
+    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent event)
+        throws Exception {
+        if (client.isConnected()) {
+            client.write(ChannelBuffers.EMPTY_BUFFER)
+                .addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
     private void throwFiveOhTwo() {
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
             HttpResponseStatus.BAD_GATEWAY);
         ChannelFuture future = client.write(response);
         if (!keepAlive) {
-            future.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture arg0) throws Exception {
-                    client.close();
-                }
-            });
+            future.addListener(ChannelFutureListener.CLOSE);
         }
     }
 }

@@ -86,7 +86,6 @@ class HttpCdnClientChannelFactory {
                 }
                 else {
                     callback.onCdnError(future.getChannel());
-                    // XXX I think we need to bubble up the SslPemException here
                 }
             }
         });
@@ -110,9 +109,14 @@ class HttpCdnClientChannelFactory {
             Channel cdnChannel = channelFactory.newChannel(pipeline);
             ChannelFuture future = cdnChannel.connect(remote);
             future.addListener(new ChannelFutureListener() {
-                public void operationComplete(ChannelFuture future) {
-                    // it appears we never get here
-                    callback.onCdnConnected(future.getChannel());
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (future.isSuccess()) {
+                        callback.onCdnConnected(future.getChannel());
+                    }
+                    else {
+                        callback.onCdnError(future.getChannel());
+                    }
                 }
             });
         }
@@ -130,24 +134,27 @@ class HttpCdnClientChannelFactory {
                 public void onConnected(ChannelHandlerContext ctx) {
                     ChannelPipeline pipeline = ctx.getPipeline();
                     pipeline.remove("codec");
-                    pipeline.remove("proxy");
+
                     try {
                         buildFinalPipeline(pipeline, client, keepAlive, pem);
-
-                        if (config.getBoolean("cdn.ssl")) {
-                            handshakeSsl(ctx, callback);
-                        }
-                        else {
-                            callback.onCdnConnected(ctx.getChannel());
-                        }
                     }
                     catch (SslPemException e) {
-                        // TODO Auto-generated catch block
                         // send a 502 back to the user
-                        log.warn("unable to read ssl cert from cpin, " +
-                            "sending a 502 back to the client");
-                        callback.onCdnError(client);
-                        e.printStackTrace();
+                        log.error("unable to read ssl cert from cpin, " +
+                            "sending a 502 back to the client: ", e);
+                        callback.onCdnError(ctx.getChannel());
+                        return;
+                    }
+                    // we keep this handler around until after build final pipeline so
+                    // that there's always at least one handler on the channel.
+                    // this prevents netty from nagging us about channels with no handlers
+                    pipeline.remove("proxy");
+
+                    if (config.getBoolean("cdn.ssl")) {
+                        handshakeSsl(ctx, callback);
+                    }
+                    else {
+                        callback.onCdnConnected(ctx.getChannel());
                     }
                 }
             }));
@@ -161,9 +168,8 @@ class HttpCdnClientChannelFactory {
             public void operationComplete(ChannelFuture future) {
 
                 if (!future.isSuccess()) {
-                    // XXX handle error here (or do it in ConnectProxy?
                     log.warn("unable to connect to proxy!");
-                    callback.onCdnError(client);
+                    callback.onCdnError(future.getChannel());
                 }
             }
         });
