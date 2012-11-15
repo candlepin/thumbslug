@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.26
+Version: 0.0.27
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -186,6 +186,13 @@ fi
 
 
 %changelog
+* Thu Nov 15 2012 James Bowes <jbowes@redhat.com> 0.0.27-1
+- 875876: Fix oauth classpath in init script (jbowes@redhat.com)
+- 871586: Add a ping function to Thumbslug. (awood@redhat.com)
+- 817599: Fix closing connections when in a bad state (jbowes@redhat.com)
+- 865841: Improve concurrency properties of thumbslug (jbowes@redhat.com)
+- 829791: Add support for configuring logging in thumbslug.conf
+  (alikins@redhat.com)
 * Fri Nov 02 2012 William Poteat <wpoteat@redhat.com> 0.0.26-1
 - Add findbugs target (alikins@redhat.com)
 - 868290: Verify signature on client and CDN X.509 certificates
