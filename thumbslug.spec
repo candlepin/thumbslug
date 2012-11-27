@@ -57,8 +57,10 @@ Requires:       selinux-policy >= %{selinux_policyver}
 %endif
 Requires:       %{name} = %{version}-%{release}
 Requires(post):   /usr/sbin/semodule
+Requires(post):   /usr/sbin/semanage
 Requires(post):   /sbin/restorecon
 Requires(postun): /usr/sbin/semodule
+Requires(postun): /usr/sbin/semanage
 Requires(postun): /sbin/restorecon
 
 
