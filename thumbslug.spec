@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.27
+Version: 0.0.28
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -188,6 +188,10 @@ fi
 
 
 %changelog
+* Wed Dec 19 2012 jesus m. rodriguez <jesusr@redhat.com> 0.0.28-1
+- require apache-commons-codec instead of jakarta-commons-codec (jesusr@redhat.com)
+- 880662: Add missing semanage dep for selinux pkg (jbowes@redhat.com)
+
 * Thu Nov 15 2012 James Bowes <jbowes@redhat.com> 0.0.27-1
 - 875876: Fix oauth classpath in init script (jbowes@redhat.com)
 - 871586: Add a ping function to Thumbslug. (awood@redhat.com)
