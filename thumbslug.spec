@@ -21,7 +21,7 @@ Vendor: Red Hat, Inc.
 BuildArch: noarch
 
 Requires(pre): shadow-utils
-Requires: jakarta-commons-codec
+Requires: apache-commons-codec
 Requires: jna >= 3.2.4
 Requires: log4j >= 1.2
 Requires: netty >= 3.2.3
@@ -34,7 +34,7 @@ BuildRequires: akuma >= 1.7
 BuildRequires: jna >= 3.2.4
 BuildRequires: log4j >= 1.2
 BuildRequires: netty >= 3.2.3
-BuildRequires: jakarta-commons-codec
+BuildRequires: apache-commons-codec
 BuildRequires: oauth
 BuildRequires: java-devel >= 1.6.0
 
