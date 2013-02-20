@@ -26,7 +26,11 @@ Requires: jna >= 3.2.4
 Requires: log4j >= 1.2
 Requires: netty >= 3.2.3
 Requires: akuma >= 1.7
+%if 0%{?fedora} && 0%{?fedora} > 17
+Requires: java-oauth
+%else
 Requires: oauth
+%endif
 Requires: java >= 1.6.0
 
 BuildRequires: ant >= 1.7.0
@@ -35,7 +39,11 @@ BuildRequires: jna >= 3.2.4
 BuildRequires: log4j >= 1.2
 BuildRequires: netty >= 3.2.3
 BuildRequires: apache-commons-codec
+%if 0%{?fedora} && 0%{?fedora} > 17
+BuildRequires: java-oauth
+%else
 BuildRequires: oauth
+%endif
 BuildRequires: java-devel >= 1.6.0
 
 %define __jar_repack %{nil}
