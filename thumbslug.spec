@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.28
+Version: 0.0.29
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -196,6 +196,12 @@ fi
 
 
 %changelog
+* Wed Feb 20 2013 jesus m. rodriguez <jesusr@redhat.com> 0.0.29-1
+- F18 has java-oauth (jesusr@redhat.com)
+- f17 file should use f17 and *not* f15 (jesusr@redhat.com)
+- add f18 build configs (jesusr@redhat.com)
+- add releaser for katello-koji to build into katello-thirdparty-candlepin* tag (msuchy@redhat.com)
+
 * Wed Dec 19 2012 jesus m. rodriguez <jesusr@redhat.com> 0.0.28-1
 - require apache-commons-codec instead of jakarta-commons-codec (jesusr@redhat.com)
 - 880662: Add missing semanage dep for selinux pkg (jbowes@redhat.com)
