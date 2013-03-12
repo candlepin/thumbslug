@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.29
+Version: 0.0.30
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -204,6 +204,9 @@ fi
 
 
 %changelog
+* Tue Mar 12 2013 jesus m. rodriguez <jesusr@redhat.com> 0.0.30-1
+- RHEL 5 and 6 require jakarta-commons-codec. (awood@redhat.com)
+
 * Wed Feb 20 2013 jesus m. rodriguez <jesusr@redhat.com> 0.0.29-1
 - F18 has java-oauth (jesusr@redhat.com)
 - f17 file should use f17 and *not* f15 (jesusr@redhat.com)
