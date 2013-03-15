@@ -115,20 +115,9 @@ public class SslContextFactory {
         try {
             log.debug("loading thumbslug to cdn entitlement certificate (pem encoded)");
 
-            // split the pem into its two parts, then figure out which is
-            // the private and which is the public part
-            log.debug("Cert is: \n" + pem);
-            int endOfFirstPart = pem.indexOf("\n", pem.indexOf("END"));
-            if (endOfFirstPart == -1) {
-                throw new IllegalArgumentException("unable to parse PEM data");
-            }
-            String certificate = pem.substring(0, endOfFirstPart);
-            String privateKey = pem.substring(endOfFirstPart);
-            if (!certificate.startsWith(PEMReader.CERTIFICATE_X509_MARKER)) {
-                String tmp = privateKey;
-                privateKey = certificate;
-                certificate = tmp;
-            }
+            CertParser parser = new CertParser(pem);
+            String certificate = parser.getCert();
+            String privateKey = parser.getKey();
 
             PEMx509KeyManager [] managers = new PEMx509KeyManager[1];
             managers[0] = new PEMx509KeyManager();
