@@ -25,6 +25,7 @@ You'll need to do a bit of setup first, before thumbslug will work.
  - Create a pkcs keystore containing a cert/private key for thumbslug to use
    to talk to its clients, and sign it with a CA that your clients will know.
    Place this keystore in /etc/thumbslug/server_keystore.p12
+   - Example: keytool -genkeypair -alias my_certificate -keystore /etc/thumbslug/server_keystore.p12 -storepass thumbslug -validity 365 -keyalg RSA -keysize 2048 -storetype pkcs12
  - set the value of ssl.keystore.password in /etc/thumbslug/thumbslug.conf to
    match the password on the above keystore.
  - Set up a shared secret betweeen candlepin and thumbslug.
