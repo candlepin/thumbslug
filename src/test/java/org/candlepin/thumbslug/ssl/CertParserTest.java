@@ -47,6 +47,20 @@ public class CertParserTest {
     }
 
     @Test
+    public void parseV1CertPKCS8() throws Exception {
+        InputStream is =
+            this.getClass().getResourceAsStream("/certs/v1-cert-pkcs8.pem");
+        String pem = convertStreamToString(is);
+        CertParser parser = new CertParser(pem);
+
+        assertTrue(parser.getCert().trim().startsWith("-----BEGIN CERTIFICATE-----"));
+        assertTrue(parser.getCert().trim().endsWith("-----END CERTIFICATE-----"));
+
+        assertTrue(parser.getKey().trim().startsWith("-----BEGIN PRIVATE KEY-----"));
+        assertTrue(parser.getKey().trim().endsWith("-----END PRIVATE KEY-----"));
+    }
+
+    @Test
     public void parseV3Cert() throws Exception {
         InputStream is =
             this.getClass().getResourceAsStream("/certs/v3-cert.pem");

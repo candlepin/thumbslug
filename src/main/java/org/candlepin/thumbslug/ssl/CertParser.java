@@ -31,8 +31,10 @@ public class CertParser {
 
     private static final String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
     private static final String END_CERT = "-----END CERTIFICATE-----";
-    private static final String BEGIN_KEY = "-----BEGIN RSA PRIVATE KEY-----";
-    private static final String END_KEY = "-----END RSA PRIVATE KEY-----";
+    private static final String BEGIN_KEY_PKCS1 = "-----BEGIN RSA PRIVATE KEY-----";
+    private static final String END_KEY_PKCS1 = "-----END RSA PRIVATE KEY-----";
+    private static final String BEGIN_KEY_PKCS8 = "-----BEGIN PRIVATE KEY-----";
+    private static final String END_KEY_PKCS8 = "-----END PRIVATE KEY-----";
 
     public CertParser(String pem) {
         // split the pem into its two parts, then figure out which is
@@ -40,17 +42,30 @@ public class CertParser {
         log.debug("Cert is: \n" + pem);
         int certBegin = pem.indexOf(BEGIN_CERT);
         int certEnd = pem.indexOf(END_CERT);
-        int keyBegin = pem.indexOf(BEGIN_KEY);
-        int keyEnd = pem.indexOf(END_KEY);
 
-        if ((certBegin == -1) || (certEnd == -1) || (keyBegin == -1) ||
-            (keyEnd == -1)) {
+        if ((certBegin == -1) || (certEnd == -1)) {
+            throw new IllegalArgumentException("unable to parse PEM data");
+        }
+
+        // Try to find PKCS1 key marker first:
+        int keyBegin = pem.indexOf(BEGIN_KEY_PKCS1);
+        int keyEnd = pem.indexOf(END_KEY_PKCS1);
+        String keyEndMarker = END_KEY_PKCS1; // for the end key length offset later
+
+        // If none found, try PKCS8 key marker:
+        if ((keyBegin == -1) || (keyEnd == -1)) {
+            keyBegin = pem.indexOf(BEGIN_KEY_PKCS8);
+            keyEnd = pem.indexOf(END_KEY_PKCS8);
+            keyEndMarker = END_KEY_PKCS8;
+        }
+
+        if ((keyBegin == -1) || (keyEnd == -1)) {
             throw new IllegalArgumentException("unable to parse PEM data");
         }
 
         // Expand to the actual end of the strings:
         certEnd = certEnd + END_CERT.length();
-        keyEnd = keyEnd + END_KEY.length();
+        keyEnd = keyEnd + keyEndMarker.length();
 
         this.cert = pem.substring(certBegin, certEnd);
         this.key = pem.substring(keyBegin, keyEnd);
