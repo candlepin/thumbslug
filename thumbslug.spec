@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.28
+Version: 0.0.28.0
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -69,7 +69,7 @@ SELinux policy module supporting thumbslug
 
 
 %prep
-%setup -q 
+%setup -q
 
 %build
 ant -Dlibdir=/usr/share/java clean package
@@ -121,7 +121,7 @@ rm -rf $RPM_BUILD_ROOT
 getent group thumbslug >/dev/null || groupadd -r thumbslug
 getent passwd thumbslug >/dev/null || \
     useradd -r -g thumbslug -d %{_datadir}/%{name} -s /sbin/nologin \
-    -c "thumbslug content and entitlement proxy" thumbslug 
+    -c "thumbslug content and entitlement proxy" thumbslug
 exit 0
 
 
@@ -188,6 +188,9 @@ fi
 
 
 %changelog
+* Mon Mar 18 2013 Devan Goodwin <dgoodwin@rm-rf.ca> 0.0.28.0-1
+- 916895: Fix use of V3 certificates to the CDN. (dgoodwin@redhat.com)
+
 * Wed Dec 19 2012 jesus m. rodriguez <jesusr@redhat.com> 0.0.28-1
 - require apache-commons-codec instead of jakarta-commons-codec (jesusr@redhat.com)
 - 880662: Add missing semanage dep for selinux pkg (jbowes@redhat.com)
@@ -317,7 +320,7 @@ fi
 - try to make an rpm (cduryee@redhat.com)
 
 * Mon Jul 11 2011 Chris Duryee (beav) <cduryee@redhat.com>
-- bump the version 
+- bump the version
 
 * Mon Jul 11 2011 Chris Duryee (beav) <cduryee@redhat.com>
 - new package built with tito
