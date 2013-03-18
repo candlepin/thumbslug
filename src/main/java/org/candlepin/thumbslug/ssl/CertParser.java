@@ -14,8 +14,6 @@
  */
 package org.candlepin.thumbslug.ssl;
 
-import net.oauth.signature.pem.PEMReader;
-
 import org.apache.log4j.Logger;
 
 
@@ -36,7 +34,7 @@ public class CertParser {
     private static final String BEGIN_KEY = "-----BEGIN RSA PRIVATE KEY-----";
     private static final String END_KEY = "-----END RSA PRIVATE KEY-----";
 
-    public CertParser (String pem) {
+    public CertParser(String pem) {
         // split the pem into its two parts, then figure out which is
         // the private and which is the public part
         log.debug("Cert is: \n" + pem);
@@ -45,8 +43,8 @@ public class CertParser {
         int keyBegin = pem.indexOf(BEGIN_KEY);
         int keyEnd = pem.indexOf(END_KEY);
 
-        if ((certBegin == -1) || (certEnd == -1) || (keyBegin == -1)
-            || (keyEnd == -1)) {
+        if ((certBegin == -1) || (certEnd == -1) || (keyBegin == -1) ||
+            (keyEnd == -1)) {
             throw new IllegalArgumentException("unable to parse PEM data");
         }
 
