@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.28.0
+Version: 0.0.28.1
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -188,6 +188,10 @@ fi
 
 
 %changelog
+* Mon Mar 18 2013 Devan Goodwin <dgoodwin@rm-rf.ca> 0.0.28.1-1
+- Fix PKCS8 private key parsing from recent fix. (dgoodwin@redhat.com)
+- Checkstyle fixes. (dgoodwin@redhat.com)
+
 * Mon Mar 18 2013 Devan Goodwin <dgoodwin@rm-rf.ca> 0.0.28.0-1
 - 916895: Fix use of V3 certificates to the CDN. (dgoodwin@redhat.com)
 
