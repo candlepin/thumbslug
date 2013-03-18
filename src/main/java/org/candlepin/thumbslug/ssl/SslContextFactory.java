@@ -33,8 +33,6 @@ import java.util.Scanner;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 
-import net.oauth.signature.pem.PEMReader;
-
 import org.apache.log4j.Logger;
 
 /**
