@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.31
+Version: 0.0.32
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -204,6 +204,10 @@ fi
 
 
 %changelog
+* Mon Jun 03 2013 Bryan Kearney <bkearney@redhat.com> 0.0.32-1
+- Update spec file to only use jakarta-commons-codec on RHEL 5
+  (bkearney@redhat.com)
+
 * Thu Mar 28 2013 Alex Wood <awood@redhat.com> 0.0.31-1
 - Fix PKCS8 private key parsing from recent fix. (dgoodwin@redhat.com)
 - Checkstyle fixes. (dgoodwin@redhat.com)
