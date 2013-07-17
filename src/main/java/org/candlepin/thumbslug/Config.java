@@ -47,11 +47,11 @@ public class Config {
 
     public Config(String configFile) {
 
-        Properties props;
         // load default properties, and then attempt to overwrite
         // with system properties
         InputStream is = null;
-        props = new Properties();
+        Properties props = new Properties();
+
         try {
             URL url = this.getClass().getClassLoader().getResource(
                 DEFAULT_CONFIG_RESOURCE);
@@ -64,7 +64,9 @@ public class Config {
         }
         finally {
             try {
-                is.close();
+                if (is != null) {
+                    is.close();
+                }
             }
             catch (IOException e) {
                 throw new RuntimeException(e);
