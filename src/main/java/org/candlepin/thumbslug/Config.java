@@ -128,7 +128,9 @@ public class Config {
         }
         finally {
             try {
-                is.close();
+                if (is != null) {
+                    is.close();
+                }
             }
             catch (IOException e) {
                 // no need to bail out here, just log it
