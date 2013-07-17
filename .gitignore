@@ -4,3 +4,4 @@ reports
 .project
 .classpath
 *.swp
+run/*

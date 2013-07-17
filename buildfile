@@ -69,10 +69,21 @@ define "thumbslug" do
   package(:jar).with(:manifest => manifest)
 end
 
+# sets up needed system level directories and other
+# administriva for a dev setup to work
+task :setup do
+  #`buildconf/devsetup`
+  mkdir_p("run/log")
+  mkdir_p("run/etc")
+  touch "run/log/error.log"
+  touch "run/log/access.log"
+  `buildconf/updateconf -f`
+end
+
 task :serve do
     sh "java -jar target/#{GROUP}-#{VERSION_NUMBER}.jar"
 end
-task :serve => :package
+task :serve => [:setup, :package]
 
 
 #==========================================================================
