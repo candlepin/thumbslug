@@ -40,7 +40,7 @@ import org.candlepin.thumbslug.ssl.SslPemException;
 import com.sun.akuma.Daemon;
 
 /**
- * Main
+ * The main Thumbslug application class.
  */
 public class Main {
 
@@ -59,8 +59,8 @@ public class Main {
     }
 
     /**
-     * Do an initial bootstrap setup of the server SSL Context, so we can shake out any
-     * errors early, and abort if needed.
+     * Do an initial bootstrap setup of the server SSL Context, so we can shake
+     * out any errors early, and abort if needed.
      *
      * @param config our Config
      */
@@ -107,6 +107,8 @@ public class Main {
     }
 
     /**
+     * This is where magic happens.
+     * 
      * @param args
      */
     public static void main(String[] args) {
@@ -126,6 +128,7 @@ public class Main {
         int port = config.getInt("port");
         boolean shouldDaemonize = config.getBoolean("daemonize");
 
+        // Thumbslug can run as a normal application or as a daemon.
         Daemon daemon = new Daemon();
         if (daemon.isDaemonized()) {
             try {
