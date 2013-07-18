@@ -72,6 +72,7 @@ class HttpCandlepinClient {
 
     HttpCandlepinClient(Config config,
         CandlepinClientResponseHandler responseHandler, ChannelFactory channelFactory) {
+        System.out.println("XXX HttpCandlepinClient.ctor");
         this.responseHandler = responseHandler;
         this.channelFactory = channelFactory;
 
@@ -86,6 +87,7 @@ class HttpCandlepinClient {
     private ChannelPipeline getPipeline() {
         ChannelPipeline pipeline = pipeline();
 
+        System.out.println("XXX HCC.getPipeline()");
         if (useSSL) {
             SSLEngine engine =
                 SslContextFactory.getCandlepinClientContext().createSSLEngine();
@@ -110,6 +112,7 @@ class HttpCandlepinClient {
         @Override
         public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
             throws Exception {
+            System.out.println("XXX HttpResponseHandler.messageReceived");
             HttpResponse response = (HttpResponse) e.getMessage();
             buffer = response.getContent().toString(CharsetUtil.UTF_8);
 
@@ -139,6 +142,7 @@ class HttpCandlepinClient {
     }
 
     Channel getSubscriptionCertificateViaEntitlementId(final String entitlementId) {
+        System.out.println("XXX getSubscriptionCertificateViaEntitlementId [" + entitlementId + "]");
         Channel requestChannel = channelFactory.newChannel(getPipeline());
         // Set up the event pipeline factory.
 
@@ -176,19 +180,21 @@ class HttpCandlepinClient {
         String url = String.format("http%s://%s:%s/candlepin/entitlements/%s/upstream_cert",
             useSSL ? "s" : "", candlepinHost, candlepinPort, entitlementId);
 
+        System.out.println("XXX onSubscriptionCertificateViaEntitlementId.url [" + url + "]");
         onConnectedToCandlepin(channel, url, true);
     }
 
     private void onGetStatus(Channel channel) {
         String url = String.format("http%s://%s:%s/candlepin/status",
             useSSL ? "s" : "", candlepinHost, candlepinPort);
+        System.out.println("XXX onGetStatus.url [" + url + "]");
 
         onConnectedToCandlepin(channel, url, false);
     }
 
     private void onConnectedToCandlepin(Channel channel, String url, boolean textOnly) {
         // Prepare the HTTP request.
-
+        System.out.println("XXX onConnectedToCandlepin [" + url + "] textonly? " + textOnly);
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.GET, url);
         request.setHeader(HttpHeaders.Names.HOST, candlepinHost);
@@ -205,6 +211,7 @@ class HttpCandlepinClient {
         consumer.setProperty(OAuth.OAUTH_SIGNATURE_METHOD, OAuth.HMAC_SHA1);
         OAuthAccessor accessor = new OAuthAccessor(consumer);
 
+        System.out.println("XXX created OAuthAccessor");
         String errMsg = "OAuth error!";
 
         try {
@@ -228,6 +235,7 @@ class HttpCandlepinClient {
             log.error(errMsg, e);
         }
 
+        System.out.println("XXX HCC.channel.write()");
         // Send the HTTP request.
         channel.write(request);
     }
