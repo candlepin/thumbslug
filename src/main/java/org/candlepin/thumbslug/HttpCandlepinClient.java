@@ -149,6 +149,7 @@ class HttpCandlepinClient {
         future.addListener(new ChannelFutureListener() {
             public void operationComplete(final ChannelFuture future)
                 throws Exception {
+                System.out.println("XXX operationComplete called");
                 onSubscriptionCertificateViaEntitlementId(
                     future.getChannel(), entitlementId);
             }
@@ -207,6 +208,8 @@ class HttpCandlepinClient {
         String errMsg = "OAuth error!";
 
         try {
+            System.out.println("Making request to [" + url + "]");
+
             OAuthMessage oAuthRequest = accessor.newRequestMessage(OAuthMessage.GET, url,
                 null);
             request.setHeader(HttpHeaders.Names.AUTHORIZATION,

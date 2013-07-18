@@ -68,6 +68,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     HttpRequestHandler(Config config, HttpCdnClientChannelFactory clientFactory,
         ChannelFactory channelFactory) {
+        System.out.println("XXX HttpRequestHandler.ctor");
         this.config = config;
         this.clientFactory = clientFactory;
         this.channelFactory = channelFactory;
@@ -85,6 +86,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
+        System.out.println("XXX HttpRequestHandler.messageReceived");
         if (!readingChunks) {
             requestStartReceived(ctx, e);
         }
@@ -96,6 +98,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     // we need a java.security.cert rather than a javax one, so we can read extensions.
     private static X509Certificate convertCertificate(
         javax.security.cert.X509Certificate cert) {
+        System.out.println("XXX convertCertificate");
         String errMsg = "Unable to convert x509 certificate";
         try {
             byte[] encoded = cert.getEncoded();
@@ -134,6 +137,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     private void requestStartReceived(final ChannelHandlerContext ctx, final MessageEvent e)
         throws Exception {
+        System.out.println("XXX requestStartReceived");
         // configured to use a static ssl cert for all cdn communication. for testing only!
         // XXX we'll have to remove this at some point and just always do it
 
@@ -217,6 +221,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     private void sendResponseToClient(ChannelHandlerContext ctx,
         HttpResponseStatus status) {
+        System.out.println("XXX send response to client");
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
         ChannelFuture future = ctx.getChannel().write(response);
         future.addListener(ChannelFutureListener.CLOSE);
@@ -224,6 +229,8 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     private void beginCdnCommunication(ChannelHandlerContext ctx, MessageEvent e,
         String pem) throws Exception {
+
+        System.out.println("XXX talk to CDN");
         this.request = (HttpRequest) e.getMessage();
         final HttpRequest request = this.request;
         final Channel inbound = e.getChannel();

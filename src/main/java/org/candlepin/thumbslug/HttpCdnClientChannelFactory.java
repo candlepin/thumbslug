@@ -58,6 +58,7 @@ class HttpCdnClientChannelFactory {
     public HttpCdnClientChannelFactory(Config config, ChannelFactory channelFactory) {
         this.config = config;
         this.channelFactory = channelFactory;
+        System.out.println("XXX HttpCdnClientChannelFactory ctor");
 
     }
 

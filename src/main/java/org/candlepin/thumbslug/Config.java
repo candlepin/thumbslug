@@ -214,6 +214,7 @@ public class Config {
         for (Entry<Object, Object> entry : loggingProperties.entrySet()) {
             String loggingKey = (String) entry.getKey();
             String key = loggingKey.replace(LOGGER_PREFIX, "");
+            System.out.println("logging: " + key + " " +  entry.getValue());
             p.put(key, entry.getValue());
         }
         return p;

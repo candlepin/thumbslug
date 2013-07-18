@@ -124,6 +124,7 @@ public class Main {
         }
 
         configureLogging(config.getProperty("log.error"), config.getLoggingConfig());
+        log.debug("do you see me now?");
 
         int port = config.getInt("port");
         boolean shouldDaemonize = config.getBoolean("daemonize");
