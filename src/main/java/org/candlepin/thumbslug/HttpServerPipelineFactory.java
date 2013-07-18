@@ -54,22 +54,39 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         // Create a default pipeline implementation.
         ChannelPipeline pipeline = pipeline();
 
+        /*
+         * Processing order for this pipe depends on whether the handler
+         * implements upstream, downstream or both.
+         *
+         * upstream: ssl, decoder, aggregator, deflator, logger,
+         *           pipelineExecutor, ping, handler
+         * downstream: handler, pipelineExecutor, logger, deflator, encoder, ssl
+         *
+         * ssl, aggregator and deflator are optional and can be added if needed.
+         */
+
         if (config.getBoolean("ssl")) {
             SSLEngine engine =
                 SslContextFactory.getServerContext(
                     config.getProperty("ssl.keystore"),
                     config.getProperty("ssl.keystore.password"),
                     config.getProperty("ssl.ca.keystore")).createSSLEngine();
+
+            // Note that we have setUseClientMode set to false here, we are
+            // acting as a server on this side of the pipeline.
             engine.setUseClientMode(false);
             engine.setNeedClientAuth(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }
 
         pipeline.addLast("decoder", new HttpRequestDecoder());
+
+        // FIXME: why not make this configurable? 2013-07-18 jmrodri
         // Uncomment the following line if you don't want to handle HttpChunks.
         // pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
         pipeline.addLast("encoder", new HttpResponseEncoder());
 
+        // FIXME: why not make this configurable? 2013-07-18 jmrodri
         // we're explicitly not compressing here; the CDN takes care of that.
         // pipeline.addLast("deflater", new HttpContentCompressor());
 

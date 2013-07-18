@@ -35,7 +35,8 @@ import java.net.InetSocketAddress;
 import javax.net.ssl.SSLEngine;
 
 /**
- * HttpClientPipelineFactory
+ * HttpCdnClientChannelFactory builds the pipeline used to connect to the
+ * CDN: hosted, katello/headpin, or another thumbslug.
  */
 class HttpCdnClientChannelFactory {
     private final Config config;

@@ -108,7 +108,7 @@ public class Main {
 
     /**
      * This is where magic happens.
-     * 
+     *
      * @param args
      */
     public static void main(String[] args) {
