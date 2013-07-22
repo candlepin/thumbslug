@@ -66,6 +66,7 @@ describe 'Certificate download from candlepin' do
     begin
       response = get('https://127.0.0.1:8088/lorem.ipsum')
       response.code.should == '200'
+      puts response.body
     ensure
       Process.kill('INT', cpin_proc)
       Process.wait(cpin_proc)
@@ -79,6 +80,7 @@ describe 'Certificate download from candlepin' do
       response = get('https://127.0.0.1:8088/lorem.ipsum', headers = nil,
                      pem = 'spec/data/spec/cert-v3.pem')
       response.code.should == '200'
+      puts response.body
     ensure
       Process.kill('INT', cpin_proc)
       Process.wait(cpin_proc)
@@ -170,12 +172,13 @@ class Cert < WEBrick::HTTPServlet::AbstractServlet
 
   def do_GET(request, response)
     response.status = 200
-    response['Content-Type'] = "text/plain"
-    body = ""
+    response['Content-Type'] = "applications/json"
+    body = '{"%s", "%s"}'
+    certfile = ""
     File.open("spec/data/cdn-client.pem", 'r') do |file|
-        body = file.read
+        certfile = file.read
     end
-    response.body = body
+    response.body = body % ["http://cschevia.is/1337", certfile]
   end
 end
 
