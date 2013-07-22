@@ -68,7 +68,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     HttpRequestHandler(Config config, HttpCdnClientChannelFactory clientFactory,
         ChannelFactory channelFactory) {
-        System.out.println("XXX HttpRequestHandler.ctor");
+        System.err.println("XXX HttpRequestHandler.ctor");
         this.config = config;
         this.clientFactory = clientFactory;
         this.channelFactory = channelFactory;
@@ -86,7 +86,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
-        System.out.println("XXX HttpRequestHandler.messageReceived");
+        System.err.println("XXX HttpRequestHandler.messageReceived");
         if (!readingChunks) {
             requestStartReceived(ctx, e);
         }
@@ -98,7 +98,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     // we need a java.security.cert rather than a javax one, so we can read extensions.
     private static X509Certificate convertCertificate(
         javax.security.cert.X509Certificate cert) {
-        System.out.println("XXX convertCertificate");
+        System.err.println("XXX convertCertificate");
         String errMsg = "Unable to convert x509 certificate";
         try {
             byte[] encoded = cert.getEncoded();
@@ -137,7 +137,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     private void requestStartReceived(final ChannelHandlerContext ctx, final MessageEvent e)
         throws Exception {
-        System.out.println("XXX requestStartReceived");
+        System.err.println("XXX requestStartReceived");
         // configured to use a static ssl cert for all cdn communication. for testing only!
         // XXX we'll have to remove this at some point and just always do it
 
@@ -154,7 +154,10 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                     @Override
                     public void onResponse(String buffer) throws Exception {
                         log.debug("Buffer for /entitlements call :" + buffer);
-                        beginCdnCommunication(ctx, e, buffer);
+
+                        String[] parts = getParts(buffer);
+                        System.err.println(parts[1]);
+                        beginCdnCommunication(ctx, e, parts[0], parts[1]);
                     }
 
                     @Override
@@ -173,6 +176,12 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                     public void onOtherResponse(int code) {
                         log.error("Unexpected response code from candlepin: " + code);
                         sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
+                    }
+
+                    private String[] getParts(String buffer) {
+                        // ["url", "pemcert"]
+                        int len = buffer.length();
+                        return buffer.substring(1, len - 1).replaceAll("\"", "").replaceAll("\\\\n", "\n").split(",");
                     }
 
                 }, channelFactory);
@@ -215,22 +224,22 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                 }
             }
 
-            beginCdnCommunication(ctx, e, pem);
+            beginCdnCommunication(ctx, e, "", pem);
         }
     }
 
     private void sendResponseToClient(ChannelHandlerContext ctx,
         HttpResponseStatus status) {
-        System.out.println("XXX send response to client");
+        System.err.println("XXX send response to client");
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
         ChannelFuture future = ctx.getChannel().write(response);
         future.addListener(ChannelFutureListener.CLOSE);
     }
 
     private void beginCdnCommunication(ChannelHandlerContext ctx, MessageEvent e,
-        String pem) throws Exception {
+        String cdnurl, String pem) throws Exception {
 
-        System.out.println("XXX talk to CDN");
+        System.err.println("XXX talk to CDN");
         this.request = (HttpRequest) e.getMessage();
         final HttpRequest request = this.request;
         final Channel inbound = e.getChannel();
@@ -240,8 +249,11 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
         // Reset the host header to our new request.
         // A certain CDN provider is quite picky about this.
-        request.setHeader("Host",
-            config.getProperty("cdn.host") + ":" + config.getProperty("cdn.port"));
+        //request.setHeader("Host",
+        //    config.getProperty("cdn.host") + ":" + config.getProperty("cdn.port"));
+
+        // FIXME: need to parse the cdnurl since we don't need the protocol
+        request.setHeader("Host", cdnurl);
 
         // Likewise, we have to reset the get path, just in case.
         URI uri = new URI(request.getUri());

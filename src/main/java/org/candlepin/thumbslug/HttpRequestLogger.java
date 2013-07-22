@@ -151,7 +151,7 @@ class HttpRequestLogger extends SimpleChannelHandler {
     private void logAccess() {
         // We've got to use the a default locale here, so that month name is
         // formatted properly for CLF, regardless of server locale. I've chosen Canada!
-        System.out.println("XXX logAccess called");
+        System.err.println("XXX logAccess called");
         if (accessLog.isInfoEnabled()) {
             accessLog.info(String.format(Locale.CANADA, DEFAULT_LOG_FORMAT,
                 inetAddress, Calendar.getInstance(), method, uri, protocol, status,
@@ -163,7 +163,7 @@ class HttpRequestLogger extends SimpleChannelHandler {
         if (loggingConfigured) {
             return;
         }
-        System.out.println("XXX configure logAccess");
+        System.err.println("XXX configure logAccess");
         loggingConfigured = true;
 
         accessLog.setLevel(org.apache.log4j.Level.INFO);

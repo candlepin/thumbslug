@@ -46,13 +46,13 @@ public class PingHandler extends SimpleChannelUpstreamHandler {
     PingHandler(Config config, ChannelFactory channelFactory) {
         this.config = config;
         this.channelFactory = channelFactory;
-        System.out.println("XXX PingHandler.ctor");
+        System.err.println("XXX PingHandler.ctor");
     }
 
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, MessageEvent e)
         throws Exception {
-        System.out.println("XXX PH.messageReceived");
+        System.err.println("XXX PH.messageReceived");
 
         HttpRequest request = (HttpRequest) e.getMessage();
 
@@ -102,7 +102,7 @@ public class PingHandler extends SimpleChannelUpstreamHandler {
 
     private void sendResponseToClient(ChannelHandlerContext ctx,
         HttpResponseStatus status) {
-        System.out.println("XXX send ping response");
+        System.err.println("XXX send ping response");
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
         ChannelFuture future = ctx.getChannel().write(response);
         future.addListener(ChannelFutureListener.CLOSE);

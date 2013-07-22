@@ -47,12 +47,12 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 
         channelFactory = new NioClientSocketChannelFactory(executor, executor);
         httpClientPipelineFactory = new HttpCdnClientChannelFactory(config, channelFactory);
-        System.out.println("XXX  HttpServerPipelineFactory ctor");
+        System.err.println("XXX  HttpServerPipelineFactory ctor");
     }
 
     @Override
     public ChannelPipeline getPipeline() throws Exception {
-        System.out.println("XXX  HSPF.getPipeline()");
+        System.err.println("XXX  HSPF.getPipeline()");
         // Create a default pipeline implementation.
         ChannelPipeline pipeline = pipeline();
 
@@ -97,7 +97,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         pipeline.addLast("ping", new PingHandler(config, channelFactory));
         pipeline.addLast("handler", new HttpRequestHandler(config,
                                             httpClientPipelineFactory, channelFactory));
-        System.out.println("XXX returning pipeline");
+        System.err.println("XXX returning pipeline");
         return pipeline;
     }
 }
