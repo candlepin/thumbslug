@@ -32,6 +32,10 @@ LOG4J = 'log4j:log4j:jar:1.2.14'
 DAEMON = transitive 'org.kohsuke:akuma:jar:1.7'
 OAUTH = transitive 'net.oauth.core:oauth-consumer:jar:20100527'
 COMMONSCODEC = 'commons-codec:commons-codec:jar:1.4'
+JACKSON = [group('jackson-core-lgpl',
+                 'jackson-mapper-lgpl',
+                 :under => 'org.codehaus.jackson',
+                 :version => '1.9.2')]
 
 JUNIT = 'junit:junit:jar:4.5'
 MOCKITO = 'org.mockito:mockito-all:jar:1.8.5'
@@ -47,8 +51,8 @@ define "thumbslug" do
   compile.options.target = '1.6'
   compile.options.source = '1.6'
 
-  compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC]
-  test.compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC]
+  compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC, JACKSON]
+  test.compile.with [NETTY, LOG4J, DAEMON, OAUTH, COMMONSCODEC, JACKSON]
   test.with [JUNIT, MOCKITO]
 
   #
@@ -66,6 +70,7 @@ define "thumbslug" do
   package(:jar).merge(DAEMON).exclude("META-INF/MANIFEST.MF")
   package(:jar).merge(OAUTH).exclude("META-INF/MANIFEST.MF")
   package(:jar).merge(COMMONSCODEC).exclude("META-INF/MANIFEST.MF")
+  package(:jar).merge(JACKSON).exclude("META-INF/MANIFEST.MF")
   package(:jar).with(:manifest => manifest)
 end
 
