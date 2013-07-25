@@ -19,7 +19,11 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import org.candlepin.thumbslug.HttpCandlepinClient.CandlepinClientResponseHandler;
 import org.candlepin.thumbslug.HttpCdnClientChannelFactory.OnCdnConnectedCallback;
 import org.candlepin.thumbslug.ssl.SslPemException;
-
+import org.candlepin.thumbslug.model.CdnInfo;
+import org.codehaus.jackson.map.AnnotationIntrospector;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
 import org.apache.log4j.Logger;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
@@ -47,6 +51,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.Map;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 
@@ -155,9 +161,12 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                     public void onResponse(String buffer) throws Exception {
                         log.debug("Buffer for /entitlements call :" + buffer);
 
-                        String[] parts = getParts(buffer);
-                        System.err.println(parts[1]);
-                        beginCdnCommunication(ctx, e, parts[0], parts[1]);
+                        CdnInfo cdninfo = parseCdnInfo(buffer);
+                        System.err.println(cdninfo.getSubCert());
+                        // we can't just pass in the cdninfo only because if we
+                        // are not using dynamicSsl there is no cdninfo to pass
+                        // in so we need the 4 params
+                        beginCdnCommunication(ctx, e, cdninfo, cdninfo.getSubCert());
                     }
 
                     @Override
@@ -178,10 +187,10 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                         sendResponseToClient(ctx, HttpResponseStatus.BAD_GATEWAY);
                     }
 
-                    private String[] getParts(String buffer) {
-                        // ["url", "pemcert"]
-                        int len = buffer.length();
-                        return buffer.substring(1, len - 1).replaceAll("\"", "").replaceAll("\\\\n", "\n").split(",");
+                    private CdnInfo parseCdnInfo(String buffer) {
+                        // ["cdninfo", "pemcert"]
+                        CdnInfo realcdn = getObjectMapper().convertValue(buffer, CdnInfo.class);
+                        return realcdn;
                     }
 
                 }, channelFactory);
@@ -224,7 +233,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                 }
             }
 
-            beginCdnCommunication(ctx, e, "", pem);
+            beginCdnCommunication(ctx, e, null, pem);
         }
     }
 
@@ -237,7 +246,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     }
 
     private void beginCdnCommunication(ChannelHandlerContext ctx, MessageEvent e,
-        String cdnurl, String pem) throws Exception {
+        CdnInfo cdninfo, String pem) throws Exception {
 
         System.err.println("XXX talk to CDN");
         this.request = (HttpRequest) e.getMessage();
@@ -247,13 +256,19 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             request.addHeader("X-Forwarded-By", "Thumbslug v1.0");
         }
 
-        // Reset the host header to our new request.
-        // A certain CDN provider is quite picky about this.
-        //request.setHeader("Host",
-        //    config.getProperty("cdn.host") + ":" + config.getProperty("cdn.port"));
+        if (cdninfo != null) {
+            // FIXME: need to parse the cdnurl since we don't need the protocol
+            // if the CdnUrl has a protocol, remove it.
+            // if there is no host, use the config, if no port, use the config.
+            request.setHeader("Host", cdninfo.getCdnUrl());
+        }
+        else {
+            // Reset the host header to our new request.
+            // A certain CDN provider is quite picky about this.
+            request.setHeader("Host",
+                config.getProperty("cdn.host") + ":" + config.getProperty("cdn.port"));
+        }
 
-        // FIXME: need to parse the cdnurl since we don't need the protocol
-        request.setHeader("Host", cdnurl);
 
         // Likewise, we have to reset the get path, just in case.
         URI uri = new URI(request.getUri());
@@ -339,5 +354,13 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             candlepinChannel.write(ChannelBuffers.EMPTY_BUFFER)
                 .addListener(ChannelFutureListener.CLOSE);
         }
+    }
+
+    public ObjectMapper getObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        AnnotationIntrospector primary = new JacksonAnnotationIntrospector();
+        mapper.setAnnotationIntrospector(primary);
+        mapper.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
+        return mapper;
     }
 }
