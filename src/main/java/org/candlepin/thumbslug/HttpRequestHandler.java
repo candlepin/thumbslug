@@ -20,7 +20,9 @@ import org.candlepin.thumbslug.HttpCandlepinClient.CandlepinClientResponseHandle
 import org.candlepin.thumbslug.HttpCdnClientChannelFactory.OnCdnConnectedCallback;
 import org.candlepin.thumbslug.ssl.SslPemException;
 import org.candlepin.thumbslug.model.CdnInfo;
+import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.AnnotationIntrospector;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
@@ -51,8 +53,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.security.cert.X509Certificate;
-import java.util.Date;
-import java.util.Map;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 
@@ -144,7 +144,8 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private void requestStartReceived(final ChannelHandlerContext ctx, final MessageEvent e)
         throws Exception {
         System.err.println("XXX requestStartReceived");
-        // configured to use a static ssl cert for all cdn communication. for testing only!
+        // configured to use a static ssl cert for all cdn communication. for
+        // testing only!
         // XXX we'll have to remove this at some point and just always do it
 
         // prevent any more messages until we are connected to the cdn.
@@ -155,6 +156,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             String entitlementUuid = getEntitlementId(
                 ctx.getChannel().getPipeline().get(SslHandler.class));
 
+            @SuppressWarnings("synthetic-access")
             HttpCandlepinClient client = new HttpCandlepinClient(config,
                 new CandlepinClientResponseHandler() {
                     @Override
@@ -189,7 +191,19 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
                     private CdnInfo parseCdnInfo(String buffer) {
                         // ["cdninfo", "pemcert"]
-                        CdnInfo realcdn = getObjectMapper().convertValue(buffer, CdnInfo.class);
+                        CdnInfo realcdn = null;
+                        try {
+                            realcdn = getObjectMapper().readValue(buffer, CdnInfo.class);
+                        }
+                        catch (JsonParseException jpe) {
+                            log.error(jpe);
+                        }
+                        catch (JsonMappingException jme) {
+                            log.error(jme);
+                        }
+                        catch (IOException ioe) {
+                            log.error(ioe);
+                        }
                         return realcdn;
                     }
 
@@ -283,7 +297,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
         try {
             clientFactory.getPipeline(e.getChannel(),
-                isKeepAlive(request), pem, new OnCdnConnectedCallback() {
+                isKeepAlive(request), cdninfo, pem, new OnCdnConnectedCallback() {
                     @Override
                     public void onCdnConnected(Channel channel) {
                         cdnChannel = channel;

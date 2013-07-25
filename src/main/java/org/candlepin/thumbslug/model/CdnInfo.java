@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2009 - 2012 Red Hat, Inc.
+ * Copyright (c) 2011 Red Hat, Inc.
  *
  * This software is licensed to you under the GNU General Public License,
  * version 2 (GPLv2). There is NO WARRANTY for this software, express or
@@ -14,8 +14,12 @@
  */
 package org.candlepin.thumbslug.model;
 
-import java.util.Date;
 
+/**
+ * CdnInfo represents the CDN information returned from Candlepin which
+ * includes the upstream subscription certificate and the CDN url and
+ * certificate.
+ */
 public class CdnInfo {
     private Cdn cdn;
     private String subCert;

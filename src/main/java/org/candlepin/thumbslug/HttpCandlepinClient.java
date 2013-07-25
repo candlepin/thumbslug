@@ -142,7 +142,8 @@ class HttpCandlepinClient {
     }
 
     Channel getSubscriptionCertificateViaEntitlementId(final String entitlementId) {
-        System.err.println("XXX getSubscriptionCertificateViaEntitlementId [" + entitlementId + "]");
+        System.err.println("XXX getSubscriptionCertificateViaEntitlementId [" +
+            entitlementId + "]");
         Channel requestChannel = channelFactory.newChannel(getPipeline());
         // Set up the event pipeline factory.
 
@@ -177,16 +178,11 @@ class HttpCandlepinClient {
 
     private void onSubscriptionCertificateViaEntitlementId(Channel channel,
         String entitlementId) {
-        String eid = "8a8d089d3fedcc97013ff3504d3d09c9";
-        System.err.println("Entitlement Id: " + entitlementId + "but using " + eid);
-//        String url = String.format("http%s://%s:%s/candlepin/entitlements/%s/upstream_cert",
-//            useSSL ? "s" : "", candlepinHost, candlepinPort, entitlementId);
-        
         String url = String.format("http%s://%s:%s/candlepin/entitlements/%s/upstream_cert",
-            useSSL ? "s" : "", candlepinHost, candlepinPort, eid);
-        
+            useSSL ? "s" : "", candlepinHost, candlepinPort, entitlementId);
 
-        System.err.println("XXX onSubscriptionCertificateViaEntitlementId.url [" + url + "]");
+        System.err.println("XXX onSubscriptionCertificateViaEntitlementId.url [" +
+            url + "]");
         onConnectedToCandlepin(channel, url, false);
     }
 
@@ -200,7 +196,8 @@ class HttpCandlepinClient {
 
     private void onConnectedToCandlepin(Channel channel, String url, boolean textOnly) {
         // Prepare the HTTP request.
-        System.err.println("XXX onConnectedToCandlepin [" + url + "] textonly? " + textOnly);
+        System.err.println("XXX onConnectedToCandlepin [" + url +
+            "] textonly? " + textOnly);
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.GET, url);
         request.setHeader(HttpHeaders.Names.HOST, candlepinHost);

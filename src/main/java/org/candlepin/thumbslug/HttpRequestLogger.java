@@ -113,11 +113,15 @@ class HttpRequestLogger extends SimpleChannelHandler {
     public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
         throws Exception {
 
+        System.err.println("XXX handleDownstream: " + e.getClass().getName());
+
         super.handleDownstream(ctx, e);
 
         if (e instanceof MessageEvent) {
+            System.err.println("XXX we have a messageevent");
             Object msg = ((MessageEvent) e).getMessage();
             if (msg instanceof HttpResponse) {
+                System.err.println("XXX msg is an HttpResponse");
                 HttpResponse response = (HttpResponse) msg;
 
                 status = response.getStatus().getCode();

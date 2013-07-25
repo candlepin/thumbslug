@@ -17,6 +17,7 @@ package org.candlepin.thumbslug;
 import static org.jboss.netty.channel.Channels.pipeline;
 
 import org.candlepin.thumbslug.HttpConnectProxy.OnProxyConnectedCallback;
+import org.candlepin.thumbslug.model.CdnInfo;
 import org.candlepin.thumbslug.ssl.SslContextFactory;
 import org.candlepin.thumbslug.ssl.SslPemException;
 
@@ -63,12 +64,12 @@ class HttpCdnClientChannelFactory {
     }
 
     private void buildFinalPipeline(ChannelPipeline pipeline, Channel client,
-        boolean keepAlive, String pem) throws SslPemException {
+        boolean keepAlive, CdnInfo cdninfo, String pem) throws SslPemException {
 
         if (config.getBoolean("cdn.ssl")) {
             //this is where we bomb if we can't read the PEM data from cpin
             SSLEngine engine = SslContextFactory.getClientContext(pem,
-                config.getProperty("cdn.ssl.ca.keystore")).createSSLEngine();
+                CdnInfoUtil.getCdnSslKeystore(cdninfo, config)).createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
         }
@@ -93,20 +94,24 @@ class HttpCdnClientChannelFactory {
         });
     }
 
-    public void getPipeline(final Channel client, final boolean keepAlive, final String pem,
-        final OnCdnConnectedCallback callback)
-        throws SslPemException {
+    public void getPipeline(final Channel client, final boolean keepAlive,
+        final CdnInfo cdninfo, final String pem,
+        final OnCdnConnectedCallback callback) throws SslPemException {
+
         ChannelPipeline pipeline = pipeline();
 
-
         if (config.getBoolean("cdn.proxy")) {
-            buildProxyPipeline(client, keepAlive, pem, callback, pipeline);
+            buildProxyPipeline(pipeline, client, keepAlive, pem, callback);
         }
         else {
+            // FIXME: use Util to get values
+            //InetSocketAddress remote = new InetSocketAddress(
+            //    config.getProperty("cdn.host"), config.getInt("cdn.port"));
             InetSocketAddress remote = new InetSocketAddress(
-                config.getProperty("cdn.host"), config.getInt("cdn.port"));
+                CdnInfoUtil.getCdnHost(cdninfo, config),
+                CdnInfoUtil.getCdnPort(cdninfo, config));
 
-            buildFinalPipeline(pipeline, client, keepAlive, pem);
+            buildFinalPipeline(pipeline, client, keepAlive, cdninfo, pem);
 
             Channel cdnChannel = channelFactory.newChannel(pipeline);
             ChannelFuture future = cdnChannel.connect(remote);
@@ -124,9 +129,9 @@ class HttpCdnClientChannelFactory {
         }
     }
 
-    private void buildProxyPipeline(final Channel client,
+    private void buildProxyPipeline(ChannelPipeline pipeline, final Channel client,
         final boolean keepAlive, final String pem,
-        final OnCdnConnectedCallback callback, ChannelPipeline pipeline) {
+        final OnCdnConnectedCallback callback) {
 
         InetSocketAddress remote;
         pipeline.addLast("codec", new HttpClientCodec());
@@ -138,7 +143,8 @@ class HttpCdnClientChannelFactory {
                     pipeline.remove("codec");
 
                     try {
-                        buildFinalPipeline(pipeline, client, keepAlive, pem);
+                        // FIXME: where does cdninfo come from here - zeus
+                        buildFinalPipeline(pipeline, client, keepAlive, null, pem);
                     }
                     catch (SslPemException e) {
                         // send a 502 back to the user

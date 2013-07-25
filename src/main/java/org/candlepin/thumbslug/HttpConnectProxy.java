@@ -42,7 +42,7 @@ public class HttpConnectProxy extends SimpleChannelUpstreamHandler {
     interface OnProxyConnectedCallback {
         void onConnected(ChannelHandlerContext ctx);
         //void onError(ChannelHandlerContext ctx, Throwable reason);
-    };
+    }
 
     private OnProxyConnectedCallback callback;
     private String uri;
