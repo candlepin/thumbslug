@@ -74,32 +74,4 @@ public class ConfigTest {
         Properties sslProps = config.getNamespaceProperties("ssl.client");
         assertEquals(2, sslProps.entrySet().size());
     }
-
-    @Test
-    public void parseParts() throws Exception {
-        FileReader fr = new FileReader("o.json");
-        BufferedReader br = new BufferedReader(fr);
-        String line = null;
-        StringBuffer buf = new StringBuffer();
-        while ((line = br.readLine()) != null) {
-            buf.append(line);
-        }
-        br.close();
-        fr.close();
-        System.out.println(buf.toString());
-
-        ObjectMapper mapper = getObjectMapper();
-        CdnInfo realcdn = mapper.readValue(buf.toString(), CdnInfo.class);
-        System.out.println(realcdn.getCdnUrl());
-        assertEquals("https://cdn.test.com", realcdn.getCdnUrl());
-    }
-
-    public ObjectMapper getObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        AnnotationIntrospector primary = new JacksonAnnotationIntrospector();
-        mapper.setAnnotationIntrospector(primary);
-        mapper.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
-        return mapper;
-    }
-
 }
