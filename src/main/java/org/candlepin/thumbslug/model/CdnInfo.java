@@ -34,10 +34,18 @@ public class CdnInfo {
     }
 
     public String getCdnUrl() {
+        // FIXME should actually make the ctor construct
+        // a Cdn
+	if (cdn == null) {
+            return null;
+        }
         return cdn.getUrl();
     }
 
     public String getCdnCert() {
+	if (cdn == null) {
+            return null;
+        }
         return cdn.getCert();
     }
 
