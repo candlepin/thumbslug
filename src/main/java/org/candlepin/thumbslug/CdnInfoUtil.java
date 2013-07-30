@@ -36,7 +36,7 @@ public class CdnInfoUtil {
 
     public static String getCdnHost(CdnInfo cdn, Config config) {
         String host = null;
-        if (cdn != null) {
+        if (cdn != null && cdn.getCdnUrl() != null) {
             host = getAsUrl(cdn.getCdnUrl()).getHost();
         }
 
@@ -50,7 +50,7 @@ public class CdnInfoUtil {
     public static int getCdnPort(CdnInfo cdn, Config config) {
         int port = -1; // getPort returns this if not set
 
-        if (cdn != null) {
+        if (cdn != null && cdn.getCdnUrl() != null) {
             port = getAsUrl(cdn.getCdnUrl()).getPort();
             System.err.println("XXX cdn port: " + port);
         }

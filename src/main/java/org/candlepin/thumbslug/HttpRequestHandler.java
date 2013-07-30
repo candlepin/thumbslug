@@ -271,10 +271,7 @@ class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         }
 
         if (cdninfo != null) {
-            // FIXME: need to parse the cdnurl since we don't need the protocol
-            // if the CdnUrl has a protocol, remove it.
-            // if there is no host, use the config, if no port, use the config.
-            request.setHeader("Host", cdninfo.getCdnUrl());
+            request.setHeader("Host", CdnInfoUtil.getCdnHost(cdninfo, config));
         }
         else {
             // Reset the host header to our new request.
