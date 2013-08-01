@@ -82,7 +82,7 @@ task :setup do
   mkdir_p("run/etc")
   touch "run/log/error.log"
   touch "run/log/access.log"
-  `buildconf/updateconf -f`
+  `buildconf/updateconf
 end
 
 task :serve do
