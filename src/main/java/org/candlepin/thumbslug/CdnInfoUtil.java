@@ -69,10 +69,12 @@ public class CdnInfoUtil {
     public static String getCdnSslKeystore(CdnInfo cdn, Config config) {
         String cdnCert = null;
         if (cdn != null) {
+            System.err.println("XXX using CDN cert from candlepin");
             cdnCert = cdn.getCdnCert();
         }
 
         if (cdnCert == null) {
+            System.err.println("XXX using configured cdn.ssl.ca.keystore");
             cdnCert = config.getProperty("cdn.ssl.ca.keystore");
         }
 
