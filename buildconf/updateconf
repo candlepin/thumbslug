@@ -51,6 +51,14 @@ if [ "$WRITE" == "1" ]; then
     write_to_tmpconf "pid.file = $TSDIR/run/thumbslug.pid"
     write_to_tmpconf "daemonize = false"
     write_to_tmpconf "log4j.logger.org.candlepin.thumbslug=DEBUG"
+    write_to_tmpconf "cdn.ssl.ca.keystore=/etc/thumbslug/cdn-ca.pem"
     write_to_tmpconf "ssl=true"
     sudo mv $TMPCONF $TSCONF
 fi
+
+# copy the cdn over if not already present
+if [ ! -f /etc/thumbslug/cdn-ca.pem ]; then
+    sudo cp cdn-ca.pem /etc/thumbslug/
+fi
+sudo cp /etc/candlepin/certs/candlepin-ca.crt /etc/thumbslug/client-ca.pem
+sudo cp /etc/candlepin/certs/keystore /etc/thumbslug/server_keystore.p12
