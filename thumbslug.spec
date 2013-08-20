@@ -180,7 +180,7 @@ fi
 
 
 %files
-%defattr(-, root, thumbslug)
+%defattr(-, root, root)
 %doc README
 %{_initddir}/%{name}
 %{_bindir}/%{name}
