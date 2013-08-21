@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.32
+Version: 0.0.33
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -204,6 +204,9 @@ fi
 
 
 %changelog
+* Wed Aug 21 2013 jesus m. rodriguez <jesusr@redhat.com> 0.0.33-1
+- 996681: Change default group owner (bkearney@redhat.com)
+
 * Mon Jun 03 2013 Bryan Kearney <bkearney@redhat.com> 0.0.32-1
 - Update spec file to only use jakarta-commons-codec on RHEL 5
   (bkearney@redhat.com)
