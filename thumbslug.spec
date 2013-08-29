@@ -180,10 +180,10 @@ fi
 
 
 %files
-%defattr(-, root, root)
+%defattr(-, root, thumbslug)
 %doc README
 %{_initddir}/%{name}
-%{_bindir}/%{name}
+%attr(-, root, root) %{_bindir}/%{name}
 
 %dir %{_sysconfdir}/thumbslug
 %config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
