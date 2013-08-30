@@ -164,7 +164,7 @@ do
   /usr/sbin/semodule -s ${selinuxvariant} -i \
     %{_datadir}/selinux/${selinuxvariant}/%{modulename}.pp &> /dev/null || :
 done
-RC=0; semanage port -l | grep 8088 &> /dev/null || RC=$?
+RC=0; /usr/sbin/semanage port -l | grep 8088 &> /dev/null || RC=$?
 if [ "$RC" -ne "0" ] ; then
     /usr/sbin/semanage port -a -t thumbslug_port_t -p tcp 8088 || :
 fi
