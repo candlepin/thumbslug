@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.33
+Version: 0.0.34
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -201,6 +201,13 @@ fi
 
 
 %changelog
+* Tue Sep 03 2013 jesus m. rodriguez <jesusr@redhat.com> 0.0.34-1
+- 924349: semanage changes (jesusr@redhat.com)
+- 924349: remove restorecon /var/cache/thumbslug (jesusr@redhat.com)
+- 996681: be less specific with thumbslug (bkearney@redhat.com)
+- remove f16 and f17 from katello-koji releasers (jesusr@redhat.com)
+- remove cvs section from tito.props (jesusr@redhat.com)
+
 * Wed Aug 21 2013 jesus m. rodriguez <jesusr@redhat.com> 0.0.33-1
 - 996681: Change default group owner (bkearney@redhat.com)
 
