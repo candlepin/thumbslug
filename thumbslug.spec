@@ -164,8 +164,7 @@ do
   /usr/sbin/semodule -s ${selinuxvariant} -i \
     %{_datadir}/selinux/${selinuxvariant}/%{modulename}.pp &> /dev/null || :
 done
-/sbin/restorecon %{_localstatedir}/cache/thumbslug || :
-/usr/sbin/semanage port -a -t thumbslug_port_t -p tcp 8088 || :
+/usr/sbin/semanage port -a -t thumbslug_port_t -p tcp 8088 &> /dev/null || :
 
 %postun selinux
 if [ $1 -eq 0 ] ; then
@@ -173,9 +172,7 @@ if [ $1 -eq 0 ] ; then
   do
      /usr/sbin/semodule -s ${selinuxvariant} -r %{modulename} &> /dev/null || :
   done
-  [ -d %{_localstatedir}/cache/thumbslug ]  && \
-    /sbin/restorecon -R %{_localstatedir}/cache/thumbslug &> /dev/null || :
-  /usr/sbin/semanage port -a -t thumbslug_port_t -p tcp 8088 || :
+  /usr/sbin/semanage port -d -t thumbslug_port_t -p tcp 8088 &> /dev/null || :
 fi
 
 
