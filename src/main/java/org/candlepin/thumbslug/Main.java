@@ -117,7 +117,7 @@ public class Main {
         }
         catch (Exception e) {
             log.error("Unable to load config!", e);
-            log.warn("Shutting down...");
+            log.warn("Unable to load config! Shutting down...");
             System.exit(ERROR_NO_CONFIG);
         }
 
@@ -135,7 +135,7 @@ public class Main {
             }
             catch (Exception e) {
                 log.error("Exception caught during daemon initialization!", e);
-                log.warn("Shutting down...");
+                log.warn("Error during daemon initialization! Shutting down...");
                 System.exit(ERROR_DAEMON_INIT);
             }
         }
@@ -150,7 +150,6 @@ public class Main {
                     log.error("Unable to daemonize properly", e);
                     System.exit(ERROR_DAEMON_DAEMONIZE);
                 }
-                log.warn("Shutting down...");
                 System.exit(0);
             }
         }
@@ -178,7 +177,7 @@ public class Main {
 
         ALL_CHANNELS.add(channel);
 
-        //intercept shutdown signal from VM and shut-down gracefully.
+        // intercept shutdown signal from VM and shut-down gracefully.
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
                 log.warn("Shutting down...");
