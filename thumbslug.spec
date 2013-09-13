@@ -12,7 +12,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.35
+Version: 0.0.36
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -201,6 +201,9 @@ fi
 
 
 %changelog
+* Fri Sep 13 2013 William Poteat <wpoteat@redhat.com> 0.0.36-1
+- Update condition to <= 6 for proper build package (wpoteat@redhat.com)
+
 * Fri Sep 13 2013 William Poteat <wpoteat@redhat.com> 0.0.35-1
 - 910077: Removed offending Shutting down log statement. (jesusr@redhat.com)
 
