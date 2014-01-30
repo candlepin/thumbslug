@@ -1,0 +1,6 @@
+/usr/lib/systemd/system/thumbslug.service gen_context(system_u:object_r:thumbslug_unit_file_t,s0)
+/usr/bin/thumbslug gen_context(system_u:object_r:thumbslug_exec_t,s0)
+
+/var/run/thumbslug/thumbslug.pid gen_context(system_u:object_r:thumbslug_var_run_t,s0)
+/var/lock/subsys/thumbslug gen_context(system_u:object_r:thumbslug_rw_t,s0)
+/var/log/thumbslug/(/.*)? gen_context(system_u:object_r:thumbslug_log_t,s0)

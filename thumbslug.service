@@ -1,0 +1,15 @@
+[Unit]
+Description=Thumbslug content and entitlement proxy.
+Wants=network.target
+After=network.target
+
+[Service]
+Type=forking
+User=thumbslug
+Group=thumbslug
+ExecStart=/usr/bin/thumbslug
+Restart=on-failure
+PIDFile=/var/run/thumbslug/thumbslug.pid
+
+[Install]
+WantedBy=multi-user.target
