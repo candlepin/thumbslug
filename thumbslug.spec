@@ -124,16 +124,16 @@ install -d -m 755 %{buildroot}/%{_bindir}/
 
 %if %use_systemd
     install -d -m 755 %{buildroot}/%{_unitdir}
-    install -m 644 %{name}.service %{buildroot}/%{_unitdir}/%{name}.service
+    install -m 644 conf/%{name}.service %{buildroot}/%{_unitdir}/%{name}.service
     install -d -m 755 %{buildroot}/%{_tmpfilesdir}
-    install -m 644 %{name}.conf.tmpfiles %{buildroot}/%{_tmpfilesdir}/%{name}.conf
+    install -m 644 conf/%{name}.conf.tmpfiles %{buildroot}/%{_tmpfilesdir}/%{name}.conf
 %else
     install -d -m 755 %{buildroot}/%{_initddir}
-    install -m 755 thumbslug.init %{buildroot}/%{_initddir}/%{name}
+    install -m 755 conf/thumbslug.init %{buildroot}/%{_initddir}/%{name}
 %endif
 
 install -d -m 755 %{buildroot}/%{_sysconfdir}/thumbslug
-install -m 640 thumbslug.conf \
+install -m 640 conf/thumbslug.conf \
             %{buildroot}/%{_sysconfdir}/thumbslug/thumbslug.conf
 install -m 640 cdn-ca.pem \
             %{buildroot}/%{_sysconfdir}/thumbslug/cdn-ca.pem
