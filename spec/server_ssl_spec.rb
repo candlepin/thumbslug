@@ -26,8 +26,8 @@ describe 'Server SSL' do
 
   before(:all) do
     @https_proc = create_httpd(true)
-    @tslugs_pipe = create_thumbslug({:ssl_keystore => 'spec/data/keystore.p12',
-                                    :ssl_keystore_password => 'password'})
+    @tslugs_pipe = create_thumbslug({'ssl.keystore' => 'spec/data/keystore.p12',
+                                    'ssl.keystore.password' => 'password'})
   end
 
   after(:all) do
@@ -44,8 +44,8 @@ describe 'Server SSL' do
   it 'uses the configured ssl certificate for its server certificate' do
     socket = TCPSocket.new('127.0.0.1', 8088)
     ssl_context = OpenSSL::SSL::SSLContext.new()
-    ssl_context.key = OpenSSL::PKey::RSA.new(File.read("spec/data/spec/cert-v3.pem"))
-    ssl_context.cert = OpenSSL::X509::Certificate.new(File.read("spec/data/spec/cert-v3.pem"))
+    ssl_context.key = OpenSSL::PKey::RSA.new(File.read("spec/data/spec/test-entitlement.pem"))
+    ssl_context.cert = OpenSSL::X509::Certificate.new(File.read("spec/data/spec/test-entitlement.pem"))
     ssl_socket = OpenSSL::SSL::SSLSocket.new(socket, ssl_context)
 
     ssl_socket.sync_close = true

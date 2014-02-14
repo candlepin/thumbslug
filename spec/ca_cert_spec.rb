@@ -14,10 +14,10 @@ describe 'CA Certificate checking' do
 
   before(:all) do
     @https_proc = create_httpd(true)
-    @tslugs_pipe = create_thumbslug({:ssl_keystore => 'spec/data/keystore-spec.p12',
-                                     :ssl_keystore_password => 'pass'})
-    @tslugs_bad_ca_pipe = create_thumbslug({:port => '9997',
-                                            :cdn_ssl_ca_keystore => 'spec/data/unknown-ca-pub.pem'})
+    @tslugs_pipe = create_thumbslug({'ssl.keystore' => 'spec/data/keystore-spec.p12',
+                                     'ssl.keystore.password' => 'pass'})
+    @tslugs_bad_ca_pipe = create_thumbslug({'port' => '9997',
+                                            'cdn.ssl.ca.keystore' => 'spec/data/unknown-ca-pub.pem'})
   end
 
   after(:all) do

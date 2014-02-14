@@ -1,5 +1,8 @@
 require 'openssl'
+require 'webrick'
 require 'webrick/https'
+require 'net/http'
+require 'zlib'
 
 module ThumbslugMethods
 
@@ -22,11 +25,18 @@ module ThumbslugMethods
     end
     return client.request(Net::HTTP::Get.new(uri.path, headers))
   end
+  module_function :get
 
   def create_httpd(secure=false)
     privkey = OpenSSL::PKey::RSA.new(File.read("spec/data/cdn-key.pem"))
     server_cert = OpenSSL::X509::Certificate.new(File.read("spec/data/cdn.pem"))
-    ca_cert = "spec/data/CA/cdn-ca.pem" 
+    ca_cert = "spec/data/CA/cdn-ca.pem"
+    log_file = 'webrick.log'
+    access_log_stream = File.open(log_file, 'w')
+    # See http://www.ruby-doc.org/stdlib-2.0/libdoc/webrick/rdoc/WEBrick/AccessLog.html
+    access_log = [
+      [access_log_stream, WEBrick::AccessLog::COMMON_LOG_FORMAT],
+    ]
     if secure
       config = {
         :Port => 9090,
@@ -39,18 +49,16 @@ module ThumbslugMethods
         :SSLPrivateKey => privkey,
         :SSLCertificate => server_cert,
         :SSLCACertificateFile => ca_cert,
-        #comment out these two lines to enable webrick logging
-        :Logger => WEBrick::Log.new('/dev/null'),
-        :AccessLog => [nil, nil],
+        :Logger => WEBrick::Log.new(log_file),
+        :AccessLog => access_log,
       }
     else
       config = {
         :Port => 9090,
         :BindAddress => '127.0.0.1',
         :DocumentRoot => Dir.pwd + '/spec/data/',
-        #comment out these two lines to enable webrick logging
-        :Logger => WEBrick::Log.new("/dev/null"),
-        :AccessLog => [nil, nil],
+        :Logger => WEBrick::Log.new(log_file),
+        :AccessLog => access_log,
       }
     end
     rd, wr = IO.pipe
@@ -78,59 +86,45 @@ module ThumbslugMethods
     rd.close
     return pid
   end
+  module_function :create_httpd
 
-  def create_thumbslug(params={})
-
-    jar = " -jar " + Dir.pwd + "/target/thumbslug-1.0.0.jar"
+  def create_thumbslug(params={}, jvm_debug=false)
+    jar = " -cp ./target/thumbslug-1.0.0.jar org.candlepin.thumbslug.Main /dev/null"
 
     #these need to all be strings
     config = {
-     :port => '8088',
-     :ssl => 'true',
-     :ssl_keystore => 'spec/data/keystore-spec.p12',
-     :ssl_keystore_password => 'pass',
-     :ssl_ca_keystore => 'spec/data/CA/cpin-cacert.pem',
-     :ssl_client_keystore => 'spec/data/cdn-client.pem',
-     :ssl_client_dynamic_ssl => 'false',
-     :cdn_port => '9090',
-     :cdn_host => 'localhost',
-     :cdn_ssl => 'true',
-     :cdn_ssl_ca_keystore => 'spec/data/CA/cdn-ca.pem',
-     :cdn_sendTSHeader => 'false',
-     :candlepin_host => 'localhost',
-     :candlepin_port => '9898',
-     :candlepin_oauth_key => 'thumbslug',
-     :candlepin_oauth_secret => 'shhhhh',
+      'daemonize' => 'false',
+      'port' => '8088',
+      'ssl' => 'true',
+      'ssl.keystore' => 'spec/data/keystore-spec.p12',
+      'ssl.keystore.password' => 'pass',
+      'ssl.ca.keystore' => 'spec/data/CA/candlepin-ca.crt',
+      'ssl.client.keystore' => 'spec/data/cdn-client.pem',
+      'ssl.client.dynamicSsl' => 'false',
+      'cdn.port' => '9090',
+      'cdn.host' => 'localhost',
+      'cdn.ssl' => 'true',
+      'cdn.ssl.ca.keystore' => 'spec/data/CA/cdn-ca.pem',
+      'cdn.sendTSHeader' => 'false',
+      'candlepin.host' => 'localhost',
+      'candlepin.port' => '9898',
+      'candlepin.oauth.key' => 'thumbslug',
+      'candlepin.oauth.secret' => 'shhhhh',
+      'cdn.proxy' => 'false',
+      'log.error' => 'error.log',
+      'log.access' => 'access.log',
     }
 
     params.each_pair do |key, value|
       config[key] = value
     end
 
-    tslug_exec_string = "java " +
-                 " -Ddaemonize=false" +
-                 " -Dport=" + config[:port] +
-                 " -Dssl=" + config[:ssl] +
-                 " -Dssl.client.keystore=" + config[:ssl_client_keystore] +
-                 " -Dssl.client.dynamicSsl=" + config[:ssl_client_dynamic_ssl] +
-                 " -Dssl.keystore=" + config[:ssl_keystore] +
-                 " -Dssl.keystore.password=" + config[:ssl_keystore_password] +
-                 " -Dssl.ca.keystore=" + config[:ssl_ca_keystore] +
-                 " -Dcdn.port=" + config[:cdn_port] +
-                 " -Dcdn.host=" + config[:cdn_host] +
-                 " -Dcdn.ssl=" + config[:cdn_ssl] +
-                 " -Dcdn.ssl.ca.keystore=" + config[:cdn_ssl_ca_keystore] +
-                 " -Dcandlepin.host=" + config[:candlepin_host] +
-                 " -Dcandlepin.port=" + config[:candlepin_port] +
-                 " -Dcdn.sendTSheader=" + config[:cdn_sendTSHeader] +
-                 " -Dcandlepin.oauth.key=" + config[:candlepin_oauth_key] +
-                 " -Dcandlepin.oauth.secret=" + config[:candlepin_oauth_secret] +
-                 " -Dcdn.proxy=false" +
-                 " -Dlog.error=error.log" +
-                 " -Dlog.access=access.log" +
-                 #" -Dcdn.proxy.host=proxy-ip-here" +
-                 #" -Dcdn.proxy.port=proxy-port-here" +
-                 jar
+    jvm_args = config.map do |key, value|
+      "-D#{key}=#{value}"
+    end
+    debug_args = "-agentlib:jdwp=transport=dt_socket,address=8123,server=y,suspend=n"
+    jvm_args << debug_args if jvm_debug
+    tslug_exec_string = "java #{jvm_args.join(' ')} #{jar}"
     pipe = IO.popen(tslug_exec_string, "w+")
     #this is perlesque
     while pipe.gets()
@@ -138,6 +132,7 @@ module ThumbslugMethods
     end 
     return pipe
   end
+  module_function :create_thumbslug
 end
 
 

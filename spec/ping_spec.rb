@@ -15,8 +15,8 @@ describe 'Thumbslug Ping' do
   end
 
   before(:all) do
-    @tslugs_pipe = create_thumbslug({:ssl_client_dynamic_ssl => 'true'})
-    @tslugs_no_dynamic_ssl_pipe = create_thumbslug({:port => '9998'})
+    @tslugs_pipe = create_thumbslug({'ssl.client.dynamicSsl' => 'true'})
+    @tslugs_no_dynamic_ssl_pipe = create_thumbslug({'port' => '9998'})
   end
 
   after(:all) do

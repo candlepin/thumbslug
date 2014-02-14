@@ -9,11 +9,11 @@ describe 'HTTP proxying' do
   include ThumbslugMethods
   before(:all) do
     @http_proc = create_httpd
-    @tslug_pipe =  create_thumbslug({:ssl => 'false', :cdn_ssl => 'false'})
-    @tslug_header_pipe = create_thumbslug({:ssl => 'false',
-                                          :cdn_sendTSHeader => 'true',
-                                          :port => '8089',
-                                          :cdn_ssl => 'false'})
+    @tslug_pipe =  create_thumbslug({'ssl' => 'false', 'cdn.ssl' => 'false'})
+    @tslug_header_pipe = create_thumbslug({'ssl' => 'false',
+                                          'cdn.sendTSHeader' => 'true',
+                                          'port' => '8089',
+                                          'cdn.ssl' => 'false'})
   end
 
   after(:all) do
