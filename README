@@ -14,10 +14,9 @@ content from the upstream cdn using locally granted entitlement certificates.
 
 == How? ==
 
-To run from source, use `buildr serve`,
-or `java -jar target/thumbslug-1.0.0.jar`
+To run from source, use the thumbslug.sh file.
 
-If you've installed via the rpm, you can run it as a regular system service, using 'service' or 'chkconfig'.
+If you've installed via the rpm, you can run it as a regular system service, using 'service' or 'chkconfig' or invoke /usr/bin/thumbslug directly.
 
 == Initial Configuration ==
 

@@ -1,7 +1,34 @@
+End To End
+----------
+Creating an end-to-end test with Thumbslug is difficult, but can be done.  Here are the steps.
+
+1. Go to access.redhat.com and get a manifest with some valid entitlements.
+2. Import the manifest into your personal Candlepin.
+3. Install and setup thumbslug.
+   - Copy your /etc/candlepin/certs/candlepin-ca.crt to /etc/thumbslug/client-ca.pem
+   - We are not using JKS for Candlepin at the time of this writing, but if we do, you need
+     to convert your candlepin keystore to PKCS12.  E.g.
+     keytool -importkeystore -srckeystore keystore.jks -srcstoretype JKS -deststoretype PKCS12 -destkeystore keystore.p12
+   - Copy your /etc/candlepin/certs/keystore to /etc/thumbslug/server_keystore.p12
+   - Alternatively you can create your own keystore with keys, create a CSR, have the Candlepin CA
+     sign it, and then update your keystore with the signed cert.  This is left as an exercise for the reader.
+   - Start Thumbslug
+   - Somewhere else, use subscription-manager to register to your Candlepin and attach to a pool.
+   - Copy the candlepin-ca.pem file to /etc/rhsm/ca
+   - Edit /etc/rhsm/rhsm.conf and set repo_ca_cert = %(ca_cert_dir)scandlepin-ca.pem
+   - Also set baseurl to point to your thumbslug.  E.g. baseurl= https://my.candlepin.host:8088
+   - Test with openssl s_client. E.g.
+     openssl s_client -cert /etc/pki/entitlement/some_ent_cert.pem -key /etc/pki/entitlement/some_ent_cert-key.pem -connect my.candlepin.host:8088
+   - Now you should connect and see the SSL handshake.  Try pinging thumbslug by typing "GET /ping HTTP/1.1" and hitting enter twice.
+   - You should get a 204 No Content response.  This means we can talk to thumbslug and thumbslug can talk to candlepin.
+   - Now let's try the whole deal.  Run "subscription-manager repolist"
+   - Did you get anything back?  Even if you got a 404, that means you're talking to the CDN.  
+        
+Spec Tests
+----------
 # Thumbslug needs a lot of SSL certs in place for spec testing.
 # Rather than generate them at test time, we have them stored in the repo.
 # If you need to regenerate them, this is how!
-
 
 # create a CA that will sign the cdn cert:
 openssl req \
@@ -9,7 +36,6 @@ openssl req \
     -subj '/C=US/L=Raleigh/CN=a.fake.cdn' \
       -newkey rsa:1024 -keyout spec/data/CA/cdn-ca-key.pem -out \
       spec/data/CA/cdn-ca.pem
-
 
 # create a cert for the cdn, and sign it with the CA cert from above:
 openssl req \
@@ -44,7 +70,6 @@ openssl req \
       -newkey rsa:1024 -keyout spec/data/unknown-ca-key.pem \
       -out spec/data/unknown-ca.pem
  cat spec/data/unknown-ca-key.pem >> spec/data/unknown-ca.pem
-
 
 # to generate the pkcs12 server keystore:
 openssl req -x509 -new -out CERT.crt -keyout KEY.key -days 3650 \
