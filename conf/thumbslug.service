@@ -8,6 +8,7 @@ Type=forking
 User=thumbslug
 Group=thumbslug
 ExecStart=/usr/bin/thumbslug
+SuccessExitStatus=143
 Restart=on-failure
 PIDFile=/var/run/thumbslug/thumbslug.pid
 
