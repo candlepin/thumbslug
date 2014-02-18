@@ -11,7 +11,7 @@ Creating an end-to-end test with Thumbslug is difficult, but can be done.  Here 
      keytool -importkeystore -srckeystore keystore.jks -srcstoretype JKS -deststoretype PKCS12 -destkeystore keystore.p12
    - Copy your /etc/candlepin/certs/keystore to /etc/thumbslug/server_keystore.p12
    - Alternatively you can create your own keystore with keys, create a CSR, have the Candlepin CA
-     sign it, and then update your keystore with the signed cert.  This is left as an exercise for the reader.
+     sign it, and then update your keystore with the signed cert.  This proces is described below in the Spec Tests section.
    - Start Thumbslug
    - Somewhere else, use subscription-manager to register to your Candlepin and attach to a pool.
    - Copy the candlepin-ca.pem file to /etc/rhsm/ca
@@ -22,8 +22,8 @@ Creating an end-to-end test with Thumbslug is difficult, but can be done.  Here 
    - Now you should connect and see the SSL handshake.  Try pinging thumbslug by typing "GET /ping HTTP/1.1" and hitting enter twice.
    - You should get a 204 No Content response.  This means we can talk to thumbslug and thumbslug can talk to candlepin.
    - Now let's try the whole deal.  Run "subscription-manager repolist"
-   - Did you get anything back?  Even if you got a 404, that means you're talking to the CDN.  
-        
+   - Did you get anything back?  Even if you got a 404, that means you're talking to the CDN.
+
 Spec Tests
 ----------
 # Thumbslug needs a lot of SSL certs in place for spec testing.
@@ -72,16 +72,14 @@ openssl req \
  cat spec/data/unknown-ca-key.pem >> spec/data/unknown-ca.pem
 
 # to generate the pkcs12 server keystore:
-openssl req -x509 -new -out CERT.crt -keyout KEY.key -days 3650 \
-    -subj "/CN=localhost/C=US/L=Raleigh/"
-# enter password/password
-openssl pkcs12 -export -in CERT.crt -inkey KEY.key -out keystore.p12 \
-    -name thumbslug -chain -password pass:password
-# enter password
-# if you see 'unable to write random state, you might need to sudo rm ~/.rnd
-
-#to make a pkcs12 cert for use on thumbslug as a client talkign to the cdn
-openssl pkcs12 -export -inkey cakeypair.pem -in cacert.pem -out keystore-spec.p12 -name thumbslug
+  # Generate a cert for localhost
+openssl req -x509 -new -out localhost.crt -keyout localhost.key -days 10000 -subj "/CN=localhost/C=US/L=Raleigh/" -passout pass:thumbslug
+  # Generate a CSR for the Candlepin CA to sign
+openssl req -out localhost.csr -key localhost.key -new -passin pass:thumbslug -subj "/CN=localhost/C=US/L=Raleigh/"
+  # Sign the CSR
+openssl x509 -in localhost.csr -out localhost.crt -req -days 10000 -CA CA/candlepin-ca.crt -CAkey CA/candlepin-ca.key -CAcreateserial
+  # Create the PKCS12 keystore with the signed cert, the key, and the Candlepin CA
+openssl pkcs12 -export -in localhost.crt -inkey localhost.key -certfile ../CA/candlepin-ca.crt -out keystore-spec.p12 -passout pass:thumbslug -passin pass:thumbslug -name localhost -caname candlepin-ca
 
 You will also need an entitlement cert that represents the consumer. I have
 not found an easy way of creating this cert given all the custom extensions

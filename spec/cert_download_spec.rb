@@ -29,7 +29,7 @@ describe 'Certificate download from candlepin' do
   end
 
   it 'returns a 502 with no open port to candlepin' do
-    response = get('https://127.0.0.1:8088/lorem.ipsum')
+    response = get('https://localhost:8088/lorem.ipsum')
     response.code.should == '502'
   end
 
@@ -37,7 +37,7 @@ describe 'Certificate download from candlepin' do
     cpin_proc = create_candlepin(FiveHundred)
 
     begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum')
+      response = get('https://localhost:8088/lorem.ipsum')
       response.code.should == '502'
     ensure
       Process.kill('INT', cpin_proc)
@@ -49,7 +49,7 @@ describe 'Certificate download from candlepin' do
     cpin_proc = create_candlepin(Garbage)
 
     begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum')
+      response = get('https://localhost:8088/lorem.ipsum')
       response.code.should == '502'
     ensure
       Process.kill('INT', cpin_proc)
@@ -61,7 +61,7 @@ describe 'Certificate download from candlepin' do
     cpin_proc = create_candlepin(Cert)
 
     begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum')
+      response = get('https://localhost:8088/lorem.ipsum')
       response.code.should == '200'
     ensure
       Process.kill('INT', cpin_proc)
@@ -73,7 +73,7 @@ describe 'Certificate download from candlepin' do
     cpin_proc = create_candlepin(Cert)
 
     begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum', nil,
+      response = get('https://localhost:8088/lorem.ipsum', nil,
                      'spec/data/spec/revoked-cert.pem')
       response.code.should == '401'
     ensure

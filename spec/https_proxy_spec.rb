@@ -30,7 +30,8 @@ describe 'HTTPS proxying' do
 
   it 'validate mocked env' do
     filename = Dir.pwd + '/spec/data/random.10k'
-    response = get('https://127.0.0.1:9090/random.10k', nil, 'spec/data/cdn-client.pem')
+    # We are connecting directly to the CDN here, so don't bother verifying the peer
+    response = get('https://localhost:9090/random.10k', nil, 'spec/data/cdn-client.pem', false)
 
     file_digest = Digest::MD5.hexdigest(File.read(filename))
     uri_digest = Digest::MD5.hexdigest(response.body)
@@ -41,7 +42,7 @@ describe 'HTTPS proxying' do
 
   it 'pull a file from thumbslug' do
     filename = Dir.pwd + '/spec/data/random.10k'
-    response = get('https://127.0.0.1:8088/random.10k')
+    response = get('https://localhost:8088/random.10k')
 
     file_digest = Digest::MD5.hexdigest(File.read(filename))
     uri_digest = Digest::MD5.hexdigest(response.body)
@@ -52,11 +53,10 @@ describe 'HTTPS proxying' do
 
 
   it 'pull a file from thumbslug without a client cert' do
-    filename = Dir.pwd + '/spec/data/random.10k'
-    uri = URI.parse('https://127.0.0.1:8088/random.10k')
+    uri = URI.parse('https://localhost:8088/random.10k')
     client = Net::HTTP.new uri.host, uri.port
     client.use_ssl = true
-   
+
     lambda do
       client.request(Net::HTTP::Get.new(uri.path))
     end.should raise_exception(OpenSSL::SSL::SSLError)
@@ -64,22 +64,22 @@ describe 'HTTPS proxying' do
 
 
   it 'pull a 502 from thumbslug (no open port on CDN)' do
-    response = get('https://127.0.0.1:9998/this_will_404')
+    response = get('https://localhost:9998/this_will_404')
     response.code.should == '502'
   end
 
   it 'pull a 404 from the cdn' do
-    response = get('https://127.0.0.1:8088/this_will_404')
+    response = get('https://localhost:8088/this_will_404')
     response.code.should == '404'
   end
 
   it 'pull a 500 from the cdn' do
-    response = get('https://127.0.0.1:8088/this_will_500')
+    response = get('https://localhost:8088/this_will_500')
     response.code.should == '500'
   end
 
   it 'check that client headers are being passed through' do
-    response = get('https://127.0.0.1:8088/trace', {'captain' => 'sub'})
+    response = get('https://localhost:8088/trace', {'captain' => 'sub'})
     response.code.should == '200'
     header_idx = response.body =~ /sub/
     header_idx.should > 0

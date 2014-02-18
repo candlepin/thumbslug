@@ -35,7 +35,7 @@ describe 'Accept Encoding header' do
     # if the client requests a compressed response, that request
     # should go on to the cdn, and we should respect whatever the CDN does.
     filename = Dir.pwd + '/spec/data/lorem.ipsum'
-    response = get('http://127.0.0.1:8088/lorem.ipsum', {'Accept-Encoding' => 'gzip;q=1.0'})
+    response = get('http://localhost:8088/lorem.ipsum', {'Accept-Encoding' => 'gzip;q=1.0'})
     response.code.should == "200"
     inflater = Zlib::GzipReader.new(StringIO.new(response.body.to_s))
     buf = inflater.read
@@ -51,7 +51,7 @@ describe 'Accept Encoding header' do
     # if the client requests a compressed response, that request
     # should go on to the cdn, and we should respect whatever the CDN does.
     filename = Dir.pwd + '/spec/data/lorem.ipsum'
-    response = get('http://127.0.0.1:8088/lorem.ipsum')
+    response = get('http://localhost:8088/lorem.ipsum')
     response.code.should == "200"
 
     file_digest = Digest::MD5.hexdigest(File.read(filename))

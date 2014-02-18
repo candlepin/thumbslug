@@ -14,8 +14,7 @@ describe 'CA Certificate checking' do
 
   before(:all) do
     @https_proc = create_httpd(true)
-    @tslugs_pipe = create_thumbslug({'ssl.keystore' => 'spec/data/keystore-spec.p12',
-                                     'ssl.keystore.password' => 'pass'})
+    @tslugs_pipe = create_thumbslug()
     @tslugs_bad_ca_pipe = create_thumbslug({'port' => '9997',
                                             'cdn.ssl.ca.keystore' => 'spec/data/unknown-ca-pub.pem'})
   end
@@ -31,13 +30,13 @@ describe 'CA Certificate checking' do
   end
 
   it "should return when the cdn's ssl certificate can't be validated" do
-    response = get('https://127.0.0.1:9997/this_will_404')
+    response = get('https://localhost:9997/this_will_404')
     response.code.should == '502'
   end
 
   it "should error out when the client's CA is unknown" do
     lambda do
-      response = get('https://127.0.0.1:8088/this_will_404', nil,
+      response = get('https://localhost:8088/this_will_404', nil,
                      'spec/data/unknown-ca.pem')
     end.should raise_exception(OpenSSL::SSL::SSLError)
   end
