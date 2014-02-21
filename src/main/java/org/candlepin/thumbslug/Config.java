@@ -33,7 +33,7 @@ import java.util.TreeMap;
  */
 public class Config {
     private static final String REQUIRED = "XX_REQUIRED_VALUE_XX";
-    private static final String CONFIG_FILE = "/etc/thumbslug/thumbslug.conf";
+    public static final String CONFIG_FILE = "/etc/thumbslug/thumbslug.conf";
     private static final String DEFAULT_CONFIG_RESOURCE = "config/thumbslug.conf";
     private static final String LOGGER_PREFIX = "log4j.logger.";
 

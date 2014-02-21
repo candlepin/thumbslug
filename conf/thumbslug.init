@@ -21,23 +21,18 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-CLASSPATH="/usr/share/java/netty.jar:/usr/share/java/log4j.jar:/usr/share/java/jna.jar"
-CLASSPATH="$CLASSPATH:/usr/share/java/commons-codec.jar:/usr/share/java/akuma.jar"
-CLASSPATH="$CLASSPATH:/usr/share/java/oauth.jar:/usr/share/java/oauth-consumer.jar"
-CLASSPATH="$CLASSPATH:/usr/share/thumbslug/thumbslug.jar"
-exec="java -cp $CLASSPATH org.candlepin.thumbslug.Main"
 prog=thumbslug
-config=/etc/thumbslug/thumbslug.conf
-pidfile=/var/run/thumbslug/thumbslug.pid
+config=/etc/${prog}/${prog}.conf
+pidfile=/var/run/thumbslug/${prog}.pid
 
 lockfile=/var/lock/subsys/$prog
 
 start() {
-    [ -f /usr/share/thumbslug/thumbslug.jar ] || exit 5
-    [ -f $config ] || exit 6
+    [ -x /usr/bin/thumbslug ] || exit 5
+    [ -r $config ] || exit 6
     echo -n "Starting $prog: "
     # if not running, start it up here, usually something like "daemon $exec"
-    daemon --user thumbslug "$exec"
+    daemon --user thumbslug "/usr/bin/thumbslug"
     retval=$?
     echo
     [ $retval -eq 0 ] && touch $lockfile

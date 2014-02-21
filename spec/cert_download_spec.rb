@@ -16,10 +16,7 @@ describe 'Certificate download from candlepin' do
 
   before(:all) do
     @https_proc = create_httpd(true)
-    @tslugs_pipe = create_thumbslug({:ssl_keystore => 'spec/data/keystore-spec.p12',
-                                     :ssl_keystore_password => 'pass',
-                                     :ssl_client_dynamic_ssl => 'true',
-                                    })
+    @tslugs_pipe = create_thumbslug({'ssl.client.dynamicSsl' => 'true'})
   end
 
   after(:all) do
@@ -32,7 +29,7 @@ describe 'Certificate download from candlepin' do
   end
 
   it 'returns a 502 with no open port to candlepin' do
-    response = get('https://127.0.0.1:8088/lorem.ipsum')
+    response = get('https://localhost:8088/lorem.ipsum')
     response.code.should == '502'
   end
 
@@ -40,7 +37,7 @@ describe 'Certificate download from candlepin' do
     cpin_proc = create_candlepin(FiveHundred)
 
     begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum')
+      response = get('https://localhost:8088/lorem.ipsum')
       response.code.should == '502'
     ensure
       Process.kill('INT', cpin_proc)
@@ -52,7 +49,7 @@ describe 'Certificate download from candlepin' do
     cpin_proc = create_candlepin(Garbage)
 
     begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum')
+      response = get('https://localhost:8088/lorem.ipsum')
       response.code.should == '502'
     ensure
       Process.kill('INT', cpin_proc)
@@ -64,34 +61,20 @@ describe 'Certificate download from candlepin' do
     cpin_proc = create_candlepin(Cert)
 
     begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum')
+      response = get('https://localhost:8088/lorem.ipsum')
       response.code.should == '200'
     ensure
       Process.kill('INT', cpin_proc)
       Process.wait(cpin_proc)
     end
-  end
-
-  it 'allows downloading content with a valid V3 certificate' do
-    cpin_proc = create_candlepin(Cert)
-
-    begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum', headers = nil,
-                     pem = 'spec/data/spec/cert-v3.pem')
-      response.code.should == '200'
-    ensure
-      Process.kill('INT', cpin_proc)
-      Process.wait(cpin_proc)
-    end
-
   end
 
   it 'returns a 401 for a revoked certificate' do
     cpin_proc = create_candlepin(Cert)
 
     begin
-      response = get('https://127.0.0.1:8088/lorem.ipsum', headers = nil,
-                    pem = 'spec/data/spec/revoked-cert.pem')
+      response = get('https://localhost:8088/lorem.ipsum', nil,
+                     'spec/data/spec/revoked-cert.pem')
       response.code.should == '401'
     ensure
       Process.kill('INT', cpin_proc)
@@ -106,7 +89,7 @@ include WEBrick
 def create_candlepin(cert_handler, params = {})
     privkey = OpenSSL::PKey::RSA.new(File.read("spec/data/cdn-key.pem"))
     server_cert = OpenSSL::X509::Certificate.new(File.read("spec/data/cdn.pem"))
-    ca_cert = "spec/data/CA/ca-cert.pem" 
+    ca_cert = "spec/data/CA/ca-cert.pem"
       config = {
         :Port => 9898,
         :BindAddress => '127.0.0.1',
@@ -135,11 +118,8 @@ def create_candlepin(cert_handler, params = {})
         server = HTTPServer.new(config)
         trap('INT') { server.stop }
         # NOTE: this is the id hardcoded into our test cert.
-        sub_id = 'ff8080813a73d4b6013a73d5b82e01f4'
-        ent_id = 'ff8080813a73d4b6013a7ae77cbf2f4c'
-        ent_id_v3 = 'ff8080813a73d4b6013a7a1b959d2f38'
+        ent_id = '8a8d01e9442cfe7701442d0227b8170a'
         server.mount "/candlepin/entitlements/#{ent_id}/upstream_cert", cert_handler
-        server.mount "/candlepin/entitlements/#{ent_id_v3}/upstream_cert", cert_handler
         wr.write "Started webrick"
       rescue Exception => e
         wr.write "Error starting webrick:\n"
@@ -153,7 +133,7 @@ def create_candlepin(cert_handler, params = {})
     puts "#{rd.read}" #this will wait for the forked process to send an EOF
     rd.close
     return pid
-  end
+end
 
 class FourOhFour < WEBrick::HTTPServlet::AbstractServlet
 

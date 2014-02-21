@@ -4,9 +4,14 @@
 %global _source_payload w9.gzdio
 
 %global selinux_variants mls strict targeted
-%global selinux_policyver %(%{__sed} -e 's,.*selinux-policy-\\([^/]*\\)/.*,\\1,' /usr/share/selinux/devel/policyhelp || echo 0.0.0)
 %global modulename thumbslug
+%global use_systemd (0%{?fedora} && 0%{?fedora} >= 17) || (0%{?rhel} && 0%{?rhel} >= 7)
 
+%if use_systemd
+    %global selinux_policy_dir systemd
+%else
+    %global selinux_policy_dir sysvinit
+%endif
 
 Name: thumbslug
 Summary: Thumbslug CDN proxy
@@ -30,13 +35,22 @@ Requires: jna >= 3.2.4
 Requires: log4j >= 1.2
 Requires: netty >= 3.2.3
 Requires: akuma >= 1.7
-%if 0%{?fedora} && 0%{?fedora} > 17
 Requires: java-oauth
-%else
-Requires: oauth
-%endif
 Requires: java >= 1.6.0
+Requires: jpackage-utils
 
+%if %use_systemd
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
+%else
+Requires(post): chkconfig
+Requires(preun): chkconfig
+Requires(preun): initscripts
+Requires(postun): initscripts
+%endif
+
+# BuildRequires section
 BuildRequires: ant >= 1.7.0
 BuildRequires: akuma >= 1.7
 BuildRequires: jna >= 3.2.4
@@ -47,12 +61,13 @@ BuildRequires: jakarta-commons-codec
 %else
 BuildRequires: apache-commons-codec
 %endif
-%if 0%{?fedora} && 0%{?fedora} > 17
 BuildRequires: java-oauth
-%else
-BuildRequires: oauth
-%endif
 BuildRequires: java-devel >= 1.6.0
+BuildRequires: jpackage-utils
+%if %use_systemd
+# We need the systemd RPM macros
+BuildRequires: systemd
+%endif
 
 %define __jar_repack %{nil}
 
@@ -68,8 +83,9 @@ BuildRequires:  selinux-policy-devel
 BuildRequires:  /usr/share/selinux/devel/policyhelp
 BuildRequires:  hardlink
 
-%if "%{selinux_policyver}" != ""
-Requires:       selinux-policy >= %{selinux_policyver}
+%{!?_selinux_policy_version: %global _selinux_policy_version %(sed -e 's,.*selinux-policy-\\([^/]*\\)/.*,\\1,' /usr/share/selinux/devel/policyhelp 2>/dev/null)}
+%if "%{_selinux_policy_version}" != ""
+Requires:      selinux-policy >= %{_selinux_policy_version}
 %endif
 Requires:       %{name} = %{version}-%{release}
 Requires(post):   /usr/sbin/semodule
@@ -79,59 +95,70 @@ Requires(postun): /usr/sbin/semodule
 Requires(postun): /usr/sbin/semanage
 Requires(postun): /sbin/restorecon
 
-
 %description selinux
-SELinux policy module supporting thumbslug
+%{summary}.
 
 
 %prep
 %setup -q 
+%{__mkdir} -p lib
+build-jar-repository -s -p lib oauth-consumer oauth akuma commons-codec jna log4j netty
 
 %build
-ant -Dlibdir=/usr/share/java clean package
+ant -Dlibdir=lib clean package
 
-cd selinux
+pushd selinux/%{selinux_policy_dir}
 for selinuxvariant in %{selinux_variants}
 do
   make NAME=${selinuxvariant} -f /usr/share/selinux/devel/Makefile
   mv %{modulename}.pp %{modulename}.pp.${selinuxvariant}
   make NAME=${selinuxvariant} -f /usr/share/selinux/devel/Makefile clean
 done
-cd -
-
+popd
 
 %install
-install -d -m 755 $RPM_BUILD_ROOT/%{_datadir}/%{name}/
-install -m 644 target/%{name}.jar $RPM_BUILD_ROOT/%{_datadir}/%{name}
+install -d -m 755 %{buildroot}/%{_javadir}
+install -m 644 target/%{name}.jar %{buildroot}/%{_javadir}/%{name}.jar
 
-install -d -m 755 $RPM_BUILD_ROOT/%{_bindir}/
-install -m 755 %{name}.bin $RPM_BUILD_ROOT/%{_bindir}/%{name}
+install -d -m 755 %{buildroot}/%{_bindir}/
 
-install -d -m 755 $RPM_BUILD_ROOT/%{_initddir}
-install -m 755 thumbslug.init $RPM_BUILD_ROOT/%{_initddir}/%{name}
+%if %use_systemd
+    install -d -m 755 %{buildroot}/%{_unitdir}
+    install -m 644 conf/%{name}.service %{buildroot}/%{_unitdir}/%{name}.service
+    install -d -m 755 %{buildroot}/%{_tmpfilesdir}
+    install -m 644 conf/%{name}.conf.tmpfiles %{buildroot}/%{_tmpfilesdir}/%{name}.conf
+%else
+    install -d -m 755 %{buildroot}/%{_initddir}
+    install -m 755 conf/thumbslug.init %{buildroot}/%{_initddir}/%{name}
+%endif
 
-install -d -m 755 $RPM_BUILD_ROOT/%{_sysconfdir}/thumbslug
-install -m 640 thumbslug.conf \
-            $RPM_BUILD_ROOT/%{_sysconfdir}/thumbslug/thumbslug.conf
+install -d -m 755 %{buildroot}/%{_sysconfdir}/thumbslug
+install -m 640 conf/thumbslug.conf \
+            %{buildroot}/%{_sysconfdir}/thumbslug/thumbslug.conf
 install -m 640 cdn-ca.pem \
-            $RPM_BUILD_ROOT/%{_sysconfdir}/thumbslug/cdn-ca.pem
+            %{buildroot}/%{_sysconfdir}/thumbslug/cdn-ca.pem
 
-install -d -m 775 $RPM_BUILD_ROOT/%{_var}/log/thumbslug
-install -d -m 775 $RPM_BUILD_ROOT/%{_var}/run/thumbslug
+install -d -m 775 %{buildroot}/%{_var}/log/%{name}
+install -d -m 775 %{buildroot}/%{_var}/run/%{name}
+install -d -m 775 %{buildroot}/%{_var}/lock/subsys
 
-cd selinux
+/bin/touch %{buildroot}/%{_var}/run/%{name}/%{name}.pid
+/bin/touch %{buildroot}/%{_var}/lock/subsys/%{name}
+
+%jpackage_script org.candlepin.thumbslug.Main "" "" %{name}:oauth-consumer:oauth:akuma:commons-codec:jna:log4j:netty %{name} true
+
+pushd selinux/%{selinux_policy_dir}
 for selinuxvariant in %{selinux_variants}
 do
-  install -d $RPM_BUILD_ROOT/%{_datadir}/selinux/${selinuxvariant}
+  install -d %{buildroot}/%{_datadir}/selinux/${selinuxvariant}
   install -p -m 644 %{modulename}.pp.${selinuxvariant} \
-    $RPM_BUILD_ROOT/%{_datadir}/selinux/${selinuxvariant}/%{modulename}.pp
+    %{buildroot}/%{_datadir}/selinux/${selinuxvariant}/%{modulename}.pp
 done
-cd -
-/usr/sbin/hardlink -cv $RPM_BUILD_ROOT/%{_datadir}/selinux
+popd
+/usr/sbin/hardlink -cv %{buildroot}/%{_datadir}/selinux
 
 %clean
-rm -rf $RPM_BUILD_ROOT
-
+rm -rf %{buildroot}
 
 %pre
 getent group thumbslug >/dev/null || groupadd -r thumbslug
@@ -140,23 +167,31 @@ getent passwd thumbslug >/dev/null || \
     -c "thumbslug content and entitlement proxy" thumbslug 
 exit 0
 
-
 %post
-/sbin/chkconfig --add %{name}
-
+%if %use_systemd
+    %systemd_post %{name}.service
+%else
+    /sbin/chkconfig --add %{name}
+%endif
 
 %postun
-if [ "$1" -ge "1" ] ; then
-    /sbin/service %{name} condrestart >/dev/null 2>&1 || :
-fi
-
+%if %use_systemd
+    %systemd_postun_with_restart %{name}.service
+%else
+    if [ "$1" -ge "1" ] ; then
+        /sbin/service %{name} condrestart >/dev/null 2>&1 || :
+    fi
+%endif
 
 %preun
-if [ $1 -eq 0 ] ; then
-    /sbin/service %{name} stop >/dev/null 2>&1
-    /sbin/chkconfig --del %{name}
-fi
-
+%if %use_systemd
+    %systemd_preun %{name}.service
+%else
+    if [ $1 -eq 0 ] ; then
+        /sbin/service %{name} stop >/dev/null 2>&1
+        /sbin/chkconfig --del %{name}
+    fi
+%endif
 
 %post selinux
 for selinuxvariant in %{selinux_variants}
@@ -175,30 +210,34 @@ if [ $1 -eq 0 ] ; then
   /usr/sbin/semanage port -d -t thumbslug_port_t -p tcp 8088 &> /dev/null || :
 fi
 
-
 %files
 %defattr(-, root, thumbslug)
 %doc README
-%{_initddir}/%{name}
+
+%if %use_systemd
+    %attr(644,root,root) %{_unitdir}/%{name}.service
+    %attr(644,root,root) %{_tmpfilesdir}/%{name}.conf
+%else
+    %attr(755,root,root) %{_initrddir}/%{name}
+%endif
+
 %attr(-, root, root) %{_bindir}/%{name}
 
 %dir %{_sysconfdir}/thumbslug
 %config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
 %{_sysconfdir}/%{name}/cdn-ca.pem
 
-%dir %{_datadir}/%{name}
-%{_datadir}/%{name}/thumbslug.jar
+%{_javadir}/%{name}.jar
 
-%dir %{_var}/log/thumbslug
-%dir %{_var}/run/thumbslug
-%ghost %attr(660, thumbslug, thumbslug) %{_var}/run/thumbslug/thumbslug.pid
-%ghost %attr(660, thumbslug, thumbslug) %{_var}/lock/subsys/thumbslug
+%dir %{_var}/log/%{name}
+%dir %{_var}/run/%{name}
+%ghost %attr(644, thumbslug, thumbslug) %{_var}/run/%{name}/%{name}.pid
+%ghost %attr(644, thumbslug, thumbslug) %{_var}/lock/subsys/%{name}
 
 %files selinux
 %defattr(-,root,root,0755)
 %doc selinux/*
 %{_datadir}/selinux/*/%{modulename}.pp
-
 
 %changelog
 * Fri Sep 13 2013 William Poteat <wpoteat@redhat.com> 0.0.36-1

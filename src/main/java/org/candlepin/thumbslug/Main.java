@@ -113,7 +113,11 @@ public class Main {
         Config config = null;
 
         try {
-            config = new Config();
+            String confFile = Config.CONFIG_FILE;
+            if (args.length == 1) {
+                confFile = args[0];
+            }
+            config = new Config(confFile);
         }
         catch (Exception e) {
             log.error("Unable to load config!", e);

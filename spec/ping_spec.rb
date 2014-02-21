@@ -15,8 +15,8 @@ describe 'Thumbslug Ping' do
   end
 
   before(:all) do
-    @tslugs_pipe = create_thumbslug({:ssl_client_dynamic_ssl => 'true'})
-    @tslugs_no_dynamic_ssl_pipe = create_thumbslug({:port => '9998'})
+    @tslugs_pipe = create_thumbslug({'ssl.client.dynamicSsl' => 'true'})
+    @tslugs_no_dynamic_ssl_pipe = create_thumbslug({'port' => '9998'})
   end
 
   after(:all) do
@@ -29,14 +29,14 @@ describe 'Thumbslug Ping' do
   end
 
   it 'ping fails with candlepin not running' do
-    response = get('https://127.0.0.1:8088/ping')
+    response = get('https://localhost:8088/ping')
     response.code.should == '502'
   end
 
   it 'pings thumbslug with dynamicSsl turned on' do
     cpin_proc = create_candlepin()
     begin
-      response = get('https://127.0.0.1:8088/ping')
+      response = get('https://localhost:8088/ping')
       response.code.should == '204'
     ensure
       Process.kill('INT', cpin_proc)
@@ -45,7 +45,7 @@ describe 'Thumbslug Ping' do
   end
 
   it 'pings thumbslug with dynamicSsl turned off' do
-    response = get('https://127.0.0.1:9998/ping')
+    response = get('https://localhost:9998/ping')
     response.code.should == '204'
   end
 

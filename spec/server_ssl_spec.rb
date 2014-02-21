@@ -26,8 +26,7 @@ describe 'Server SSL' do
 
   before(:all) do
     @https_proc = create_httpd(true)
-    @tslugs_pipe = create_thumbslug({:ssl_keystore => 'spec/data/keystore.p12',
-                                    :ssl_keystore_password => 'password'})
+    @tslugs_pipe = create_thumbslug()
   end
 
   after(:all) do
@@ -39,25 +38,24 @@ describe 'Server SSL' do
     print "done"
   end
 
-
-
   it 'uses the configured ssl certificate for its server certificate' do
     socket = TCPSocket.new('127.0.0.1', 8088)
     ssl_context = OpenSSL::SSL::SSLContext.new()
-    ssl_context.key = OpenSSL::PKey::RSA.new(File.read("spec/data/spec/cert-v3.pem"))
-    ssl_context.cert = OpenSSL::X509::Certificate.new(File.read("spec/data/spec/cert-v3.pem"))
+    ssl_context.key = OpenSSL::PKey::RSA.new(File.read("spec/data/spec/test-entitlement.pem"))
+    ssl_context.cert = OpenSSL::X509::Certificate.new(File.read("spec/data/spec/test-entitlement.pem"))
     ssl_socket = OpenSSL::SSL::SSLSocket.new(socket, ssl_context)
 
     ssl_socket.sync_close = true
 
     ssl_socket.connect
 
-    serial = ssl_socket.peer_cert.serial
+    serial = ssl_socket.peer_cert.serial.to_s
 
     # shut everything down before asserting
     ssl_socket.close
 
     # this is the magic number from our cert
-    serial.should == 18235744395953304678
+    pkcs_file = File.open('spec/data/keystore-spec.p12')
+    serial.should == OpenSSL::PKCS12.new(pkcs_file.read, 'thumbslug').certificate.serial.to_s
   end
 end

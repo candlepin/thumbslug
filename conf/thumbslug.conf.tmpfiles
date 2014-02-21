@@ -1,0 +1,2 @@
+d     /var/run/thumbslug          0755  thumbslug thumbslug -
+f     /var/lock/subsys/thumbslug  0644  thumbslug thumbslug -

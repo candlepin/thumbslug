@@ -4,7 +4,7 @@
 
 #require 'buildr/java'
 
-CHECKSTYLE = transitive('checkstyle:checkstyle:jar:5.0')
+CHECKSTYLE = transitive('com.puppycrawl.tools:checkstyle:jar:5.4')
 
 module CheckStyle
   include Extension

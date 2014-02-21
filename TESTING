@@ -1,7 +1,34 @@
+End To End
+----------
+Creating an end-to-end test with Thumbslug is difficult, but can be done.  Here are the steps.
+
+1. Go to access.redhat.com and get a manifest with some valid entitlements.
+2. Import the manifest into your personal Candlepin.
+3. Install and setup thumbslug.
+   - Copy your /etc/candlepin/certs/candlepin-ca.crt to /etc/thumbslug/client-ca.pem
+   - We are not using JKS for Candlepin at the time of this writing, but if we do, you need
+     to convert your candlepin keystore to PKCS12.  E.g.
+     keytool -importkeystore -srckeystore keystore.jks -srcstoretype JKS -deststoretype PKCS12 -destkeystore keystore.p12
+   - Copy your /etc/candlepin/certs/keystore to /etc/thumbslug/server_keystore.p12
+   - Alternatively you can create your own keystore with keys, create a CSR, have the Candlepin CA
+     sign it, and then update your keystore with the signed cert.  This proces is described below in the Spec Tests section.
+   - Start Thumbslug
+   - Somewhere else, use subscription-manager to register to your Candlepin and attach to a pool.
+   - Copy the candlepin-ca.pem file to /etc/rhsm/ca
+   - Edit /etc/rhsm/rhsm.conf and set repo_ca_cert = %(ca_cert_dir)scandlepin-ca.pem
+   - Also set baseurl to point to your thumbslug.  E.g. baseurl= https://my.candlepin.host:8088
+   - Test with openssl s_client. E.g.
+     openssl s_client -cert /etc/pki/entitlement/some_ent_cert.pem -key /etc/pki/entitlement/some_ent_cert-key.pem -connect my.candlepin.host:8088
+   - Now you should connect and see the SSL handshake.  Try pinging thumbslug by typing "GET /ping HTTP/1.1" and hitting enter twice.
+   - You should get a 204 No Content response.  This means we can talk to thumbslug and thumbslug can talk to candlepin.
+   - Now let's try the whole deal.  Run "subscription-manager repolist"
+   - Did you get anything back?  Even if you got a 404, that means you're talking to the CDN.
+
+Spec Tests
+----------
 # Thumbslug needs a lot of SSL certs in place for spec testing.
 # Rather than generate them at test time, we have them stored in the repo.
 # If you need to regenerate them, this is how!
-
 
 # create a CA that will sign the cdn cert:
 openssl req \
@@ -9,7 +36,6 @@ openssl req \
     -subj '/C=US/L=Raleigh/CN=a.fake.cdn' \
       -newkey rsa:1024 -keyout spec/data/CA/cdn-ca-key.pem -out \
       spec/data/CA/cdn-ca.pem
-
 
 # create a cert for the cdn, and sign it with the CA cert from above:
 openssl req \
@@ -45,15 +71,66 @@ openssl req \
       -out spec/data/unknown-ca.pem
  cat spec/data/unknown-ca-key.pem >> spec/data/unknown-ca.pem
 
-
 # to generate the pkcs12 server keystore:
-openssl req -x509 -new -out CERT.crt -keyout KEY.key -days 3650 \
-    -subj "/CN=localhost/C=US/L=Raleigh/"
-# enter password/password
-openssl pkcs12 -export -in CERT.crt -inkey KEY.key -out keystore.p12 \
-    -name thumbslug -chain -password pass:password
-# enter password
-# if you see 'unable to write random state, you might need to sudo rm ~/.rnd
+  # Generate a cert for localhost
+openssl req -x509 -new -out localhost.crt -keyout localhost.key -days 10000 -subj "/CN=localhost/C=US/L=Raleigh/" -passout pass:thumbslug
+  # Generate a CSR for the Candlepin CA to sign
+openssl req -out localhost.csr -key localhost.key -new -passin pass:thumbslug -subj "/CN=localhost/C=US/L=Raleigh/"
+  # Sign the CSR
+openssl x509 -in localhost.csr -out localhost.crt -req -days 10000 -CA CA/candlepin-ca.crt -CAkey CA/candlepin-ca.key -CAcreateserial
+  # Create the PKCS12 keystore with the signed cert, the key, and the Candlepin CA
+openssl pkcs12 -export -in localhost.crt -inkey localhost.key -certfile ../CA/candlepin-ca.crt -out keystore-spec.p12 -passout pass:thumbslug -passin pass:thumbslug -name localhost -caname candlepin-ca
 
-#to make a pkcs12 cert for use on thumbslug as a client talkign to the cdn
-openssl pkcs12 -export -inkey cakeypair.pem -in cacert.pem -out keystore-spec.p12 -name thumbslug
+You will also need an entitlement cert that represents the consumer. I have
+not found an easy way of creating this cert given all the custom extensions
+that we use. However, when I created the entitlement cert we use for testing
+I set it to last until 2030. Hopefully that will be long enough.
+
+If you have to do it again, here is what I did:
+1. Hack Candlepin to issue entitlement certs that last a very long time
+   because you don't want to do this often. I made the change in
+   DefaultEntitlementServiceAdapter where we make a call to PKIUtility's
+   createX509Certificate() method. Just pass in a very long time from now
+   as the cert end date.
+2. Hack Candlepin's CA to last a very long time as well, because why not?
+   We have a script called gen-certs that does all this for us, but for
+   completeness, here is the relevant portion with the -days argument set
+   for 20 years.
+
+   CERTS_HOME=/etc/candlepin/certs
+   UPSTREAM_CERTS_HOME=$CERTS_HOME/upstream
+   CA_KEY_PASSWORD=$CERTS_HOME/candlepin-ca-password.txt
+   CA_KEY=$CERTS_HOME/candlepin-ca.key
+   CA_REDHAT_CERT=conf/candlepin-redhat-ca.crt
+   CA_UPSTREAM_CERT=$UPSTREAM_CERTS_HOME/candlepin-redhat-ca.crt
+   CA_PUB_KEY=$CERTS_HOME/candlepin-ca-pub.key
+   CA_CERT=$CERTS_HOME/candlepin-ca.crt
+   KEYSTORE=$CERTS_HOME/keystore
+
+   sudo su -c "echo $RANDOM > $CA_KEY_PASSWORD"
+   sudo openssl genrsa -out $CA_KEY -passout "file:$CA_KEY_PASSWORD" 1024
+   sudo openssl rsa -pubout -in $CA_KEY -out $CA_PUB_KEY
+   sudo openssl req -new -x509 -days 7305 -key $CA_KEY -out $CA_CERT -subj "/CN=$HOSTNAME/C=US/L=Raleigh/"
+   sudo openssl pkcs12 -export -in $CA_CERT -inkey $CA_KEY -out $KEYSTORE -name tomcat -CAfile $CA_CERT -caname root -chain -password pass:password
+   sudo cp $CA_REDHAT_CERT $CA_UPSTREAM_CERT
+   sudo chmod a+r $KEYSTORE
+
+3. Deploy your hacked Candlepin with a fresh database and test data (See the
+   buildconf/scripts/import_products.rb and buildconf/scripts/test_data.json
+   for examples).
+
+4. Register to your hacked Candlepin and attach to a pool. It doesn't really
+   matter which pool because all your entitlements are going to last a long
+   time thanks to step 1. E.g.
+
+   subscription-manager register --user admin --pass admin --org admin
+   subscription-manager list --all --available
+   subscription-manager attach --pool=blah_pool
+
+5. Take your entitlement cert and key and cat them together. E.g.
+
+   cat /etc/pki/entitlement/blah.pem /etc/pki/entitlement/blah-key.pem > /tmp/test-entitlement.pem
+
+6. Copy the test-entitlement.pem file to spec/data/spec/test-entitlement.pem and copy all
+   the candlepin-ca files (don't forget the password file!) under /etc/candlepin/certs to
+   spec/data/CA. You are now done.
