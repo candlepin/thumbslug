@@ -7,7 +7,7 @@
 %global modulename thumbslug
 %global use_systemd (0%{?fedora} && 0%{?fedora} >= 17) || (0%{?rhel} && 0%{?rhel} >= 7)
 
-%if use_systemd
+%if %use_systemd
     %global selinux_policy_dir systemd
 %else
     %global selinux_policy_dir sysvinit
@@ -26,16 +26,23 @@ Vendor: Red Hat, Inc.
 BuildArch: noarch
 
 Requires(pre): shadow-utils
+
 %if 0%{?rhel} && 0%{?rhel} <= 6
 Requires: jakarta-commons-codec
 %else
 Requires: apache-commons-codec
 %endif
+
+%if 0%{?fedora}
+Requires: java-oauth
+%else
+Requires: oauth
+%endif
+
 Requires: jna >= 3.2.4
 Requires: log4j >= 1.2
 Requires: netty >= 3.2.3
 Requires: akuma >= 1.7
-Requires: java-oauth
 Requires: java >= 1.6.0
 Requires: jpackage-utils
 
@@ -56,12 +63,19 @@ BuildRequires: akuma >= 1.7
 BuildRequires: jna >= 3.2.4
 BuildRequires: log4j >= 1.2
 BuildRequires: netty >= 3.2.3
+
 %if 0%{?rhel} && 0%{?rhel} <= 6
 BuildRequires: jakarta-commons-codec
 %else
 BuildRequires: apache-commons-codec
 %endif
+
+%if 0%{?fedora}
 BuildRequires: java-oauth
+%else
+BuildRequires: oauth
+%endif
+
 BuildRequires: java-devel >= 1.6.0
 BuildRequires: jpackage-utils
 %if %use_systemd
@@ -102,7 +116,7 @@ Requires(postun): /sbin/restorecon
 %prep
 %setup -q 
 %{__mkdir} -p lib
-build-jar-repository -s -p lib oauth-consumer oauth akuma commons-codec jna log4j netty
+build-jar-repository -s -p lib %{?rhel:oauth-consumer} oauth akuma commons-codec jna log4j netty
 
 %build
 ant -Dlibdir=lib clean package
