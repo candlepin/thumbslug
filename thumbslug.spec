@@ -17,7 +17,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.37
+Version: 0.0.38
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -254,6 +254,10 @@ fi
 %{_datadir}/selinux/*/%{modulename}.pp
 
 %changelog
+* Thu Feb 27 2014 William Poteat <wpoteat@redhat.com> 0.0.38-1
+- Correct requires and buildrequires for oauth and use macros correctly.
+  (awood@redhat.com)
+
 * Wed Feb 26 2014 William Poteat <wpoteat@redhat.com> 0.0.37-1
 - 918759: Update Thumbslug to use systemd. (awood@redhat.com)
 
