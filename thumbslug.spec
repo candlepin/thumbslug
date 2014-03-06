@@ -36,7 +36,7 @@ Requires: apache-commons-codec
 %if 0%{?fedora}
 Requires: java-oauth
 %else
-Requires: oauth
+Requires: oauth >= 20100601-4
 %endif
 
 Requires: jna >= 3.2.4
@@ -73,7 +73,7 @@ BuildRequires: apache-commons-codec
 %if 0%{?fedora}
 BuildRequires: java-oauth
 %else
-BuildRequires: oauth
+BuildRequires: oauth >= 20100601-4
 %endif
 
 BuildRequires: java-devel >= 1.6.0
@@ -116,7 +116,7 @@ Requires(postun): /sbin/restorecon
 %prep
 %setup -q 
 %{__mkdir} -p lib
-build-jar-repository -s -p lib %{?rhel:oauth-consumer} oauth akuma commons-codec jna log4j netty
+build-jar-repository -s -p lib oauth/oauth-consumer oauth/oauth akuma commons-codec jna log4j netty
 
 %build
 ant -Dlibdir=lib clean package
@@ -159,7 +159,7 @@ install -d -m 775 %{buildroot}/%{_var}/lock/subsys
 /bin/touch %{buildroot}/%{_var}/run/%{name}/%{name}.pid
 /bin/touch %{buildroot}/%{_var}/lock/subsys/%{name}
 
-%jpackage_script org.candlepin.thumbslug.Main "" "" %{name}:oauth-consumer:oauth:akuma:commons-codec:jna:log4j:netty %{name} true
+%jpackage_script org.candlepin.thumbslug.Main "" "" %{name}:oauth/oauth:oauth/oauth-consumer:akuma:commons-codec:jna:log4j:netty %{name} true
 
 pushd selinux/%{selinux_policy_dir}
 for selinuxvariant in %{selinux_variants}
