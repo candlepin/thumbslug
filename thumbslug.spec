@@ -17,7 +17,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.38
+Version: 0.0.39
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -254,6 +254,10 @@ fi
 %{_datadir}/selinux/*/%{modulename}.pp
 
 %changelog
+* Tue Apr 01 2014 Alex Wood <awood@redhat.com> 0.0.39-1
+- Revert "Update condition to <= 6 for proper build package" (awood@redhat.com)
+- Build against newer oauth packaging. (awood@redhat.com)
+
 * Thu Feb 27 2014 William Poteat <wpoteat@redhat.com> 0.0.38-1
 - Correct requires and buildrequires for oauth and use macros correctly.
   (awood@redhat.com)
