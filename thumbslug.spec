@@ -27,7 +27,7 @@ BuildArch: noarch
 
 Requires(pre): shadow-utils
 
-%if 0%{?rhel} && 0%{?rhel} <= 6
+%if 0%{?rhel} && 0%{?rhel} < 6
 Requires: jakarta-commons-codec
 %else
 Requires: apache-commons-codec
@@ -64,7 +64,7 @@ BuildRequires: jna >= 3.2.4
 BuildRequires: log4j >= 1.2
 BuildRequires: netty >= 3.2.3
 
-%if 0%{?rhel} && 0%{?rhel} <= 6
+%if 0%{?rhel} && 0%{?rhel} < 6
 BuildRequires: jakarta-commons-codec
 %else
 BuildRequires: apache-commons-codec
