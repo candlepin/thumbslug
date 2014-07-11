@@ -17,7 +17,7 @@ Name: thumbslug
 Summary: Thumbslug CDN proxy
 Group: Internet/Applications
 License: GPLv2
-Version: 0.0.39
+Version: 0.0.40
 Release: 1%{?dist}
 URL: http://fedorahosted.org/thumbslug
 Source: %{name}-%{version}.tar.gz
@@ -246,6 +246,10 @@ fi
 %{_datadir}/selinux/*/%{modulename}.pp
 
 %changelog
+* Fri Jul 11 2014 Devan Goodwin <dgoodwin@rm-rf.ca> 0.0.40-1
+- Use correct apache-commons-codec package, remove EL5 jakarta deps.
+  (dgoodwin@redhat.com)
+
 * Tue Apr 01 2014 Alex Wood <awood@redhat.com> 0.0.39-1
 - Revert "Update condition to <= 6 for proper build package" (awood@redhat.com)
 - Build against newer oauth packaging. (awood@redhat.com)
