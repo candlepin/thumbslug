@@ -27,11 +27,7 @@ BuildArch: noarch
 
 Requires(pre): shadow-utils
 
-%if 0%{?rhel} && 0%{?rhel} < 6
-Requires: jakarta-commons-codec
-%else
-Requires: apache-commons-codec
-%endif
+Requires: apache-commons-codec-eap6
 
 %if 0%{?fedora}
 Requires: java-oauth
@@ -64,11 +60,7 @@ BuildRequires: jna >= 3.2.4
 BuildRequires: log4j >= 1.2
 BuildRequires: netty >= 3.2.3
 
-%if 0%{?rhel} && 0%{?rhel} < 6
-BuildRequires: jakarta-commons-codec
-%else
-BuildRequires: apache-commons-codec
-%endif
+BuildRequires: apache-commons-codec-eap6
 
 %if 0%{?fedora}
 BuildRequires: java-oauth
@@ -114,9 +106,9 @@ Requires(postun): /sbin/restorecon
 
 
 %prep
-%setup -q 
+%setup -q
 %{__mkdir} -p lib
-build-jar-repository -s -p lib oauth/oauth-consumer oauth/oauth akuma commons-codec jna log4j netty
+build-jar-repository -s -p lib oauth/oauth-consumer oauth/oauth akuma commons-codec-eap6/commons-codec jna log4j netty
 
 %build
 ant -Dlibdir=lib clean package
@@ -159,7 +151,7 @@ install -d -m 775 %{buildroot}/%{_var}/lock/subsys
 /bin/touch %{buildroot}/%{_var}/run/%{name}/%{name}.pid
 /bin/touch %{buildroot}/%{_var}/lock/subsys/%{name}
 
-%jpackage_script org.candlepin.thumbslug.Main "" "" %{name}:oauth/oauth:oauth/oauth-consumer:akuma:commons-codec:jna:log4j:netty %{name} true
+%jpackage_script org.candlepin.thumbslug.Main "" "" %{name}:oauth/oauth:oauth/oauth-consumer:akuma:commons-codec-eap6/commons-codec:jna:log4j:netty %{name} true
 
 pushd selinux/%{selinux_policy_dir}
 for selinuxvariant in %{selinux_variants}
@@ -178,7 +170,7 @@ rm -rf %{buildroot}
 getent group thumbslug >/dev/null || groupadd -r thumbslug
 getent passwd thumbslug >/dev/null || \
     useradd -r -g thumbslug -d %{_datadir}/%{name} -s /sbin/nologin \
-    -c "thumbslug content and entitlement proxy" thumbslug 
+    -c "thumbslug content and entitlement proxy" thumbslug
 exit 0
 
 %post
@@ -429,7 +421,7 @@ fi
 - try to make an rpm (cduryee@redhat.com)
 
 * Mon Jul 11 2011 Chris Duryee (beav) <cduryee@redhat.com>
-- bump the version 
+- bump the version
 
 * Mon Jul 11 2011 Chris Duryee (beav) <cduryee@redhat.com>
 - new package built with tito
