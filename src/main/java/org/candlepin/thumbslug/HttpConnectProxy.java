@@ -74,6 +74,8 @@ public class HttpConnectProxy extends SimpleChannelUpstreamHandler {
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
             HttpMethod.CONNECT, uri);
 
+        request.addHeader("Host", uri);
+
         if (proxyAuth != null) {
             request.addHeader("Proxy-authorization", "Basic " +
                 new String(Base64.encodeBase64(proxyAuth.getBytes())));
